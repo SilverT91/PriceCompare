@@ -45,35 +45,49 @@ export function colourOf(token: string): string | null {
   return null;
 }
 
+// connectors / prepositions (sk, cs, de, pl, en)
+const CONNECTOR_WORDS = [
+  'a', 'i', 'o', 's', 'v', 'vo', 'z', 'ze', 'na', 'pre', 'do', 'od', 'und', 'mit', 'fur', 'fuer', 'for', 'the', 'of', 'and', 'with',
+  'w', 'dla', 'inkl', 'incl', 'vcetne', 'vratane', 'x', 'by', 'in', 'im', 'der', 'die', 'das',
+];
+const CATEGORY_EXACT = [
+  // phones
+  'telefon', 'telefony', 'smartfon', 'smartfony', 'smartphone', 'handy', 'mobil', 'phone', 'dual', 'sim', 'esim', 'nano',
+  '5g', '4g', 'lte', 'nfc', 'wifi', 'android',
+  // toothbrushes
+  'kefka', 'kefky', 'kefku', 'kartacek', 'kartacky', 'toothbrush', 'szczoteczka', 'zebow', 'elektryczna', 'elektryczny',
+  // tools
+  'aku', 'akku', 'vrtacka', 'vrtacky', 'skrutkovac', 'sroubovak', 'wiertarka', 'wkretarka', 'wiertarkowkretarka', 'drill', 'driver',
+  'bohrschrauber', 'akkubohrschrauber', 'vrtaci', 'akumulator', 'akumulatorovy', 'akumulatorova',
+];
+// Line words that are part of many model names ("Bosch Professional", "Oral-B Professional Care").
+const LINE_WORDS = ['professional', 'profesional', 'profi'];
+// generic shop and marketing words
+const GENERIC_WORDS = [
+  'nove', 'novy', 'nova', 'new', 'neu', 'neue', 'nowy', 'nowa', 'original', 'originalny', 'originalni', 'edition', 'edicia', 'edice',
+  'model', 'verzia', 'verze', 'version', 'cashback', 'akcia', 'akce', 'darcek', 'zdarma', 'gratis', 'eu', 'sk', 'cz', 'de', 'pl', 'at',
+  'distribucia', 'distribuce', 'cena', 'pri', 'nakupe', 'min', 'za', 'ks1', 'zaruka', 'zaruky', 'garancia', 'mesiacov', 'rokov', 'rok',
+];
+/** Brand names: a brand word never tells two models of that brand apart, but it does name the product family. */
+export const BRANDS = new Set([
+  'apple', 'samsung', 'xiaomi', 'google', 'motorola', 'nokia', 'sony', 'huawei', 'honor', 'oneplus', 'bosch', 'makita', 'dewalt',
+  'metabo', 'milwaukee', 'einhell', 'ryobi', 'stanley', 'oralb', 'braun', 'philips', 'sonicare', 'panasonic', 'lg', 'tefal',
+  'rowenta', 'dyson', 'electrolux', 'whirlpool', 'nivea', 'ikea', 'lenovo', 'asus', 'acer', 'hp', 'dell', 'jbl', 'garmin',
+]);
+const CATEGORY_PREFIX = [
+  'mobiln', 'telefo', 'smartf', 'chytr', 'inteligent', 'dotyk',
+  'zubn', 'zahnburst', 'zahnbuerst', 'elektr', 'electr', 'oscil', 'rotac', 'rotier', 'rotuj', 'dospel', 'erwachs', 'osobn',
+  'vrtack', 'skrutkov', 'sroubov', 'akumulator', 'bezuhl', 'bezuhlik',
+];
+
 /** Words that say nothing about which product it is: categories, connectors, marketing, specs. */
-export const NEUTRAL = wc(
-  [
-    // connectors / prepositions (sk, cs, de, pl, en)
-    'a', 'i', 'o', 's', 'v', 'vo', 'z', 'ze', 'na', 'pre', 'do', 'od', 'und', 'mit', 'fur', 'fuer', 'for', 'the', 'of', 'and', 'with',
-    'w', 'dla', 'inkl', 'incl', 'vcetne', 'vratane', 'x', 'by', 'in', 'im', 'der', 'die', 'das',
-    // phones
-    'telefon', 'telefony', 'smartfon', 'smartfony', 'smartphone', 'handy', 'mobil', 'phone', 'dual', 'sim', 'esim', 'nano',
-    '5g', '4g', 'lte', 'nfc', 'wifi', 'android',
-    // toothbrushes
-    'kefka', 'kefky', 'kefku', 'kartacek', 'kartacky', 'toothbrush', 'szczoteczka', 'zebow', 'elektryczna', 'elektryczny',
-    // tools
-    'aku', 'akku', 'vrtacka', 'vrtacky', 'skrutkovac', 'sroubovak', 'wiertarka', 'wkretarka', 'wiertarkowkretarka', 'drill', 'driver',
-    'bohrschrauber', 'akkubohrschrauber', 'professional', 'profesional', 'profi', 'vrtaci', 'akumulator', 'akumulatorovy', 'akumulatorova',
-    // generic
-    'nove', 'novy', 'nova', 'new', 'neu', 'neue', 'nowy', 'nowa', 'original', 'originalny', 'originalni', 'edition', 'edicia', 'edice',
-    'model', 'verzia', 'verze', 'version', 'cashback', 'akcia', 'akce', 'darcek', 'zdarma', 'gratis', 'eu', 'sk', 'cz', 'de', 'pl', 'at',
-    'distribucia', 'distribuce', 'cena', 'pri', 'nakupe', 'min', 'za', 'ks1', 'zaruka', 'zaruky', 'garancia', 'mesiacov', 'rokov', 'rok',
-    // brand names: a brand word never tells two models of that brand apart
-    'apple', 'samsung', 'xiaomi', 'google', 'motorola', 'nokia', 'sony', 'huawei', 'honor', 'oneplus', 'bosch', 'makita', 'dewalt',
-    'metabo', 'milwaukee', 'einhell', 'ryobi', 'stanley', 'oralb', 'braun', 'philips', 'sonicare', 'panasonic', 'lg', 'tefal',
-    'rowenta', 'dyson', 'electrolux', 'whirlpool', 'nivea', 'ikea', 'lenovo', 'asus', 'acer', 'hp', 'dell', 'jbl', 'garmin',
-  ],
-  [
-    'mobiln', 'telefo', 'smartf', 'chytr', 'inteligent', 'dotyk',
-    'zubn', 'zahnburst', 'zahnbuerst', 'elektr', 'electr', 'oscil', 'rotac', 'rotier', 'rotuj', 'dospel', 'erwachs', 'osobn',
-    'vrtack', 'skrutkov', 'sroubov', 'akumulator', 'bezuhl', 'bezuhlik',
-  ],
-);
+export const NEUTRAL = wc([...CONNECTOR_WORDS, ...CATEGORY_EXACT, ...LINE_WORDS, ...GENERIC_WORDS, ...BRANDS], CATEGORY_PREFIX);
+
+/**
+ * The part of NEUTRAL a model name can do without: category and shop words ("elektrická zubná
+ * kefka", "akcia"). Brand, line and connector words are not in it.
+ */
+export const CATEGORY_WORDS = wc([...CATEGORY_EXACT, ...GENERIC_WORDS], CATEGORY_PREFIX);
 
 /** Tier/model words: a title with one the query lacks is a different model. */
 export const MODEL_WORDS = wc(
@@ -85,7 +99,7 @@ export const MODEL_WORDS = wc(
 /** Package/bundle words: a different package of the same model is a different product. */
 export const PACKAGE_WORDS = wc(
   ['duo', 'duopack', 'trio', 'family', 'twin', 'twinpack', 'doppelpack', 'doppel', 'dvojbalenie', 'dvojbaleni', 'multipack',
-    'pack', 'set', 'sada', 'sady', 'souprava', 'zestaw', 'kit', 'bundle', 'combo', 'komplet', 'solo', 'bez', 'ohne', 'bare', 'body',
+    'pack', 'set', 'sada', 'sady', 'souprava', 'suprava', 'supravy', 'zestaw', 'kit', 'bundle', 'combo', 'komplet', 'solo', 'bez', 'ohne', 'bare', 'body',
     'lboxx', 'kufor', 'kufr', 'koffer', 'walizka', 'taska', 'tasche', 'travel', 'reise', 'cestovne', 'cestovni', 'cestovny', 'puzdrom',
     'dielna', 'dielny', 'dilna', 'dilny', 'teilig', 'tlg', 'czesciowy',
     // "s batériou", "s akumulátorom", "2 akumulátory", "mit Akkus": the battery is in the box
@@ -104,7 +118,9 @@ export const ACCESSORY_WORDS = wc(
 /** Used / refurbished / unpacked / damaged markers. */
 export const CONDITION_WORDS: [RegExp, 'used' | 'refurbished' | 'damaged' | 'unknown_used'][] = [
   [/^(refurbished|refurb|renewed|repasovan\w*|generalkovan\w*|odnowion\w*|obnoven\w*|wiederaufbereitet\w*|generalüberholt)$/, 'refurbished'],
-  [/^(pouzit\w*|pouzivan\w*|gebraucht\w*|uzywan\w*|used|secondhand|bazar\w*|bazarov\w*)$/, 'used'],
+  // The adjective "použitý / použitá / použité ..." (sk, cs), not the noun "použitie / použití" ("Použitie:
+  // Pre dospelých" = use: for adults) or the verb "použiť / použít".
+  [/^(pouzit(?:y|a|e|eho|ej|emu|u|om|ou|em|ych|ym|ymi)|pouzivan\w*|gebraucht\w*|uzywan\w*|used|secondhand|bazar\w*|bazarov\w*)$/, 'used'],
   [/^(rozbalen\w*|vystaven\w*|powystawow\w*|bware|outlet|demo|vratene|vraceno|vratenie)$/, 'unknown_used'],
   [/^(poskoden\w*|poskozen\w*|kozmetick\w*|kosmetick\w*|uszkodzon\w*|beschadigt\w*|damaged|defekt\w*)$/, 'damaged'],
 ];

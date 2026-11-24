@@ -14,7 +14,7 @@ import { runSearch, type SearchEvent } from '../core/pipeline.ts';
 import { notCheckedList, statusSummary } from '../core/report.ts';
 import { locationById } from '../core/shops.ts';
 import { headlineText, reachable, sortOffers } from '../core/totals.ts';
-import type { Offer, ProductGroup, ShopResult, ShopStatus } from '../core/types.ts';
+import type { NearbyList, Offer, ProductGroup, ShopResult, ShopStatus } from '../core/types.ts';
 import { loadEnv, loadShops, makeScheduler, openStore, providersFromEnv } from './setup.ts';
 
 const { values, positionals } = parseArgs({
@@ -60,6 +60,7 @@ const eur = (n: number | null) => (n === null ? '?' : `${n.toFixed(2)} €`);
 
 const shopResults: ShopResult[] = [];
 let groups: ProductGroup[] = [];
+let nearby: NearbyList = { models: [], total: 0 };
 let heureka = '';
 let summary: Extract<SearchEvent, { type: 'done' }>['summary'] | null = null;
 const startedAt = new Date().toISOString();
@@ -81,7 +82,10 @@ for await (const ev of runSearch(query, {
     shopResults.push(ev.result);
     if (!values.json && ev.result.status !== 'not_relevant') console.log(`  ${ev.result.shopName}: ${ev.result.status} (${ev.result.requestsUsed} req, ${(ev.result.ms / 1000).toFixed(1)} s)`);
   }
-  if (ev.type === 'products') groups = ev.groups;
+  if (ev.type === 'products') {
+    groups = ev.groups;
+    nearby = ev.nearby;
+  }
   if (ev.type === 'done') summary = ev.summary;
 }
 if (summary) {
@@ -89,7 +93,7 @@ if (summary) {
 }
 
 if (values.json) {
-  console.log(JSON.stringify({ query, summary, shops: shopResults, groups }, null, 1));
+  console.log(JSON.stringify({ query, summary, shops: shopResults, groups, nearby }, null, 1));
   store.close();
   process.exit(0);
 }
@@ -110,11 +114,27 @@ else {
   if (groups.length > 25) console.log(`  ... ${groups.length - 25} more`);
 }
 
+// ---- similar models the shops list --------------------------------------------------------------
+if (nearby.models.length) {
+  const noMatch = !groups.some((g) => g.level !== 'different');
+  const noExact = !groups.some((g) => g.level === 'exact');
+  console.log(`\n== Similar models the shops list (${nearby.models.length}${nearby.total > nearby.models.length ? ` of ${nearby.total}` : ''}) ==`);
+  if (noMatch) console.log('  No shop lists exactly what you typed.');
+  else if (noExact) console.log('  No shop lists exactly what you typed; the products above are possible matches.');
+  console.log('  Listed by the shops; their prices were not read. Search for one to compare it.');
+  nearby.models.forEach((m, i) => {
+    console.log(`  ${String(i + 1).padStart(2)}. ${m.query}   (${m.differs})`);
+    console.log(`      listed by ${m.shops.map((s) => s.shopName + (s.section === 'local' ? ` (${location.name} branch)` : '')).join(', ')}`);
+    if (m.seenPrice) console.log(`      seen at ${eur(m.seenPrice.eur)} at ${m.seenPrice.shopName} (one shop's price, not a comparison)`);
+  });
+  console.log(`  e.g. npm run search -- "${nearby.models[0].query}"`);
+}
+
 let chosen: ProductGroup | undefined;
 if (values.pick) chosen = groups[Number(values.pick) - 1];
 else chosen = groups.find((g) => g.level !== 'different');
 if (!chosen) {
-  console.log('\nNo product matches the query well enough to compare; pick one with --pick N.');
+  console.log(`\nNo product matches the query well enough to compare; pick one with --pick N${nearby.models.length ? ', or search for one of the similar models above' : ''}.`);
 } else {
   const idx = groups.indexOf(chosen) + 1;
   console.log(`\n== Comparison for #${idx}: ${chosen.title} (${levelLabel[chosen.level]}${chosen.condition !== 'new' ? `, ${chosen.condition}` : ''}) ==`);

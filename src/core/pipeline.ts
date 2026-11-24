@@ -5,8 +5,9 @@ import { chooseCategories, shopIsRelevant, type CategoryChoice } from './categor
 import { groupOffers } from './group.ts';
 import { HostScheduler, MAX_REQUESTS_PER_SHOP, ShopSession, type FetchLike } from './http.ts';
 import { extractListCandidates, extractOffers, offerUrl } from './jsonld.ts';
-import { extractLinkCandidates, stripTrackingParams } from './links.ts';
+import { extractLinkCandidates, pageKey, stripTrackingParams } from './links.ts';
 import { matchTitle, parseQuery, scoreCandidate, type ParsedQuery } from './matcher.ts';
+import { nearbyModels } from './nearby.ts';
 import { getRates } from './rates.ts';
 import {
   ProviderChain, SiteSearchBatcher, type ProviderCall, type SearchHit, type SearchProvider, type SiteSearchMode, type SiteSearchResult,
@@ -14,7 +15,7 @@ import {
 import { buildSearchUrl, heurekaUrl, sectionFor, type Location } from './shops.ts';
 import { computeTotals, type Rates } from './totals.ts';
 import {
-  CACHE_TTL, type Cache, type Candidate, type Offer, type ProductGroup, type RawOffer, type Shop, type ShopResult, type ShopStatus,
+  CACHE_TTL, type Cache, type Candidate, type NearbyList, type Offer, type ProductGroup, type RawOffer, type Shop, type ShopResult, type ShopStatus,
 } from './types.ts';
 
 export const MAX_PRODUCT_PAGES = 3;
@@ -53,7 +54,8 @@ export type SearchEvent =
   | { type: 'start'; query: string; location: string; shops: ShopInfo[]; heurekaUrl: string; providers: string[]; categories: CategoryChoice }
   | { type: 'rates'; rates: Rates | null; error?: string }
   | { type: 'shop'; result: ShopResult }
-  | { type: 'products'; groups: ProductGroup[] }
+  /** groups: the distinct products so far; nearby: similar models the shops list (nearby.ts). */
+  | { type: 'products'; groups: ProductGroup[]; nearby: NearbyList }
   | { type: 'done'; summary: SearchSummary };
 
 export interface SearchSummary {
@@ -62,6 +64,8 @@ export interface SearchSummary {
   statusCounts: Partial<Record<ShopStatus, number>>;
   offers: number;
   groups: number;
+  /** Similar models the shops list (all of them, before the cut to the list shown). */
+  nearby: number;
   /** New web search API calls made by this search (cache hits not counted). */
   providerCalls: ProviderCall[];
   shopsAsked: number;
@@ -159,7 +163,7 @@ export async function* runSearch(query: string, opts: SearchOptions): AsyncGener
         results.push(r);
         remaining--;
         push({ type: 'shop', result: r });
-        push({ type: 'products', groups: groupOffers(results.flatMap((x) => x.offers)) });
+        push({ type: 'products', groups: groupOffers(results.flatMap((x) => x.offers)), nearby: nearbyModels(pq, results) });
       });
   }
   while (remaining > 0 || queue.length) {
@@ -174,6 +178,7 @@ export async function* runSearch(query: string, opts: SearchOptions): AsyncGener
     type: 'done',
     summary: {
       query, ms: Date.now() - t0, statusCounts, offers: allOffers.length, groups: groupOffers(allOffers).length,
+      nearby: nearbyModels(pq, results).total,
       providerCalls: chain?.calls ?? [],
       shopsAsked: shops.length,
       shopRequests: results.reduce((a, r) => a + r.requestsUsed, 0),
@@ -226,16 +231,6 @@ interface RouteOutcome {
   offers: Offer[];
   candidates: Candidate[];
 }
-
-const pageKey = (url: string) => {
-  try {
-    const u = new URL(stripTrackingParams(url));
-    u.hash = '';
-    return u.href;
-  } catch {
-    return url;
-  }
-};
 
 /** A page of this shop had schema.org Product data: remembered, so later pages without it are not taken for JavaScript pages. */
 async function rememberStructuredData(ctx: ShopCtx): Promise<void> {

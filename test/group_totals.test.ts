@@ -201,6 +201,17 @@ describe('grouping into distinct products', () => {
     assert.equal(groupOffers([morele, teta, nay])[0].title, nay.title);
     assert.equal(groupOffers([morele, teta, nay])[0].level, 'exact', 'the level still comes from the best match');
   });
+  test('a product with a price that reaches the user comes before one no shop delivers, at the same level', () => {
+    // Seen 2026-11-25 for "Oral-B Pro 3 3000": Morele (no SK delivery) was listed first, ahead of Nazuby.eu.
+    const q3 = 'Oral-B Pro 3 3000';
+    const at = (o: Offer, ships: boolean) => ({ ...o, shipsToSk: ships, totals: computeTotals(o, { name: o.shopName, ships_to_sk: ships, shipping_to_sk: null }, rates) });
+    const morele = at(offer(q3, { title: 'Szczoteczka Oral-B Pro 3 3000 PureClean Czarna', price: 223.76, currency: 'PLN', gtin: '04210201291213' }, 'morele'), false);
+    const nazuby = at(offer(q3, { title: 'Oral-B PRO 3000 Blue oscilačná kefka', price: 62.01 }, 'nazuby'), true);
+    assert.ok(morele.match.score > nazuby.match.score, 'Morele is the closer match');
+    const g = groupOffers([morele, nazuby]);
+    assert.deepEqual(g.map((x) => [x.level, x.bestItemEur === null]), [['possible', false], ['possible', true]]);
+    assert.equal(g[0].title, nazuby.title);
+  });
   test('used and new offers with the same GTIN are not merged', () => {
     const g = groupOffers([
       offer('Oral-B Pro 3 3000', { title: 'Oral-B Pro 3 3000', price: 60, gtin: '08006540759790' }, 'a'),

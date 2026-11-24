@@ -197,7 +197,8 @@ async function fallbackRun(f: FetchLike, ids: string[], providers = [new SerperP
   }));
   const results = new Map(events.filter((e): e is Extract<SearchEvent, { type: 'shop' }> => e.type === 'shop').map((e) => [e.result.shopId, e.result]));
   const done = (events.at(-1) as Extract<SearchEvent, { type: 'done' }>).summary;
-  return { results, done };
+  const products = events.filter((e): e is Extract<SearchEvent, { type: 'products' }> => e.type === 'products');
+  return { results, done, products };
 }
 
 test('second route: own search found nothing matching -> one batched web search for those shops; others do not get it', async () => {
@@ -239,6 +240,24 @@ test('second route: the 6-request budget holds across both routes', async () => 
   assert.ok(!calls.includes('https://m.test/p/q2'), 'no seventh request');
   assert.equal(m.status, 'ok');
   assert.match(m.detail, /request budget \(6 per shop\) reached/);
+});
+
+test('products event: similar models from the pages that turned out to be another model; count in the summary', async () => {
+  const { f, calls } = fallbackSite(allHits);
+  const { products, done } = await fallbackRun(f, ['g', 'h', 'm']);
+  const before = calls.length;
+  assert.ok(products.length >= 3, 'one products event per finished shop');
+  assert.ok(products.every((p) => Array.isArray(p.nearby.models) && typeof p.nearby.total === 'number'));
+  const { nearby } = products.at(-1) as Extract<SearchEvent, { type: 'products' }>;
+  // H's page /p/old and M's three pages were the 3500: one model, two shops, the lowest price seen.
+  assert.equal(nearby.total, 1);
+  const model = nearby.models[0];
+  assert.equal(model.query, 'Oral-B Pro 3 3500');
+  assert.deepEqual(model.shops.map((s) => s.shopId).sort(), ['h', 'm']);
+  assert.equal(model.differs, 'has "3500", lacks "3000"');
+  assert.deepEqual(model.seenPrice, { eur: 64.9, shopName: 'Shop H' });
+  assert.equal(done.nearby, 1);
+  assert.equal(calls.length, before, 'no request after the search');
 });
 
 test('second route: nothing found either -> no_match that names both routes; no provider -> first-route no_match', async () => {

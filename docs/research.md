@@ -141,8 +141,22 @@ Read from each shop's own delivery page and recorded in `data/shops.yaml` with s
 | Datart.cz | **Does not deliver abroad** |
 | Morele.net | **Does not deliver to Slovakia** for consumers (abroad only for companies with a VAT number) |
 
-Still unknown: Dr.Max (blocked), Mironet.cz (its pages never mention Slovakia), MediaMarkt.de and
-.at, 101 Drogerie, Hornbach pickup, Alza.sk and Planeo pickup.
+Added on 2026-11-25, from a second reading of the shops' own pages:
+
+| Shop | Recorded |
+|---|---|
+| Teta | Pickup point 1.99 €, courier 2.99 € to 3.49 €; free to the address from 49 € |
+| Planeo | Pickup in a store is free once the shop confirms the reservation; the page names no store |
+| Vaša Lekáreň | Its pharmacy list has eight entries in Košice; pickup is offered in "selected" pharmacies, which ones is not stated |
+| TPD | The contact page lists stores in Bratislava, Zvolen, Žilina and Žiar nad Hronom; none in Košice |
+| MojaLekáreň | No place of its own to collect an order; external pickup points only |
+| Mironet.cz | Pickup points are marked "ČR a SK", but no Slovak prices are given, so delivery stays unknown |
+| Nazuby.eu | The delivery page lists three paid options and no 0 € one; the 0 € entry in its product data is not explained there |
+
+Still unknown: Dr.Max, MediaMarkt.de and .at and Alza.sk pickup (their pages answered 403), Hornbach
+pickup (the page needs JavaScript), Sanitino and 101 Drogerie (no prices on their pages), the pickup
+fee at Datacomp and Profimed (offered, fee not stated), and a Košice branch for Nazuby.eu, Holime.eu
+and Sanitino.
 
 ## 6. cenyslovensko.sk (groceries, currently out of scope)
 
@@ -198,3 +212,39 @@ Not hosted; it runs locally. What was considered:
   public scraping service. If it is ever hosted, put it behind a login (Cloudflare Access).
 - Running locally and sharing through a Cloudflare Tunnel is the cheapest way to give one other
   person access.
+
+## 10. Official routes to shops that do not allow automated reading
+
+Checked on 2026-11-25. The question was whether Alza, Notino, MediaMarkt and Dr.Max offer product
+and price data through a partner programme that one private person with a local tool could join.
+Several of the shops' own pages could not be read, so parts of this come from the networks'
+catalogue pages; those are marked *(unverified)* where the shop's own page was not seen.
+
+| Shop | Programme | Product data for partners | Who may join |
+|---|---|---|---|
+| Alza | Its own programme, [affiliate.alza.sk](https://affiliate.alza.sk/) | Text links and banners. The page says an API for partners is in preparation; no date. | A company ID (IČO) and a website that Alza reviews. Non-entrepreneurs only occasionally, under 1,000 € a year. |
+| Notino | Listed in the [VIVnetworks catalogue](https://www.vivnetworks.com/sk/affiliate-katalog/notinosk/) and on FlexOffers *(unverified)* | The catalogue page says an XML feed is supported; its fields are not listed | Application describing the partner's website, reviewed by the shop |
+| MediaMarkt.at | [Awin, merchant 13996](https://ui.awin.com/merchant-profile/13996) | Product feed "on demand and by arrangement" | Awin publisher account, then approval. The profile states shipping within Austria only. |
+| MediaMarkt.de | No current programme found | | |
+| Dr.Max | Listed in the [VIVnetworks catalogue](https://www.vivnetworks.com/sk/affiliate-katalog/drmaxsk/), sign-up through CJ *(unverified)* | The catalogue page says no product feed | Not stated |
+
+Affiliate networks with product data across several shops:
+
+- **Tradedoubler Products API**: EAN, price, stock, delivery time and shipping cost per product,
+  limited to the feeds of advertisers the publisher is connected to
+  ([documentation](https://dev.tradedoubler.com/products/publisher)).
+- **Awin product feeds**: per advertiser, after joining that advertiser's programme. Applications
+  are checked by hand and ask for the publisher's URLs.
+- **Dognet** (Slovak): a natural person may register, and its FAQ says an active website or project
+  is needed ([FAQ](https://www.dognet.sk/faq/)). It has a feeds section; which shops provide feeds
+  was not visible without an account.
+
+What follows from it:
+
+- **None of these routes is open to a local tool with no public website.** Each programme is built
+  for publishers who send visitors to the shop, and asks for a site to review.
+- They become relevant if the tool is ever hosted as a public site (section 9). The order to try
+  then: Dognet, then Tradedoubler and Awin for individual shops.
+- Alza's partner API is worth checking again once it is released.
+- Shops produce product feeds for comparison services, at an address the service downloads from.
+  Whether any shop publishes that address openly was not established, and none was probed.

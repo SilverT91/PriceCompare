@@ -92,6 +92,13 @@ shops:
     search_url_template: "https://www.planeo.sk/vyhladavanie$a1013-search?query={query}"
     search_template_basis: form
     shipping_to_sk: null
+    pickup_kosice:
+      available: true
+      price: 0
+      currency: EUR
+      note: "'Vyzdvihnutie na predajni' is listed as 'Zadarmo' (free), after the shop confirms the reservation is ready (about 15 minutes); availability varies by product and store. The page names no Košice store; it points to a store finder."
+      source: https://www.planeo.sk/sluzby/moznosti-dopravy
+      checked: 2026-11-25
     in_scope: true
     notes: >
       Source (2025-07-25) lists Košice OC Optima among newly taken-over stores; an older source
@@ -266,11 +273,20 @@ shops:
     search_url_template: null
     search_template_basis: none
     no_route_reason: "the site search is an ASP.NET postback form (POST to default.aspx), so there is no plain search URL (checked 2026-11-24)"
-    shipping_to_sk: null
+    shipping_to_sk:
+      price: 1.99
+      currency: EUR
+      free_from: 49
+      method: "SPS Parcel Shop or Balíkovobox pickup point 1.99 €; SPS courier 2.99 €; Packeta Z-box or pickup point 2.99 €; Packeta courier 3.49 €; to the address free from 49 € (not covering an oversized-parcel surcharge); one parcel up to 10 kg for pickup points; cash on delivery 1.00 €"
+      source: https://www.tetadrogerie.sk/doprava/
+      checked: 2026-11-25
     in_scope: true
     notes: >
       An OpenStreetMap node places a Teta at OD Dargov, Košice; the shop's own /predajne page only
-      showed stores near Nitra without JavaScript. No search form found in homepage HTML
+      showed stores near Nitra without JavaScript (re-read 2026-11-25: its "nearest stores" list names
+      Nitra, Močenok, Pata and Hlohovec, none in Košice; the page is a nearest-stores list, so this does
+      not show whether a Košice store exists). The delivery page also lists "expresné vyzdvihnutie v
+      predajni" as free (store not named). No search form found in homepage HTML
       (/vyhladavanie/?q= and /hladat?q= gave 404); probe skips it (no_search_template).
       Re-checked 2026-11-24: product pages are readable (HTTP 200, JSON-LD Product with price and GTIN, e.g.
       https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D169320-Oral-B-iO-2-elektricka-zubna-kefka-zelena/),
@@ -598,7 +614,7 @@ shops:
     kind: local_chain
     categories: [electronics, appliances, home]
     currency: EUR
-    has_kosice_branch: unknown
+    has_kosice_branch: false
     ships_to_sk: true
     search_url_template: "https://www.tpd.sk/vyhladavanie?search={query}"
     search_template_basis: searchaction
@@ -612,8 +628,9 @@ shops:
     in_scope: true
     notes: >
       Online shop of a store network that calls itself a member of the Euronics network (a different
-      operator from the euronics_sk entry). Branch list not readable without JavaScript, and the contact
-      page names no Košice branch, so has_kosice_branch stays unknown. Reservation in a branch costs
+      operator from the euronics_sk entry). The contact page https://www.tpd.sk/kontakt (read 2026-11-25)
+      lists four stores: Bratislava (Farského 26), Zvolen, Žilina (marked closed) and Žiar nad Hronom;
+      none in Košice, hence has_kosice_branch false. Reservation in a branch costs
       1.00 € (same delivery page). Product page https://www.tpd.sk/oral-b-vitality-protect-x-d103-p291809
       (HTTP 200): JSON-LD Product with price, no GTIN. Search page allowed by robots.txt; result links
       name the products.
@@ -625,7 +642,7 @@ shops:
     kind: webshop
     categories: [pharmacy, drugstore, beauty]
     currency: EUR
-    has_kosice_branch: unknown
+    has_kosice_branch: false
     ships_to_sk: true
     search_url_template: null
     search_template_basis: none
@@ -639,7 +656,10 @@ shops:
       checked: 2026-11-24
     in_scope: true
     notes: >
-      Online pharmacy and drugstore with 300+ pickup points. Product page
+      Online pharmacy and drugstore with 300+ pickup points. Its contact page
+      https://www.mojalekaren.sk/kontakt/ (read 2026-11-25) names only an office in Bratislava and a
+      warehouse in Chrudim, and says orders cannot be collected at either; collection is through external
+      pickup points, so has_kosice_branch is false (no own pickup place in Košice). Product page
       https://www.mojalekaren.sk/oral-b-series-io-3-black-elektricka-zubna-kefka/ (HTTP 200): JSON-LD
       Product with price, MPN and an SK shipping entry without a rate; no GTIN in the markup.
 
@@ -650,7 +670,8 @@ shops:
     kind: webshop
     categories: [pharmacy, drugstore, beauty]
     currency: EUR
-    has_kosice_branch: unknown
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.vasalekaren.sk/lekarne
     ships_to_sk: true
     search_url_template: "https://www.vasalekaren.sk/vyhladavanie?search={query}"
     search_template_basis: searchaction
@@ -665,12 +686,14 @@ shops:
       available: unknown
       price: null
       currency: EUR
-      note: "The delivery page offers pickup in selected Vaša Lekáreň pharmacies; whether one is in Košice was not read."
+      note: "The delivery page offers pickup in selected ('vybraných') Vaša Lekáreň pharmacies and states it as free both below and above 36.90 €; it does not say which pharmacies take part, so whether a Košice one does is not known."
       source: https://www.vasalekaren.sk/moznosti-dopravy-a17
-      checked: 2026-11-24
+      checked: 2026-11-25
     in_scope: true
     notes: >
-      Online shop of a pharmacy network. Product page
+      Online shop of a pharmacy network. Its pharmacy list (https://www.vasalekaren.sk/lekarne, read
+      2026-11-25) shows eight Košice entries, among them Lekáreň Váhy (Zimná 20), Lekáreň Sandra
+      (Moldavská 3A) and Lekáreň Jazero (Bukovecká 18). Product page
       https://www.vasalekaren.sk/oral-b-vitality-100-sensi-ultra-thin-blue-p44097 (HTTP 200): JSON-LD
       Product with price, GTIN and an SK shipping entry. robots.txt disallows the search page, so
       the app takes the web search route.
@@ -700,7 +723,12 @@ shops:
       spaces) works and is allowed by robots.txt (checked 2026-11-24). Product page
       https://www.nazuby.eu/oral-b-io-series-3-black-magneticka-kefka (HTTP 200): JSON-LD Product with
       price and SK shipping rates, no GTIN. Same shop software, phone number and delivery wording as
-      holime_eu.
+      holime_eu. Delivery page https://www.nazuby.eu/doprava (read 2026-11-25) lists three options
+      (SPS Parcelshop/Parcelbox 2.49 €, Packeta pickup 3.09 €, Packeta courier 4.49 €) and no 0 €
+      option; it does not mention personal pickup or any Košice place, and its basket banner reads
+      "Len 54 € do dopravy zadarmo" while the SPS line states free above 54.9 €. Where the 0 €
+      entry in the product data comes from is not explained on the page. The page names no branch in
+      Košice either way, so has_kosice_branch stays unknown.
 
   - id: holime_eu
     name: Holime.eu
@@ -726,7 +754,9 @@ shops:
       nazuby_eu's (checked 2026-11-24, allowed by robots.txt). Product page
       https://www.holime.eu/philips-oneblade-qp2530-20-zastrihavac-fuzov (HTTP 200): JSON-LD Product with
       price and SK shipping rates, no GTIN. No toothbrush page was probed: the shop presents itself as a
-      shaver specialist.
+      shaver specialist. Its delivery page (read 2026-11-25) names only carrier pickup points and
+      courier delivery, no own store or personal pickup; no Košice place is named, so has_kosice_branch
+      stays unknown.
 
   - id: profimed_eu
     name: Profimed
@@ -779,7 +809,10 @@ shops:
       prices were not read, so shipping stays unknown. Product page
       https://www.sanitino.sk/oral-b-elektricka-kefka-io-series-3-modra-8006540731321 (HTTP 200):
       JSON-LD Product with price and GTIN. robots.txt disallows the search page, so the app takes the web
-      search route.
+      search route. Re-read 2026-11-25: https://www.sanitino.sk/doprava gives no standard delivery prices
+      or free-delivery threshold (only optional Toptrans services and parcel-point pickup with GLS and
+      DPD), and /kontakt gives only the operator's address in Litomyšl and no store or personal pickup.
+      Košice appears only as a Toptrans depot for the "Top Comfort plus" service.
 
   # ---------------- Czech web shops ----------------
   - id: alza_cz
@@ -828,7 +861,12 @@ shops:
     search_template_basis: searchaction
     shipping_to_sk: null   # 2026-11-24: the delivery page (doprava-a-ceny+kc143) and the terms list only Czech carriers and do not mention Slovakia; left unknown
     in_scope: true
-    notes: Has a Slovak site mironet.sk (TLS error on 2026-11-24); delivery from .cz to SK not verified.
+    notes: >
+      Has a Slovak site mironet.sk (TLS error on 2026-11-24); delivery from .cz to SK not verified.
+      Re-read 2026-11-25 (https://www.mironet.cz/info/vse-o-nakupu/doprava-a-ceny+kc143/): the page
+      marks pickup via Zásilkovna and DPD Pickup as "(ČR a SK)" and home-delivery carriers as Czech
+      only, but gives no Slovak prices or threshold and does not say outright that orders go to
+      Slovakia, so ships_to_sk stays unknown.
 
   # ---------------- German / Austrian web shops ----------------
   - id: amazon_de

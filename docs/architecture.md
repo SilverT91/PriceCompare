@@ -55,7 +55,7 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 
 | File | Responsibility |
 |---|---|
-| `types.ts` | All shared types (`Shop`, `ShopStatus`, `RawOffer`, `Offer`, `MatchResult`, `Totals`, `Candidate`, `ShopResult`, `ProductGroup`, `ProductVariant`), the `Cache` interface and the `CACHE_TTL` table. |
+| `types.ts` | All shared types (`Shop`, `ShopStatus`, `RawOffer`, `Offer`, `MatchResult`, `Totals`, `Candidate`, `ShopResult`, `ProductGroup`, `ProductVariant`, `NearbyModel`, `NearbyShop`, `NearbyList`), the `Cache` interface and the `CACHE_TTL` table. |
 | `pipeline.ts` | `runSearch()` (async generator of `SearchEvent`s), `searchShop()` (one shop from query to `ShopResult`, including the second route) and `readCandidates()` (fetch the best candidate pages, extract, match, decide a route's outcome; used by both routes). `dedupeOffers()` removes repeats of one page's offer. This is the orchestrator and the place where every shop status is decided. |
 | `shops.ts` | `validateShops()` turns the parsed `shops.yaml` into `Shop[]`; `buildSearchUrl()`, `heurekaUrl()`, `Location`/`LOCATIONS`, `sectionFor()` (local vs online section). |
 | `categories.ts` | Guesses categories from the query (`RULES`, `guessCategories`), the user-selectable `CATEGORY_GROUPS`, `chooseCategories()` and `shopIsRelevant()`. |
@@ -65,12 +65,13 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 | `search/provider.ts` | The `SearchProvider` interface, `ProviderChain` (order, fallback, pacing, exhausted marks, result cache), `SiteSearchBatcher` (combines `site:` queries for several shops into one query), `Locale` per shop country. |
 | `search/brave.ts`, `search/serper.ts` | The two provider adapters. |
 | `jsonld.ts` | JSON-LD extraction with a regex (no DOM): `extractOffers()` for product pages, `extractListCandidates()` for search pages (`ItemList`), `parsePrice()`, `offerUrl()` (an offer whose declared URL is the site root links to the page it was read from). |
-| `links.ts` | `extractLinkCandidates()`: product links from a search page that has no `ItemList` (uses cheerio). `stripTrackingParams()`: removes click-tracking parameters from candidate URLs. |
+| `links.ts` | `extractLinkCandidates()`: product links from a search page that has no `ItemList` (uses cheerio). `stripTrackingParams()`: removes click-tracking parameters from candidate URLs. `pageKey()`: one key per page (tracking parameters and fragment removed). |
 | `gtin.ts` | `normaliseGtin()` maps UPC/EAN/GTIN-14/ISBN to one 14-digit form; `displayGtin()`. |
 | `text.ts` | `fold()` (lowercase, no diacritics), `tokenize()`, `editDistance()`. |
-| `vocab.ts` | Word lists for the matcher: colours, neutral words, tier/package/accessory words, condition words, unit patterns. |
-| `matcher.ts` | `parseQuery()`, `matchTitle()` (query vs title: exact / possible / different, condition, colour, signature, codes), `scoreCandidate()` (cheap pre-fetch score). |
+| `vocab.ts` | Word lists for the matcher: colours, neutral words, tier/package/accessory words, condition words, unit patterns. `NEUTRAL` is built from sub-lists; `BRANDS` and `CATEGORY_WORDS` (category and shop words) are exported for `nearby.ts`. |
+| `matcher.ts` | `parseQuery()`, `matchTitle()` (query vs title: exact / possible / different, condition, colour, signature, codes, matched query tokens), `scoreCandidate()` (cheap pre-fetch score), `isArticlePage()` and `urlSlug()` (used by `scoreCandidate` and `nearby.ts`). |
 | `group.ts` | `groupOffers()`: links offers into distinct products and variants. |
+| `nearby.ts` | `nearbyModels()`: similar models the shops list, from the candidates and offers rated `different` (section 4, step 11a). `productPart()` and `deriveName()` make a model name from a title. Pure: no requests. |
 | `totals.ts` | `computeTotals()` (EUR conversion, delivery, pickup), `sortOffers()`, `headline()`/`headlineText()`, `reachable()`. |
 | `rates.ts` | `getRates()`: ECB rates from the Frankfurter API, cached. |
 | `report.ts` | `statusSummary()` and `notCheckedList()`: the one-line status summary and the "open these yourself" list. |
@@ -89,7 +90,7 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 
 | Path | What it is |
 |---|---|
-| `public/index.html`, `app.js`, `style.css` | Plain HTML/CSS/JS, no build step. `app.js` opens an `EventSource` on `/api/search`, keeps one `state` object, and renders products, the comparison for the selected product, the manual-link list and per-shop statuses. Choosing a product ("Which one do you mean?") happens in the browser, not on the server. `app.js` re-implements `headlineText`, `sortOffers`, and the status summary from core (comments say "Mirrors"), so a change to those rules needs a matching change here. |
+| `public/index.html`, `app.js`, `style.css` | Plain HTML/CSS/JS, no build step. `app.js` opens an `EventSource` on `/api/search`, keeps one `state` object, and renders products, the similar models (`renderNearby()`, only what the `products` event carries), the comparison for the selected product, the manual-link list and per-shop statuses. Choosing a product ("Which one do you mean?") happens in the browser, not on the server. `app.js` re-implements `headlineText`, `sortOffers`, and the status summary from core (comments say "Mirrors"), so a change to those rules needs a matching change here. |
 | `tools/extract_fixtures.ts` | Builds test fixtures from pages cached by the probe, or (`--fetch`) from one page fetched now under the request rules (section 8). |
 | `tools/fetch_info.ts` | Reads one shop page under the same request rules, to fill in `shops.yaml` facts by hand (`--links`, `--grep`, `--forms`). |
 | `tools/measure_site_search.ts` | Runs the real pipeline against the web-search route and counts queries and hits. Makes live requests. |
@@ -126,6 +127,12 @@ Offer = RawOffer + { shopName, section: 'local'|'online', shipsToSk, branchKnown
 ProductGroup { id, title, level, condition, gtins, signature, shopCount, offerCount,
                bestItemEur/Shop, bestTotalEur/Shop/Kind, notes, variants: ProductVariant[] }
   +-- ProductVariant { key, label, gtin, colour, offers: Offer[], bestItemEur, bestTotalEur, ... }
+
+  nearbyModels(query, all ShopResults): candidates and offers rated 'different'
+  v
+NearbyList { models: NearbyModel[] (at most 8), total }
+  +-- NearbyModel { query, shops: NearbyShop[], differs, missing, distinguishing, distance, seenPrice }
+        +-- NearbyShop { shopId, shopName, section, url, title }
 ```
 
 Points worth knowing:
@@ -134,7 +141,8 @@ Points worth knowing:
   `pickup_kosice` (`ShopPickup`). `TriState` (`true | false | 'unknown'`) is used wherever the data
   may be unknown; "unknown" is never coerced to false or to zero.
 - `MatchResult.level` is `'exact' | 'possible' | 'different'`. `signature` is the grouping key;
-  `codes` are manufacturer order codes found in the title; `condition` is a `Condition`.
+  `codes` are manufacturer order codes found in the title; `condition` is a `Condition`; `matched`
+  lists the query tokens the title (or brand, spec segments, a near spelling) has.
 - `Totals` keeps item, delivery and pickup separately and says where each came from
   (`shippingSource`: `jsonld`, `shop_data`, `unknown`, `no_delivery`). `bestTotalEur` is the cheaper
   of pickup total and delivery total, or `null`.
@@ -180,6 +188,7 @@ page: EventSource /api/search?q=..&location=..&cat=..          CLI: runSearch(qu
           ShopResult (route shop_search / search_provider / both)   |--> ShopResult
           ---------------------------------------------------------------
         each finished shop pushes:  [shop] event, then [products] = groupOffers(all offers so far)
+                                                              + nearbyModels(all results so far)
                                                                        |
    [done] summary (status counts, costs)  ---> Store.recordSearch (history)
 ```
@@ -266,8 +275,45 @@ Step by step:
 11. **Streaming.** When a shop finishes, `runSearch()` pushes a `shop` event and then a `products`
     event with `groupOffers()` over all offers collected so far. Grouping (`group.ts`) joins offers
     by GTIN plus condition, by identical `match.signature`, or by shared order code; inside a
-    product it splits variants by GTIN or colour. The page re-renders on every `products` event.
-    After the last shop, `done` carries the summary: status counts, shop requests, `siteQueries`
+    product it splits variants by GTIN or colour. The same event carries `nearby` (step 11a). The
+    page re-renders on every `products` event.
+
+    11a. **Similar models** (`nearby.ts`, `nearbyModels()`). Input is what the shops already gave:
+    candidates that `scoreCandidate()` rates `different` (pages that were read are represented by
+    their offers instead) and offers whose `match.level` is `different` (these have a price). One
+    counts as a nearby model when it is not an article page (`isArticlePage()`); its product part
+    (`productPart()`: `cleanTitle()`, the name segment of a "Name / spec / spec" title, nothing after
+    " + ", the name after a leading "Typ: … • Počet rýchlostí: 3" spec list, a doubled title taken
+    once) is `different` from the query, so the query's own model in a
+    bundle is not one; no distinguishing token there is an `ACCESSORY_WORDS` word; every family token
+    of the query (`familyTokens()`: alphabetic, not a tier or package word, not a category word;
+    brands count) is matched, plus at least one of the other query tokens when there are any; it has
+    no amount unit (`75ml`, `1kg`) that the query lacks; its condition (judged on the whole title) is
+    new; and its page is not the source of a matching offer. The slug of the URL stands in for a
+    title that is missing or names nothing of the query. `deriveName()` then takes the title words
+    from the first word with a matched family token (else the first with any matched query token)
+    to the last word the matcher places (matched,
+    distinguishing or variant-unit token), drops category, colour and condition words inside that
+    span (`CATEGORY_WORDS`; brand, line and connector words stay) and keeps unknown words inside it.
+    The name must add a token the query lacks, and must match its own product part again as `exact`
+    or `possible` (self-check); otherwise the listing is left out. Listings cluster by the name's
+    tokens run together in order or as a sorted set (a token that repeats two others, "iO3" after
+    "iO" and "3", is ignored). A cluster's name is one from a title rather than a slug that finds
+    most of its listings again, in the form most shops write, with the fewest words in capitals; when
+    it starts with the query's brand, the brand is written as the query writes it ("Oral-B PRO 3
+    3900" for "Oral B PRO 3 3900"). `distance` is `nearbyDistance()` over the closest listing's
+    missing and distinguishing tokens: a missing number paired with an extra number is one step, a
+    missing or extra tier or package word two, anything else one each. Order, closest first: the same
+    line with another number (distance 1), by number of shops, then a local branch; then the models
+    most shops list, then distance, then a local branch, then name. At most 8 (`NEARBY_LIMIT`), with `total`. `seenPrice` is the lowest
+    `totals.itemEur` among the cluster's offers, with the shop name. The page renders the list inside
+    "Which one do you mean?": open when no product matches exactly (introduced by "No shop lists
+    exactly what you typed", plus "the products above are possible matches" when there are possible
+    ones), collapsed in a `<details>` below the products when an exact match exists.
+    "Compare this model" calls `go()` with the name and the current location and category.
+
+    After the last shop, `done` carries the summary: status counts, `nearby` (the total of similar
+    models), shop requests, `siteQueries`
     (web queries the search needed, cached or not), `fallbackQueries` (the second-route part of
     them), `fallbackShops` (shops that tried the second route) and `providerCalls` (new API calls).
     `server.ts` and `cli.ts` store it in `searches`. With nothing cached a search costs about 5 to 6
@@ -380,7 +426,7 @@ Where to extend the vocabulary (all in `vocab.ts` unless noted):
 | A tier or model word (Pro, Plus, Kids, FC, XL) | `MODEL_WORDS` |
 | A bundle or package word (duopack, set, with battery) | `PACKAGE_WORDS`; count patterns such as "39-dielna" are `PACK_RE`/`TIMES_RE` in `matcher.ts` |
 | A spare part or accessory word | `ACCESSORY_WORDS` |
-| A word that never tells products apart (category words, brand names, marketing) | `NEUTRAL` |
+| A word that never tells products apart (category words, brand names, marketing) | one of the sub-lists `NEUTRAL` is built from: `CATEGORY_EXACT` / `CATEGORY_PREFIX` (category words, dropped from similar-model names), `GENERIC_WORDS` (shop and marketing words, also dropped), `BRANDS` (brand names; they also name the product family), `LINE_WORDS` ("professional"), `CONNECTOR_WORDS` |
 | A unit that defines a variant, or one that is only a spec | `VARIANT_UNITS`, `NEUTRAL_UNITS` |
 | Units glued to numbers when tokenising | `UNIT_RE` in `text.ts` |
 
@@ -402,8 +448,9 @@ shops; a vocabulary change can flip them.
 | `matcher.test.ts` | Tokenizer, matcher rules, candidate scoring. |
 | `jsonld.test.ts` | JSON-LD extraction against fixtures, `parsePrice`. |
 | `group_totals.test.ts` | `computeTotals`, sorting, headline, `groupOffers`. |
+| `nearby.test.ts` | Similar models: family rule, accessories / articles / used items / bundles of the query's model left out, name derivation on real titles, slug fallback, the self-check, clustering, ordering, the cap, `seenPrice`. |
 | `http_robots_links.test.ts` | robots.txt, bot walls, `ShopSession` politeness, `HostScheduler`, link candidates. |
-| `pipeline.test.ts` | Whole search over mocked shops: statuses, routes, offers, totals; the second route (batching, budget across both routes, no re-fetch, unavailable provider), the known-structured-data case, `dedupeOffers`. |
+| `pipeline.test.ts` | Whole search over mocked shops: statuses, routes, offers, totals; the second route (batching, budget across both routes, no re-fetch, unavailable provider), the known-structured-data case, `dedupeOffers`, `nearby` in the `products` event and the summary. |
 | `providers.test.ts` | Serper and Brave adapters (mocked), provider chain, batching. |
 | `categories.test.ts` | Category guess, `not_relevant`, status summary, manual list. |
 | `app.test.ts` | The HTTP API streams one `shop` event per shop as it finishes. |

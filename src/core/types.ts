@@ -113,6 +113,8 @@ export interface MatchResult {
   level: MatchLevel;
   /** 0..1, higher = closer to the query. */
   score: number;
+  /** Query tokens found in the title, the brand, the spec segments, or in a near spelling. */
+  matched: string[];
   missing: string[];
   distinguishing: string[];
   specExtras: string[];
@@ -212,6 +214,42 @@ export interface ProductGroup {
   bestItemTotalKnown: boolean;
   notes: string[];
   variants: ProductVariant[];
+}
+
+/** One shop that lists a nearby model: the page and the title as the shop wrote it. */
+export interface NearbyShop {
+  shopId: string;
+  shopName: string;
+  section: 'local' | 'online';
+  url: string;
+  title: string;
+}
+
+/**
+ * A model next to the one the user typed (same brand and line, another number, tier or package),
+ * found among the candidates and offers the matcher rated "different". Built by nearbyModels().
+ */
+export interface NearbyModel {
+  /** The model name, usable as a new search query; also the display name. */
+  query: string;
+  /** One entry per shop that lists it. */
+  shops: NearbyShop[];
+  /** How it differs from the query, e.g. `has "3500", lacks "3000"`. */
+  differs: string;
+  /** Query tokens its title lacks and tokens it has that the query lacks (from the closest listing). */
+  missing: string[];
+  distinguishing: string[];
+  /** Steps from the query (nearbyDistance(): a number swapped 1, a tier or package word 2, else 1); smaller = closer. */
+  distance: number;
+  /** The lowest item price seen on one of its pages that was read (EUR), or null. A hint, not a comparison. */
+  seenPrice: { eur: number; shopName: string } | null;
+}
+
+export interface NearbyList {
+  /** At most NEARBY_LIMIT models, closest first. */
+  models: NearbyModel[];
+  /** How many nearby models there were before the cut. */
+  total: number;
 }
 
 /** Small key-value cache with TTL; the Node side implements it on SQLite. */

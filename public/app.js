@@ -73,7 +73,10 @@ function go(q, loc, cat) {
 
 function start(q, loc, cat) {
   if (source) source.close();
-  state = { q, loc, cat, shops: new Map(), groups: [], selected: null, done: false, heureka: null, locName: $('#location').selectedOptions[0]?.textContent || 'Košice' };
+  state = {
+    q, loc, cat, shops: new Map(), groups: [], nearby: { models: [], total: 0 }, nearbyOpenFor: null, selected: null, done: false, heureka: null,
+    locName: $('#location').selectedOptions[0]?.textContent || 'Košice',
+  };
   for (const id of ['#products', '#comparison', '#manual', '#shops']) $(id).hidden = true;
   $('#scope').hidden = true;
   $('#progress').hidden = false;
@@ -106,7 +109,9 @@ function start(q, loc, cat) {
     renderShops();
   });
   source.addEventListener('products', (m) => {
-    state.groups = JSON.parse(m.data).groups;
+    const ev = JSON.parse(m.data);
+    state.groups = ev.groups;
+    state.nearby = ev.nearby || { models: [], total: 0 };
     renderProducts();
   });
   source.addEventListener('done', () => {
@@ -176,7 +181,7 @@ function groupKey(g) { return g.signature; }
 
 function productItem(g) {
   const selected = state.selected === groupKey(g);
-  return el('li', {}, el('button', { type: 'button', 'aria-pressed': selected ? 'true' : 'false', onclick: () => { state.selected = groupKey(g); renderProducts(); } },
+  return el('li', {}, el('button', { type: 'button', 'aria-pressed': selected ? 'true' : 'false', onclick: () => { state.selected = groupKey(g); state.picked = true; renderProducts(); } },
     el('span', { class: 'ptitle' }, g.title),
     el('span', { class: 'price' }, headlineText(g)),
     el('span', { class: 'pmeta' },
@@ -188,20 +193,71 @@ function productItem(g) {
 
 function renderProducts() {
   const groups = state.groups;
-  $('#products').hidden = !groups.length && !state.done;
+  const near = state.nearby;
+  const main = groups.filter((g) => g.level !== 'different');
+  const other = groups.filter((g) => g.level === 'different');
+  $('#products').hidden = !groups.length && !near.models.length && !state.done;
+  let empty;
+  if (near.models.length) {
+    empty = state.done ? 'No shop lists exactly what you typed. Similar models the shops list:'
+      : 'No shop has listed exactly what you typed so far. Similar models the shops list:';
+  } else if (!groups.length) {
+    empty = state.done ? 'No priced products found. Use the links below to check the shops yourself.' : 'Waiting for shops…';
+  } else {
+    empty = 'Nothing matches the query exactly or possibly; see the other products below.';
+  }
+  $('#product-list').replaceChildren(...(main.length ? main.map(productItem) : [el('li', { class: 'empty' }, empty)]));
+  const exact = main.some((g) => g.level === 'exact');
+  // Only possible matches: the list opens below them, with its own introduction.
+  $('#nearby-intro').hidden = !(main.length && !exact && near.models.length);
+  $('#nearby-intro').textContent = 'No shop lists exactly what you typed; the products above are possible matches. Similar models the shops list:';
+  renderNearby(near, !exact);
+  $('#other-products').hidden = !other.length;
+  $('#other-list').replaceChildren(...other.map(productItem));
   if (!groups.length) {
-    $('#product-list').replaceChildren(el('li', { class: 'empty' }, state.done ? 'No priced products found. Use the links below to check the shops yourself.' : 'Waiting for shops…'));
-    $('#other-products').hidden = true;
     $('#comparison').hidden = true;
     return;
   }
-  const main = groups.filter((g) => g.level !== 'different');
-  const other = groups.filter((g) => g.level === 'different');
-  if (!state.selected || !groups.some((g) => groupKey(g) === state.selected)) state.selected = main[0] ? groupKey(main[0]) : null;
-  $('#product-list').replaceChildren(...(main.length ? main.map(productItem) : [el('li', { class: 'empty' }, 'Nothing matches the query exactly or possibly; see the other products below.')]));
-  $('#other-products').hidden = !other.length;
-  $('#other-list').replaceChildren(...other.map(productItem));
+  // Until the user picks a product, the comparison follows the first one as results arrive.
+  if (!state.picked || !groups.some((g) => groupKey(g) === state.selected)) state.selected = main[0] ? groupKey(main[0]) : null;
   renderComparison(groups.find((g) => groupKey(g) === state.selected));
+}
+
+// Similar models the shops list (computed on the server, src/core/nearby.ts): open when no product
+// matches the query exactly, collapsed below the products when one does. The open state is set only
+// when that situation changes, so a list the user opened or closed stays so while shops keep arriving.
+function renderNearby(near, open) {
+  const box = $('#nearby');
+  box.hidden = !near.models.length;
+  if (!near.models.length) return;
+  if (state.nearbyOpenFor !== open) {
+    box.open = open;
+    state.nearbyOpenFor = open;
+  }
+  const n = near.models.length;
+  $('#nearby-summary').textContent = `Similar models the shops list (${near.total > n ? `the ${n} closest of ${near.total}` : n})`;
+  $('#nearby-list').replaceChildren(...near.models.map(nearbyItem));
+}
+
+function nearbyItem(m) {
+  const shops = m.shops.flatMap((s, i) => [
+    i ? ', ' : '',
+    el('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer', title: s.title }, s.shopName),
+    s.section === 'local' ? el('span', { class: 'muted small' }, ` (branch in ${state.locName})`) : null,
+  ]);
+  return el('li', {},
+    el('div', { class: 'ninfo' },
+      el('span', { class: 'nname' }, m.query),
+      el('span', { class: 'nmeta' }, m.differs),
+      el('span', { class: 'nshops' }, 'Listed by ', ...shops),
+      m.seenPrice ? el('span', { class: 'nmeta' }, `seen at ${eur(m.seenPrice.eur)} at ${m.seenPrice.shopName} (one shop's price, not a comparison)`) : null),
+    el('button', { type: 'button', onclick: () => compareModel(m.query) }, 'Compare this model'));
+}
+
+function compareModel(q) {
+  $('#q').value = q;
+  window.scrollTo({ top: 0 });
+  go(q, $('#location').value || state.loc, $('#cat').value || state.cat);
 }
 
 const td = (label, attrs, ...children) => el('td', { 'data-label': label, ...attrs }, ...children);

@@ -322,7 +322,10 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   const sigTokens = [...new Set([...matched, ...distinguishing, ...specExtras])].sort();
   const signature = sigTokens.join(' ') + (condition !== 'new' ? ` [${condition}]` : '');
 
-  return { level, score, missing: [...missing, ...missingAlpha, ...softMissing], distinguishing, specExtras, unknownExtras, condition, conditionWords, colour, signature, codes: titleCodes, reasons };
+  return {
+    level, score, matched: [...new Set(matched)], missing: [...missing, ...missingAlpha, ...softMissing], distinguishing, specExtras, unknownExtras,
+    condition, conditionWords, colour, signature, codes: titleCodes, reasons,
+  };
 }
 
 // Words of review, comparison, manual and advice pages ("RECENZIA: elektrická kefka Oral-B PRO 3 3000",
@@ -330,17 +333,28 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
 const ARTICLE_WORDS = new Set([
   'recenzia', 'recenzie', 'recenze', 'recenzi', 'review', 'reviews', 'navod', 'navody', 'porovnanie', 'porovnani', 'porovnali',
   'clanok', 'clanek', 'blog', 'poradna', 'skusenosti', 'zkusenosti',
+  // advice questions: "Jaký elektrický kartáček Oral-B použít pro ...", "Aký ..."
+  'jaky', 'jaka', 'jake', 'aky', 'aka', 'ake',
 ]);
+
+/** The URL path as words ("/oral-b-pro-3-3500.html" -> "oral b pro 3 3500"); empty for an invalid URL. */
+export function urlSlug(url: string): string {
+  try {
+    return decodeURIComponent(new URL(url).pathname).replace(/[/_+\-]+/g, ' ').replace(/\.(html?|php)$/, '').trim();
+  } catch {
+    return '';
+  }
+}
+
+/** A review, comparison, manual or advice page (by title or URL slug), unless the query itself asks for one. */
+export function isArticlePage(query: ParsedQuery, title: string, url: string): boolean {
+  return [...tokenize(title), ...tokenize(urlSlug(url))].some((t) => ARTICLE_WORDS.has(t) && !query.tokens.includes(t));
+}
 
 /** Quick relevance score for a search-result candidate (title + URL slug), used to pick pages to fetch. */
 export function scoreCandidate(query: ParsedQuery, title: string, url: string): { level: MatchResult['level']; score: number } {
-  let slug = '';
-  try {
-    slug = decodeURIComponent(new URL(url).pathname).replace(/[/_+\-]+/g, ' ').replace(/\.(html?|php)$/, '');
-  } catch {
-    /* ignore */
-  }
-  if ([...tokenize(title), ...tokenize(slug)].some((t) => ARTICLE_WORDS.has(t) && !query.tokens.includes(t))) return { level: 'different', score: 0.05 };
+  const slug = urlSlug(url);
+  if (isArticlePage(query, title, url)) return { level: 'different', score: 0.05 };
   const fromTitle = title ? matchTitle(query, { title, url }) : null;
   let fromSlug = matchTitle(query, { title: slug, url });
   // Slugs carry ids and sizes without decimal points ("6.1" -> "61"); numeric extras there are noise.

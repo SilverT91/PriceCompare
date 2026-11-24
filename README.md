@@ -49,6 +49,19 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
 3. **Matches and groups** offers into distinct products: by normalised GTIN, by manufacturer order
    code, otherwise by a signature of the brand/model tokens. Used, refurbished and unpacked items
    are flagged and never grouped with new ones; colour variants of one model sit side by side.
+   At the same match level, a product with a price that reaches Slovakia is listed before one that
+   no shop delivers.
+   - **Similar models the shops list.** When a model is no longer on the shelves, shops still list
+     its neighbours: for "Oral-B Pro 3 3000" the Pro 3 3500, the iO Series 3, the Pro 3 3900. The
+     search already sees them among the candidates and pages the matcher rated as another product, so
+     the app lists them (at most 8, closest first: the same line with another number, then the
+     models most shops list) with a model name, how it differs from the query
+     (`has "3500", lacks "3000"`), the shops that list it, and a "Compare this model" button that
+     starts a new search for that name. Only models of the same brand and line count; accessories,
+     review and manual pages, used items and the query's own model in a bundle do not. Their prices
+     are not read for this list; when one of their pages was read anyway, its price is shown as
+     "seen at X € at Shop", a hint from one shop, not a comparison. The list costs no extra shop
+     requests and no extra web search queries (`src/core/nearby.ts`).
 4. **Totals** per offer, converted to EUR with ECB reference rates (Frankfurter API):
    - delivery to Slovakia: from the product's JSON-LD `shippingDetails` when it applies to SK, else
      from `shipping_to_sk` in `shops.yaml` (cheapest standard delivery and free-delivery threshold,
@@ -64,8 +77,9 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
    then a shop that delivers to Slovakia; a shop that does not deliver only when there is no other.
 5. Splits the comparison into **"Shops with a branch in Košice"** and **"Web shops"**.
 6. Streams each shop's result to the page as soon as that shop is done (Server-Sent Events). The
-   page shows the products and the comparison first, then "Not checked automatically: open these
-   yourself" (manual links of the relevant shops that could not be checked, and Heureka), then the
+   page shows the products and the comparison first (with the similar models: open when no shop
+   lists exactly what you typed, collapsed below an exact match), then "Not checked automatically:
+   open these yourself" (manual links of the relevant shops that could not be checked, and Heureka), then the
    per-shop statuses collapsed to one line ("6 found, 7 blocked, 1 needs a browser, ...").
 
 Every shop ends with one status:
@@ -244,6 +258,7 @@ src/core/          portable core: only fetch, URL, AbortSignal, TextDecoder (+ c
   text.ts, vocab.ts  tokenizer and word lists (sk/cs/de/pl/en)
   matcher.ts         query vs title: exact / possible / different, condition, colour, signature
   group.ts           distinct products and their variants
+  nearby.ts          similar models the shops list (from what a search collected, no requests)
   totals.ts, rates.ts  shipping, EUR conversion (Frankfurter, ECB)
   search/            web search providers (Brave, Serper), fallback chain, site: batching
   categories.ts      which shops to ask (category guess from the query)
@@ -274,7 +289,8 @@ Two toothbrush searches on 2026-11-24 evening, Auto categories (32 of 39 shops a
 
 `blocked` were Alza.sk, Alza.cz, Conrad, Notino, x-kom, Allegro, MediaMarkt.de, MediaMarkt.at and
 Dr.Max; blocking varies between runs. The `needs_js` results besides dm were Pilulka pages without
-Product data (some of its product pages carry it, others do not).
+Product data: its page for a product that is currently unavailable carries none (checked
+2026-11-25 on one page), while pages of products on sale do.
 
 Earlier measurement with 30 shops in scope (Planeo was then marked `needs_js`), one fresh search
 (robots.txt cached, blocked shops inside their one-hour skip, before the second route existed):
@@ -288,15 +304,17 @@ Earlier measurement with 30 shops in scope (Planeo was then marked `needs_js`), 
 When the blocked shops' hour has passed, each blocked shop that is asked costs one more request
 (robots.txt) before it is skipped again.
 
-Delivery and pickup facts in `shops.yaml` (read 2026-11-24 from the shops' own pages, sources in the
+Delivery and pickup facts in `shops.yaml` (read 2026-11-24 and 2026-11-25 from the shops' own pages, sources in the
 file): NAY (pickup free, delivery from 1.99 €), Mountfield (pickup 1 €, delivery 2.50 €, free from
 80 €), Hornbach (free from 99 €, below unknown; pickup terms not readable), Andreashop (2.99 €),
 iStores (2.98 €, free from 50 €), Pilulka (1.49 €, free from 29 €), Datacomp (1.99 €), ABCOM (3.50 €),
 TPD Euronics (2.99 €), MojaLekáreň (0.99 €, free from 40 €), Vaša Lekáreň (0.99 €, free from 36.90 €),
-Nazuby.eu (2.49 €, free from 54.90 €), Holime.eu (2.49 €), Profimed (3.39 €, free from 39 €); the
+Nazuby.eu (2.49 €, free from 54.90 €), Holime.eu (2.49 €), Profimed (3.39 €, free from 39 €), Teta
+(1.99 €, free from 49 €), Planeo (pickup in a store free); the
 complete list, with sources, is in `shops.yaml`. Datart.cz does not deliver abroad;
 Morele.net ships abroad only to companies with a VAT number. Unknown: Dr.Max (blocked), Mironet.cz
-(no mention of Slovakia), MediaMarkt.de/.at (blocked), 101 Drogerie (no delivery page found).
+(no Slovak prices on its page), MediaMarkt.de/.at (blocked), Sanitino and 101 Drogerie (no prices
+on their pages).
 
 ## More documentation
 

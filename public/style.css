@@ -72,6 +72,16 @@ ol.products .ptitle { display: block; font-weight: 600; }
 ol.products .price { display: block; margin: 2px 0; }
 ol.products .pmeta { display: block; color: var(--muted); font-size: 13px; }
 details summary { cursor: pointer; color: var(--muted); margin: 10px 0; }
+
+.nearby-intro { margin: 12px 0 0; }
+ol.nearby { list-style: none; margin: 0; padding: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+ol.nearby li { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--line); }
+ol.nearby li:first-child { border-top: 0; }
+ol.nearby .ninfo { flex: 1 1 260px; min-width: 0; }
+ol.nearby .nname { display: block; font-weight: 600; }
+ol.nearby .nmeta, ol.nearby .nshops { display: block; font-size: 13px; }
+ol.nearby .nmeta { color: var(--muted); }
+ol.nearby button { flex: none; padding: 6px 10px; font-size: 14px; }
 .headline { font-size: 16px; font-weight: 600; margin: 4px 0; }
 
 .variants { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }

@@ -76,6 +76,12 @@ describe('rule 2: an extra distinguishing token makes it a different product', (
     assert.ok(kit.distinguishing.includes('39pc'));
     assert.equal(kit.signature, m(q2, 'Bosch GSR 12V-15 + 39 dielna sada prislusenstva').signature);
   });
+  test('Slovak "súprava" is a package word like Czech "souprava"', () => {
+    // Teta drogérie, 2026-11-25: a gift set of a brush and a toothpaste
+    const r = m('Oral-B Vitality Pro', 'Oral B darčeková súprava Elektrická kefka Vitality Pro Protect X Clean White + Zubná pasta Profesional Gum&Enamel Extra fresh 75 ml');
+    assert.equal(r.level, 'different');
+    assert.ok(r.distinguishing.includes('suprava'));
+  });
   test('the query may itself ask for the variant ("Pro", "Duopack", "FC")', () => {
     assert.equal(m('iPhone 16 Pro 128GB', 'APPLE IPHONE 16 PRO 128GB WHITE TITANIUM').level, 'exact');
     assert.equal(m('Oral-B Pro 3 3000 Duopack', 'Oral-B Pro 3 3000 Duopack čierna').level, 'exact');
@@ -105,6 +111,13 @@ describe('rule 3: used / refurbished / unpacked items are flagged and never grou
     });
   }
   test('a new item stays new', () => assert.equal(fresh.condition, 'new'));
+  test('"Použitie:" (use) in a spec list and the verb "použít" are not the condition "used"; the adjective is', () => {
+    // TPD Euronics and Andreashop, 2026-11-25
+    const tpd = 'Typ: Zubná kefka • Použitie: Pre dospelých • Napájanie: Akumulátorové • Počet rýchlostí: 3 ORAL-B Series iO 2 Black + Cashback 10€ pri nákupe min. za 70€';
+    assert.equal(m('Oral-B iO Series 2', tpd).condition, 'new');
+    assert.equal(m(q, 'Jaký elektrický kartáček Oral-B použít pro obnažené krčky.').condition, 'new');
+    for (const w of ['použitý', 'použitá', 'použitého', 'použitou', 'použitých']) assert.equal(m(q, `Oral-B Pro 3 3000 ${w}`).condition, 'used', w);
+  });
 });
 
 describe('rule 4: colour variants are the same model, colour kept', () => {
@@ -245,6 +258,8 @@ describe('candidate scoring (search results before fetching)', () => {
       ['RECENZIA: elektrická kefka Oral-B PRO 3 3000 RECENZIA: elektrická kefka Oral-B PRO 3 3000', 'https://www.nazuby.eu/recenzia-elektricka-kefka-oral-b-pro-3-3000'],
       ['Návod pro Zubní kartáček Oral-B Pro 3 3000 | DATART', 'https://www.datart.cz/navod/zubni-kartacek-oral-b-pro-3-3000.html'],
       ['Oral-B Pro 3 3000 - recenzie a skúsenosti', 'https://www.pilulka.sk/oral-b-pro-3-3000/recenzie-skusenosti'],
+      // Nazuby.eu, 2026-11-25: an advice article
+      ['Jaký elektrický kartáček Oral-B použít pro obnažené krčky.', 'https://www.nazuby.eu/aku-elektricku-kefku-oral-b-pouzit-pre-obnazene-krcky'],
     ]) assert.equal(scoreCandidate(pq2, title, url).level, 'different', title);
     assert.notEqual(scoreCandidate(pq2, 'Oral-B Pro 3 3000 čierna', 'https://www.nazuby.eu/oral-b-pro-3-3000-cierna').level, 'different');
   });

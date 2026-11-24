@@ -27,6 +27,17 @@ export function stripTrackingParams(url: string): string {
   return u.href.replace(/\?$/, '');
 }
 
+/** One key per page: tracking parameters and the fragment removed. */
+export function pageKey(url: string): string {
+  try {
+    const u = new URL(stripTrackingParams(url));
+    u.hash = '';
+    return u.href;
+  } catch {
+    return url;
+  }
+}
+
 /** URL path to words: hyphens and slashes are separators in slugs. */
 export function slugWords(path: string): string {
   let p = path;

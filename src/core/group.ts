@@ -146,6 +146,8 @@ export function groupOffers(offers: Offer[]): ProductGroup[] {
   return groups.sort((a, b) =>
     LEVEL_RANK[a.level] - LEVEL_RANK[b.level] ||
     (a.condition === 'new' ? 0 : 1) - (b.condition === 'new' ? 0 : 1) ||
+    // a product with a price that reaches the user before one that no shop delivers
+    (a.bestItemEur === null ? 1 : 0) - (b.bestItemEur === null ? 1 : 0) ||
     b.score - a.score ||
     b.shopCount - a.shopCount ||
     (a.bestItemEur ?? Infinity) - (b.bestItemEur ?? Infinity));
