@@ -1,0 +1,181 @@
+{
+ "source": "trimmed JSON-LD from https://www.mediamarkt.de/de/search.html?query=iPhone+16+128GB, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "search",
+ "url": "https://www.mediamarkt.de/de/search.html?query=iPhone+16+128GB",
+ "blocks": [
+  {
+   "@context": "https://schema.org",
+   "@type": "ItemList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PRO 128GB DESERT TITANIUM 128 GB Titan Wüstensand Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 721.33,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PRO 128GB WHITE TITANIUM 128 GB Titan Weiß Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 750.9,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-145607287.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 3,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PRO 128GB NATURAL TITANIUM 128 GB Titan Natur Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 737,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-pro-128gb-natural-titanium-smartphone-128-gb-graues-silber-dual-sim-147052588.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 4,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PLUS 128GB WHITE 128 GB Weiß Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 776.67,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-white-smartphone-128-gb-weiss-dual-sim-147051613.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 5,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PLUS 128GB PINK 128 GB Pink Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 672.9,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-pink-smartphone-128-gb-rosa-dual-sim-147052596.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 6,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PLUS 128GB TEAL 128 GB Teal",
+      "offers": {
+       "@type": "Offer",
+       "price": 719.59,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-turkis-dual-sim-146562868.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 7,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PLUS 128GB PINK 128 GB Pink Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 675.07,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-pink-dual-sim-146562776.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 8,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE iPhone 16 128 GB Schwarz Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 1046.97,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-schwarz-dual-sim-168735593.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 9,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PRO 128GB WHITE TITANIUM 128 GB White Titanium",
+      "offers": {
+       "@type": "Offer",
+       "price": 766,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-146563409.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 10,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE IPHONE 16 PRO 128GB BLACK TITANIUM 128 GB Titan Schwarz Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 760.89,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-schwarz-dual-sim-145607125.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 11,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE iPhone 16 128 GB Blau Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 1074.58,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-blau-dual-sim-177259451.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 12,
+     "item": {
+      "@type": "Product",
+      "name": "APPLE iPhone  16 iPhone 16 128 GB Pink Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "price": 648,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-pink-dual-sim-146562561.html"
+     }
+    }
+   ]
+  }
+ ]
+}

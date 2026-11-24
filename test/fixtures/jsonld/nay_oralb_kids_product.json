@@ -1,0 +1,41 @@
+{
+ "source": "trimmed JSON-LD from https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "Product",
+   "@id": "https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king",
+   "name": "Zubná kefka Oral-B PRO 3 Kids Lion King",
+   "sku": "BRAD103LION",
+   "gtin": "8700216297172",
+   "category": "Elektrické zubné kefky",
+   "brand": {
+    "@type": "Brand",
+    "name": "Oral-B"
+   },
+   "offers": {
+    "@type": "Offer",
+    "priceCurrency": "EUR",
+    "price": 49.9,
+    "salePrice": 29.9,
+    "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king",
+    "itemCondition": "https://schema.org/NewCondition",
+    "availability": "https://schema.org/InStock",
+    "seller": {
+     "@type": "Organization",
+     "name": "NAY"
+    }
+   },
+   "isRelatedTo": [
+    {
+     "@type": "Service",
+     "name": "Blesková výmena k výrobku do 40 €",
+     "@id": "https://www.nay.sk/napoveda/bleskova-vymena",
+     "url": "https://www.nay.sk/napoveda/bleskova-vymena"
+    }
+   ]
+  }
+ ]
+}

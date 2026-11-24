@@ -1,0 +1,98 @@
+{
+ "source": "trimmed JSON-LD from https://www.pilulka.sk/nivea-men-krem-150ml, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.pilulka.sk/nivea-men-krem-150ml",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "Product",
+   "name": "Nivea Men krém 150 ml",
+   "@id": "https://www.pilulka.sk/nivea-men-krem-150ml#product",
+   "gtin": "9005800240053",
+   "category": "Kozmetika / Kozmetika pre mužov / Starostlivosť o mužskú pleť / Krémy pre mužov",
+   "offers": {
+    "@type": "Offer",
+    "url": "https://www.pilulka.sk/nivea-men-krem-150ml",
+    "priceCurrency": "EUR",
+    "price": 6.19,
+    "itemCondition": "https://schema.org/NewCondition",
+    "availability": "https://schema.org/InStock",
+    "shippingDetails": [
+     {
+      "@type": "OfferShippingDetails",
+      "shippingLabel": "Packeta - Výdajné miesto a Z-box",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": 1.99,
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     },
+     {
+      "@type": "OfferShippingDetails",
+      "shippingLabel": "Výdajné miesto - Balíkovo Parcel Shop a Box",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": 2.59,
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     },
+     {
+      "@type": "OfferShippingDetails",
+      "shippingLabel": "Osobne v partnerských lekárňach",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": 1.49,
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     },
+     {
+      "@type": "OfferShippingDetails",
+      "shippingLabel": "Doručenie na adresu",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": 3.39,
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     },
+     {
+      "@type": "OfferShippingDetails",
+      "shippingLabel": "Na adresu - Balíkovo",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": 3,
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     }
+    ]
+   },
+   "brand": {
+    "@type": "Brand",
+    "name": "Nivea"
+   },
+   "manufacturer": {
+    "@type": "Organization",
+    "name": "Ante S"
+   }
+  }
+ ]
+}

@@ -1,0 +1,181 @@
+{
+ "source": "trimmed JSON-LD from https://www.mediamarkt.de/de/search.html?query=Oral-B+Pro+3+3000, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "search",
+ "url": "https://www.mediamarkt.de/de/search.html?query=Oral-B+Pro+3+3000",
+ "blocks": [
+  {
+   "@context": "https://schema.org",
+   "@type": "ItemList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Pro 3 3000 Elektrische Zahnbürste Black",
+      "offers": {
+       "@type": "Offer",
+       "price": 117.62,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B PRO 3-3900 DUOPACK BLACK EDITION Elektrische Zahnbürste Schwarz",
+      "offers": {
+       "@type": "Offer",
+       "price": 124.59,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3900-elektrische-zahnburste-schwarz-102823946.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 3,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Pro Kids 3+ Frozen Elektrische Kinderzahnbürste Hellblau, Reinigungstechnologie: Oszillierend / Rotierend (2D)",
+      "offers": {
+       "@type": "Offer",
+       "price": 22.99,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-frozen-elektrosche-zahnburste-hellblau-2881384.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 4,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Pro Kids 3+ Frozen Elektrische Zahnbürste Blau",
+      "offers": {
+       "@type": "Offer",
+       "price": 36.26,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-elektrische-zahnburste-blau-188751514.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 5,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Pro Kids für Kinder ab 3 Jahren, König der Löwen, 4 Stück Aufsteckbürsten",
+      "offers": {
+       "@type": "Offer",
+       "price": 9.99,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-3-stuck-aufsteckbursten-2945137.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 6,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Pro Kids 3+ Frozen, 4 Stück Aufsteckbürsten",
+      "offers": {
+       "@type": "Offer",
+       "price": 16.99,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-4-stuck-aufsteckbursten-2877025.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 7,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B EB18-3 Aufsteckbürsten",
+      "offers": {
+       "@type": "Offer",
+       "price": 29.99,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-oral-b-3d-white-ersatz-3-stck-102209785.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 8,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B VITALITY PRO 103 KIDS SPIDERMAN Elektrische Zahnbürste Blau",
+      "offers": {
+       "@type": "Offer",
+       "price": 25.29,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-vitality-pro-103-kids-spiderman-elektrische-zahnburste-blau-142257895.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 9,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B JUNIOR PRO FROZEN Elektrische Kinderzahnbürste Weiß",
+      "offers": {
+       "@type": "Offer",
+       "price": 56.55,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-junior-pro-frozen-elektrische-kinderzahnburste-weiss-144915882.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 10,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Pro Kids für Kinder ab 3 Jahren, König der Löwen, 8 Stück Aufsteckbürsten",
+      "offers": {
+       "@type": "Offer",
+       "price": 27.06,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-8-stuck-aufsteckbursten-2945138.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 11,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Pro Kids 3+ Spiderman, 4 Stück Aufsteckbürsten",
+      "offers": {
+       "@type": "Offer",
+       "price": 16.99,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-spiderman-4-stuck-aufsteckbursten-2877028.html"
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 12,
+     "item": {
+      "@type": "Product",
+      "name": "ORAL-B Kids Pro 3+ Ersatzbürstenköpfe",
+      "offers": {
+       "@type": "Offer",
+       "price": 27.8,
+       "priceCurrency": "EUR"
+      },
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-kids-pro-3-ersatzburstenkopfe-137560137.html"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,31 @@
+# Product URLs found through a web search restricted to the shop's domain (not through the shop's own search page).
+# Used by `tools/probe_shops.py --known-urls data/known_product_urls.yaml` to test the alternative route
+# "web search -> product page -> schema.org data" for shops that disallow or block their search page.
+# proxy: true = not the exact test product (the search engine did not return it); the page is only used
+# to see whether product pages carry structured data.
+# Found 2026-11-24.
+
+planeo_sk:
+  iphone16: {url: "https://www.planeo.sk/iphone-16-blue"}
+mountfield_sk:
+  bosch_gsr: {url: "https://www.mountfield.sk/bosch-sada-vrtakov-do-dreva-7-dielov-2dsz6004", proxy: true, note: "Bosch drill-bit set; GSR 12V-15 not found on mountfield.sk"}
+dm_sk:
+  nivea: {url: "https://www.mojadm.sk/p/d/1442173/nivea-univerzalny-krem-creme", proxy: true, note: "Nivea Creme 250 ml, not 150 ml"}
+pilulka_sk:
+  nivea: {url: "https://www.pilulka.sk/nivea-men-krem-150ml", proxy: true, note: "Nivea Men cream 150 ml"}
+drmax_sk:
+  nivea: {url: "https://www.drmax.sk/nivea-creme-1"}
+ikea_sk:
+  extra_desk: {url: "https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/", proxy: true, note: "desk 120x60"}
+jysk_sk:
+  extra_desk: {url: "https://jysk.sk/pracovna/pisacie-stoly-pocitacove-stoly/pisaci-stol-hjallese-50x120-tmava-pieskova", proxy: true, note: "desk 50x120 (an earlier ABBETVED URL returned a category page)"}
+martinus_sk:
+  extra_book: {url: "https://www.martinus.sk/2638963-hobit/kniha"}
+istores_sk:
+  iphone16: {url: "https://www.istores.sk/produkt/iphone-16-128-gb-cierna-2242517"}
+datart_cz:
+  iphone16: {url: "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a.html"}
+mediamarkt_at:
+  iphone16: {url: "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html"}
+morele_net:
+  iphone16: {url: "https://www.morele.net/smartfon-apple-iphone-16-128gb-black-mye73-14121922/"}

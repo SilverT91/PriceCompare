@@ -1,0 +1,226 @@
+{
+ "source": "trimmed JSON-LD from https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "BuyAction",
+   "object": {
+    "@type": "ProductGroup",
+    "brand": {
+     "@type": "Brand",
+     "name": "APPLE"
+    },
+    "sku": "145402270",
+    "gtin13": "0195949771583",
+    "name": "APPLE IPHONE 16 PRO 128GB DESERT TITANIUM 128 GB Titan Wüstensand Dual SIM",
+    "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+    "offers": [
+     {
+      "@type": "Offer",
+      "price": 721.33,
+      "priceCurrency": "EUR",
+      "itemCondition": "https://schema.org/RefurbishedCondition",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+      "seller": {
+       "@type": "Organization",
+       "name": "buyZOXS",
+       "id": "8202"
+      },
+      "shippingDetails": {
+       "@type": "OfferShippingDetails",
+       "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": {
+         "@type": "Country",
+         "name": "DE"
+        }
+       },
+       "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": 0,
+        "currency": "EUR"
+       }
+      }
+     },
+     {
+      "@type": "Offer",
+      "price": 712,
+      "priceCurrency": "EUR",
+      "itemCondition": "https://schema.org/RefurbishedCondition",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+      "seller": {
+       "@type": "Organization",
+       "name": "Alloccaz DE",
+       "id": "4047"
+      },
+      "shippingDetails": {
+       "@type": "OfferShippingDetails",
+       "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": {
+         "@type": "Country",
+         "name": "DE"
+        }
+       },
+       "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": 0,
+        "currency": "EUR"
+       }
+      }
+     },
+     {
+      "@type": "Offer",
+      "price": 656.9,
+      "priceCurrency": "EUR",
+      "itemCondition": "https://schema.org/RefurbishedCondition",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+      "seller": {
+       "@type": "Organization",
+       "name": "Janado",
+       "id": "4270"
+      },
+      "shippingDetails": {
+       "@type": "OfferShippingDetails",
+       "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": {
+         "@type": "Country",
+         "name": "DE"
+        }
+       },
+       "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": 0,
+        "currency": "EUR"
+       }
+      }
+     }
+    ],
+    "variesBy": [
+     "color",
+     "storageCapacity"
+    ],
+    "hasVariant": [
+     {
+      "@type": "Product",
+      "sku": "2954312",
+      "gtin13": "0195949771774",
+      "name": "APPLE iPhone 16 Pro 5G 128 GB Titan Natur Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-pro-5g-128-gb-titan-natur-dual-sim-2954312.html",
+       "priceCurrency": "EUR",
+       "price": 1049,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Titan Natur",
+      "storageCapacity": "128 GB"
+     },
+     {
+      "@type": "Product",
+      "sku": "2954309",
+      "gtin13": "0195949771200",
+      "name": "APPLE iPhone 16 Pro 5G 128 GB Titan Schwarz Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-pro-5g-128-gb-titan-schwarz-dual-sim-2954309.html",
+       "priceCurrency": "EUR",
+       "price": 1049,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Titan Schwarz",
+      "storageCapacity": "128 GB"
+     },
+     {
+      "@type": "Product",
+      "sku": "2954310",
+      "gtin13": "0195949771392",
+      "name": "APPLE iPhone 16 Pro 5G 128 GB Titan Weiß Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-pro-5g-128-gb-titan-weiss-dual-sim-2954310.html",
+       "priceCurrency": "EUR",
+       "price": 1049,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Titan Weiß",
+      "storageCapacity": "128 GB"
+     },
+     {
+      "@type": "Product",
+      "sku": "2954311",
+      "gtin13": "0195949771583",
+      "name": "APPLE iPhone 16 Pro 5G 128 GB Titan Wüstensand Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-pro-5g-128-gb-titan-wustensand-dual-sim-2954311.html",
+       "priceCurrency": "EUR",
+       "price": 1049,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Titan Wüstensand",
+      "storageCapacity": "128 GB"
+     },
+     {
+      "@type": "Product",
+      "sku": "2954322",
+      "gtin13": "0195949773105",
+      "name": "APPLE iPhone 16 Pro 5G 512 GB Titan Wüstensand Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-pro-5g-512-gb-titan-wustensand-dual-sim-2954322.html",
+       "priceCurrency": "EUR",
+       "price": 1349,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "storageCapacity": "512 GB",
+      "color": "Titan Wüstensand"
+     },
+     {
+      "@type": "Product",
+      "sku": "2954317",
+      "gtin13": "0195949772344",
+      "name": "APPLE iPhone 16 Pro 5G 256 GB Titan Wüstensand Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-pro-5g-256-gb-titan-wustensand-dual-sim-2954317.html",
+       "priceCurrency": "EUR",
+       "price": 1149,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "storageCapacity": "256 GB",
+      "color": "Titan Wüstensand"
+     },
+     {
+      "@type": "Product",
+      "sku": "2954327",
+      "gtin13": "0195949773860",
+      "name": "APPLE iPhone 16 Pro 5G 1 TB Titan Wüstensand Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-pro-5g-1-tb-titan-wustensand-dual-sim-2954327.html",
+       "priceCurrency": "EUR",
+       "price": 1499,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "storageCapacity": "1 TB",
+      "color": "Titan Wüstensand"
+     }
+    ]
+   }
+  }
+ ]
+}

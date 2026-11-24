@@ -1,0 +1,46 @@
+{
+ "source": "trimmed JSON-LD from https://www.mironet.cz/apple-iphone-16-128gb-cerna-61-128gb-ios18+dp702612/, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.mironet.cz/apple-iphone-16-128gb-cerna-61-128gb-ios18+dp702612/",
+ "blocks": [
+  {
+   "@context": "https://schema.org",
+   "@type": "Product",
+   "name": "Apple iPhone 16 128GB černá / 6.1\" / 128GB / iOS18",
+   "productID": "sku:93109300",
+   "sku": "93109300",
+   "mpn": "MYE73",
+   "brand": {
+    "@type": "Brand",
+    "name": "Apple"
+   },
+   "offers": {
+    "@type": "Offer",
+    "url": "https://www.mironet.cz/apple-iphone-16-128gb-cerna-61-128gb-ios18+dp702612/",
+    "priceCurrency": "CZK",
+    "price": "19990",
+    "priceValidUntil": "2026-12-24",
+    "seller": {
+     "@type": "OnlineStore",
+     "@id": "https://www.mironet.cz/#organization",
+     "name": "Mironet.cz"
+    },
+    "shippingDetails": [
+     {
+      "@type": "OfferShippingDetails",
+      "hasShippingService": {
+       "@id": "https://www.mironet.cz/#shipping-delivery"
+      }
+     },
+     {
+      "@type": "OfferShippingDetails",
+      "hasShippingService": {
+       "@id": "https://www.mironet.cz/#shipping-pickup"
+      }
+     }
+    ],
+    "availability": "https://schema.org/InStock"
+   }
+  }
+ ]
+}

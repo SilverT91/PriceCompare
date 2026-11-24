@@ -1,0 +1,88 @@
+{
+ "source": "trimmed JSON-LD from https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a.html, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a.html",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "Product",
+   "@id": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a.html",
+   "name": "Mobilní telefon Apple iPhone 16 128 GB modrozelený (MYED3SX/A)",
+   "sku": "APPMYED3SXA",
+   "gtin": "195949822650",
+   "category": "Chytré telefony",
+   "brand": {
+    "@type": "Brand",
+    "name": "Apple"
+   },
+   "offers": {
+    "@type": "Offer",
+    "priceCurrency": "CZK",
+    "price": 19990,
+    "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a.html",
+    "itemCondition": "https://schema.org/NewCondition",
+    "availability": "https://schema.org/InStock",
+    "seller": {
+     "@type": "Organization",
+     "name": "DATART"
+    }
+   },
+   "isRelatedTo": [
+    {
+     "@type": "Service",
+     "name": "Pojištění prodl. záruky + 1rok",
+     "@id": "https://www.datart.cz/napoveda/prodlouzena-zaruka",
+     "url": "https://www.datart.cz/napoveda/prodlouzena-zaruka"
+    },
+    {
+     "@type": "Service",
+     "name": "Pojištění mobilních zařízení 2+1 rok",
+     "@id": "https://www.datart.cz/napoveda/pojisteni-mobilnich-vyrobku",
+     "url": "https://www.datart.cz/napoveda/pojisteni-mobilnich-vyrobku"
+    },
+    {
+     "@type": "Service",
+     "name": "Pojištění mobilních zařízení 1 rok",
+     "@id": "https://www.datart.cz/napoveda/pojisteni-mobilnich-vyrobku",
+     "url": "https://www.datart.cz/napoveda/pojisteni-mobilnich-vyrobku"
+    },
+    {
+     "@type": "Service",
+     "name": "Pojištění mobilních zařízení 6 měsíců",
+     "@id": "https://www.datart.cz/napoveda/pojisteni-mobilnich-vyrobku",
+     "url": "https://www.datart.cz/napoveda/pojisteni-mobilnich-vyrobku"
+    }
+   ],
+   "isSimilarTo": [
+    {
+     "@type": "Product",
+     "name": "Mobilní telefon Apple iPhone 16 128 GB černý (MYE73SX/A)",
+     "@id": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-cerny-mye73sx-a.html",
+     "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-cerny-mye73sx-a.html",
+     "itemCondition": "https://schema.org/NewCondition"
+    },
+    {
+     "@type": "Product",
+     "name": "Mobilní telefon Apple iPhone 16 128 GB bílý (MYE93SX/A)",
+     "@id": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-bily-mye93sx-a.html",
+     "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-bily-mye93sx-a.html",
+     "itemCondition": "https://schema.org/NewCondition"
+    },
+    {
+     "@type": "Product",
+     "name": "Mobilní telefon Apple iPhone 16 128 GB růžový (MYEA3SX/A)",
+     "@id": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-ruzovy-myea3sx-a.html",
+     "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-ruzovy-myea3sx-a.html",
+     "itemCondition": "https://schema.org/NewCondition"
+    },
+    {
+     "@type": "Product",
+     "name": "Mobilní telefon Apple iPhone 16 128 GB ultramarínový (MYEC3SX/A)",
+     "@id": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-ultramarinovy-myec3sx-a.html",
+     "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-ultramarinovy-myec3sx-a.html",
+     "itemCondition": "https://schema.org/NewCondition"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+// Brave Search API adapter (own index, not Google).
+// GET https://api.search.brave.com/res/v1/web/search?q=...&count=20&country=..&search_lang=..
+// Header X-Subscription-Token. Response: {web: {results: [{url, title, description}]}}.
+// Per the API reference: count max 20; `country` accepts a fixed list that includes AT, DE, PL but
+// not SK or CZ (those use ALL); `search_lang` includes sk, cs, de, pl. site: and OR go inside q.
+// Free plan: about 1 request per second; HTTP 429 when faster. With a spend limit, HTTP 402 once the
+// monthly credit is used up (until the next month).
+
+import type { FetchLike } from '../http.ts';
+import { ProviderUnavailableError, type Locale, type SearchHit, type SearchProvider } from './provider.ts';
+
+export const BRAVE_URL = 'https://api.search.brave.com/res/v1/web/search';
+const BRAVE_COUNTRIES = new Set(['ar', 'au', 'at', 'be', 'br', 'ca', 'cl', 'dk', 'fi', 'fr', 'de', 'gr', 'hk', 'in', 'id', 'it', 'jp', 'kr', 'my', 'mx', 'nl', 'nz', 'no', 'cn', 'pl', 'pt', 'ph', 'ru', 'sa', 'za', 'es', 'se', 'ch', 'tw', 'tr', 'gb', 'us']);
+const BRAVE_LANGS = new Set(['sk', 'cs', 'de', 'pl', 'en', 'hu', 'uk']);
+
+/** Seconds until the first day of next month (UTC), when Brave's monthly credit renews. */
+function untilNextMonth(now = new Date()): number {
+  const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
+  return Math.max(3600, Math.ceil((next - now.getTime()) / 1000));
+}
+
+export class BraveProvider implements SearchProvider {
+  readonly id = 'brave';
+  readonly resultsPerQuery: number;
+  readonly minIntervalMs = 1100;
+  private readonly key: string;
+
+  constructor(apiKey: string, resultsPerQuery = 20) {
+    this.key = apiKey;
+    this.resultsPerQuery = Math.min(20, resultsPerQuery);
+  }
+
+  exhaustedTtlSeconds(kind: 'quota' | 'auth'): number {
+    return kind === 'quota' ? untilNextMonth() : 86400;
+  }
+
+  buildUrl(q: string, locale: Locale): string {
+    const u = new URL(BRAVE_URL);
+    u.searchParams.set('q', q);
+    u.searchParams.set('count', String(this.resultsPerQuery));
+    u.searchParams.set('country', BRAVE_COUNTRIES.has(locale.country) ? locale.country.toUpperCase() : 'ALL');
+    if (BRAVE_LANGS.has(locale.lang)) u.searchParams.set('search_lang', locale.lang);
+    u.searchParams.set('safesearch', 'off');
+    return u.href;
+  }
+
+  async search(q: string, locale: Locale, fetchImpl: FetchLike = fetch): Promise<{ hits: SearchHit[]; credits: number }> {
+    const res = await fetchImpl(this.buildUrl(q, locale), {
+      headers: { 'X-Subscription-Token': this.key, Accept: 'application/json' },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) {
+      const body = (await res.text().catch(() => '')).slice(0, 300);
+      if (res.status === 402 || /QUOTA_LIMITED|quota/i.test(body)) {
+        throw new ProviderUnavailableError('quota', res.status, `Brave monthly credit used up (HTTP ${res.status})`);
+      }
+      if (res.status === 401 || res.status === 403) throw new ProviderUnavailableError('auth', res.status, `Brave rejected the key (HTTP ${res.status})`);
+      throw new Error(`Brave HTTP ${res.status}`);
+    }
+    const json = (await res.json()) as { web?: { results?: { url?: string; title?: string; description?: string }[] } };
+    const hits = (json.web?.results ?? [])
+      .filter((r) => typeof r.url === 'string')
+      .map((r) => ({ url: r.url as string, title: stripTags(r.title ?? ''), snippet: stripTags(r.description ?? '') }));
+    return { hits, credits: 1 };
+  }
+}
+
+function stripTags(s: string): string {
+  return s.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}

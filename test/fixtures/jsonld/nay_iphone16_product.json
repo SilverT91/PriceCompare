@@ -1,0 +1,89 @@
+{
+ "source": "trimmed JSON-LD from https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "Product",
+   "@id": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+   "name": "Mobilný telefón Apple iPhone 16 128 GB modrozelený (MYED3SX/A)",
+   "sku": "APPMYED3SXA",
+   "gtin": "195949822650",
+   "category": "Inteligentné telefóny",
+   "brand": {
+    "@type": "Brand",
+    "name": "Apple"
+   },
+   "offers": {
+    "@type": "Offer",
+    "priceCurrency": "EUR",
+    "price": 1029,
+    "salePrice": 849,
+    "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+    "itemCondition": "https://schema.org/NewCondition",
+    "availability": "https://schema.org/InStock",
+    "seller": {
+     "@type": "Organization",
+     "name": "NAY"
+    }
+   },
+   "isRelatedTo": [
+    {
+     "@type": "Service",
+     "name": "Poistenie mobilných zariadení 1 rok",
+     "@id": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni",
+     "url": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni"
+    },
+    {
+     "@type": "Service",
+     "name": "Poistenie mobilných zariadení 2+1 rok",
+     "@id": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni",
+     "url": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni"
+    },
+    {
+     "@type": "Service",
+     "name": "Poistenie mobilných zariadení 6 mesiacov",
+     "@id": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni",
+     "url": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni"
+    },
+    {
+     "@type": "Service",
+     "name": "Poistenie NA ISTOTU 2+1 rok",
+     "@id": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni",
+     "url": "https://www.nay.sk/napoveda/poistenie-mobilnych-zariadeni"
+    }
+   ],
+   "isSimilarTo": [
+    {
+     "@type": "Product",
+     "name": "Mobilný telefón Apple iPhone 16 128 GB ružový (MYEA3SX/A)",
+     "@id": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ruzovy-myea3sx-a",
+     "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ruzovy-myea3sx-a",
+     "itemCondition": "https://schema.org/NewCondition"
+    },
+    {
+     "@type": "Product",
+     "name": "Mobilný telefón Apple iPhone 16 128 GB ultramarínový (MYEC3SX/A)",
+     "@id": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ultramarinovy-myec3sx-a",
+     "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ultramarinovy-myec3sx-a",
+     "itemCondition": "https://schema.org/NewCondition"
+    },
+    {
+     "@type": "Product",
+     "name": "Mobilný telefón Apple iPhone 16 128 GB biely (MYE93SX/A)",
+     "@id": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-biely-mye93sx-a",
+     "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-biely-mye93sx-a",
+     "itemCondition": "https://schema.org/NewCondition"
+    },
+    {
+     "@type": "Product",
+     "name": "Mobilný telefón Apple iPhone 16 128 GB čierny (MYE73SX/A)",
+     "@id": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-cierny-mye73sx-a",
+     "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-cierny-mye73sx-a",
+     "itemCondition": "https://schema.org/NewCondition"
+    }
+   ]
+  }
+ ]
+}

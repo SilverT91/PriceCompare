@@ -1,0 +1,52 @@
+{
+ "source": "trimmed JSON-LD from https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "BuyAction",
+   "object": {
+    "@type": "Product",
+    "brand": {
+     "@type": "Brand",
+     "name": "ORAL-B"
+    },
+    "sku": "100959625",
+    "gtin13": "8006540759790",
+    "name": "ORAL-B Pro 3 3000 Elektrische Zahnbürste Black",
+    "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+    "offers": [
+     {
+      "@type": "Offer",
+      "price": 117.62,
+      "priceCurrency": "EUR",
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": "https://schema.org/InStock",
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+      "seller": {
+       "@type": "Organization",
+       "name": "Procomponentes DE",
+       "id": "2952"
+      },
+      "shippingDetails": {
+       "@type": "OfferShippingDetails",
+       "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": {
+         "@type": "Country",
+         "name": "DE"
+        }
+       },
+       "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": 7.9,
+        "currency": "EUR"
+       }
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

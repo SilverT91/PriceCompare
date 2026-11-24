@@ -1,0 +1,71 @@
+{
+ "source": "trimmed JSON-LD from https://www.hornbach.sk/s/Bosch%2BGSR%2B12V-15, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "search",
+ "url": "https://www.hornbach.sk/s/Bosch%2BGSR%2B12V-15",
+ "blocks": [
+  {
+   "@context": "https://schema.org",
+   "@type": "ItemList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "item": {
+      "@type": "Product",
+      "name": "Aku vŕtačka Bosch GSR 12V-15, 060186810F",
+      "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+      "offers": [
+       {
+        "@type": "Offer",
+        "itemCondition": "https://schema.org/NewCondition",
+        "priceCurrency": "EUR",
+        "price": "133.20",
+        "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+        "availability": "https://schema.org/InStock",
+        "availableDeliveryMethod": "https://schema.org/ParcelService"
+       }
+      ]
+     }
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "item": {
+      "@type": "Product",
+      "name": "Kotúč Bosch Inox na GWS 12V, 5 ks",
+      "url": "https://www.hornbach.sk/p/kotuc-bosch-inox-na-gws-12v-5-ks/6358524/",
+      "offers": [
+       {
+        "@type": "Offer",
+        "itemCondition": "https://schema.org/NewCondition",
+        "priceCurrency": "EUR",
+        "price": "8.46",
+        "url": "https://www.hornbach.sk/p/kotuc-bosch-inox-na-gws-12v-5-ks/6358524/",
+        "availability": "https://schema.org/InStock",
+        "availableDeliveryMethod": "https://schema.org/ParcelService"
+       },
+       {
+        "@type": "Offer",
+        "itemCondition": "https://schema.org/NewCondition",
+        "priceCurrency": "EUR",
+        "price": "8.46",
+        "url": "https://www.hornbach.sk/p/kotuc-bosch-inox-na-gws-12v-5-ks/6358524/",
+        "availability": "https://schema.org/InStock",
+        "availableDeliveryMethod": "https://schema.org/OnSitePickup",
+        "availableAtOrFrom": {
+         "@type": "Place",
+         "name": "HORNBACH Košice",
+         "branchCode": "746"
+        },
+        "deliveryLeadTime": {
+         "@type": "QuantitativeValue",
+         "value": 0
+        }
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

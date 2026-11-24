@@ -1,0 +1,698 @@
+# PriceCompare seed shop database.
+#
+# Last reviewed: 2026-11-24. Checked by: fetching each homepage with a plain HTTP client, reading
+# store-locator pages where they were reachable, and news/web search. See `excluded` at the bottom
+# for shops that were considered and are gone.
+#
+# Field notes
+#   kind                   local_chain = has physical branches in Slovakia; webshop = online only
+#                          (or physical presence is marginal).
+#   categories             vocabulary: electronics, appliances, tools, diy_garden, drugstore, pharmacy,
+#                          beauty, furniture, home, books, grocery, general
+#   in_scope               false = groceries; the tool covers non-food goods only (scope update
+#                          2026-11-24). Kept in the file, not probed.
+#   has_kosice_branch      true / false / unknown. true carries has_kosice_branch_source.
+#   ships_to_sk            true / false / unknown. Slovak shops are true by definition.
+#   search_url_template    shop's own search URL with {query} (URL-encoded by the caller), or null.
+#   search_template_basis  how the template was found:
+#                            searchaction = schema.org SearchAction in the homepage JSON-LD
+#                            form         = <form> found on the homepage
+#                            guess        = from memory of the shop's URL scheme, NOT checked;
+#                                           treat a 404 in the probe as "template wrong", not "shop broken"
+#   search_url_template    placeholders: {query} = form encoding (spaces as +),
+#                          {query_path} = percent encoding (spaces as %20) for path-style templates.
+#   accept_language        optional Accept-Language override sent to this shop (default sk,cs,en).
+#   link_exclude_regex     optional regex; search-page links matching it are never taken as products
+#                          (used to skip sponsored click-tracking links).
+#   notes                  free text; "unverified" means exactly that.
+#
+# Fields added for the app (2026-11-24):
+#   categories             also decide which shops a search asks: a query's guessed categories must meet
+#                          the shop's (shops with "general" are asked for every category).
+#   shipping_to_sk         cheapest standard delivery to Slovakia, used only when the product page's
+#                          JSON-LD has no shippingDetails for SK:
+#                            {price: 3.99, currency: EUR, free_from: 50, method: <text>, source: <url>, checked: <date>}
+#                          price null with free_from set = free from that order value, unknown below it.
+#                          null = unknown (shown as unknown, never counted as zero).
+#   ships_to_sk_source     where ships_to_sk: false (or true for a foreign shop) was read. Offers of shops
+#                          with ships_to_sk: false stay visible, marked, and outside the ranking.
+#   pickup_kosice          collecting an online order in the Košice branch (shops with has_kosice_branch):
+#                            {available: true/false/unknown, price, currency, note, source, checked}
+#   no_route_reason        why the shop has no search URL (shown with status no_route).
+#   unreachable            true = the site answers a plain client with errors on every page; not asked at all.
+#   needs_js               true = prices only appear after JavaScript runs (probe 2026-11-24); the app
+#                          does not fetch the shop and gives the manual link instead.
+#   structured_data        false = product pages carry no schema.org data (probe 2026-11-24); same handling.
+#   branches               reserved for per-branch data (address, stock) later; not used yet.
+
+shops:
+  # ---------------- Slovak chains: electronics ----------------
+  - id: nay_sk
+    name: NAY
+    country: SK
+    domain: nay.sk
+    kind: local_chain
+    categories: [electronics, appliances]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.nay.sk/predajne/kosice-oc-aupark-nay-povodny-datart
+    ships_to_sk: true
+    search_url_template: "https://www.nay.sk/vyhladavanie?q={query}"
+    search_template_basis: searchaction
+    shipping_to_sk:
+      price: 1.99
+      currency: EUR
+      free_from: null
+      method: "Packeta or Slovenská pošta pickup point (courier to the address costs more; its price was not read)"
+      source: https://www.nay.sk/napoveda/vsetky-moznosti-dorucenia
+      checked: 2026-11-24
+    pickup_kosice:
+      available: true
+      price: 0
+      currency: EUR
+      note: "Order online, collect in the branch (Rezervácia v predajni); free when paid in advance, 0.99 € handling fee when paying at the till."
+      source: https://www.nay.sk/napoveda/rezervacie-a-vyzdvihnutie-v-predajni
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Košice branches: OC Aupark, OC Pri hati, Pri prachárni 6 (store list read 2026-11-24).
+      Since 2024-09 NAY also is the Slovak face of the former Datart.sk (datart.sk redirects here),
+      and hej.sk now redirects to nay.sk too.
+
+  - id: planeo_sk
+    name: Planeo Elektro
+    country: SK
+    domain: planeo.sk
+    kind: local_chain
+    categories: [electronics, appliances]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.startitup.sk/jedna-z-najvacsich-elektropredajni-na-slovensku-vyrazne-expandovala-prebrala-9-novych-predajni/
+    ships_to_sk: true
+    search_url_template: "https://www.planeo.sk/vyhladavanie$a1013-search?query={query}"
+    search_template_basis: form
+    needs_js: true
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Source (2025-07-25) lists Košice OC Optima among newly taken-over stores; an older source
+      lists Toryská 5 (OC Galéria). Planeo's own /predajne page is empty without JavaScript.
+
+  - id: euronics_sk
+    name: Euronics
+    country: SK
+    domain: euronics.sk
+    kind: local_chain
+    categories: [electronics, appliances]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: none
+    no_route_reason: "the homepage search form has no action and is handled by JavaScript (/?term=... returns the homepage), so there is no plain search URL"
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Franchise network. The /predajne list read on 2026-11-24 showed no Košice store (nearest are
+      Gelnica and Krompachy). Search form has a field named `term` but no action URL in the HTML,
+      so the URL scheme is not known (/vyhladavanie?term= and /search?term= gave 404); probe skips it
+      (no_search_template).
+
+  - id: alza_sk
+    name: Alza.sk
+    country: SK
+    domain: alza.sk
+    kind: webshop
+    categories: [electronics, appliances, tools, home, beauty, general]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://touchit.sk/nova-pobocka-alzy-pre-xxl-tovar-otvorena-v-senci/169734
+    ships_to_sk: true
+    search_url_template: "https://www.alza.sk/search.htm?exps={query}"
+    search_template_basis: guess
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Source is an undated article saying XXL pickup is at selected Alza branches including Košice;
+      current branch address not verified. Plain HTTP gets 403 from alza.sk and alza.cz (bot protection).
+
+  - id: conrad_sk
+    name: Conrad Slovensko
+    country: SK
+    domain: conrad.sk
+    kind: webshop
+    categories: [electronics, tools, diy_garden]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.conrad.sk/sk/search.html?search={query}"
+    search_template_basis: guess
+    shipping_to_sk: null
+    in_scope: true
+    notes: Cloudflare challenge on plain HTTP in the homepage check.
+
+  # ---------------- Slovak chains: DIY / garden ----------------
+  - id: hornbach_sk
+    name: HORNBACH
+    country: SK
+    domain: hornbach.sk
+    kind: local_chain
+    categories: [diy_garden, tools, home]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.hornbach.sk/moja-predajna/predajna-hornbach-kosice/
+    ships_to_sk: true
+    search_url_template: "https://www.hornbach.sk/s/{query}"
+    search_template_basis: guess
+    shipping_to_sk:
+      price: null
+      currency: EUR
+      free_from: 99
+      method: "parcel; free for parcels from 99 EUR (price below that not readable: the delivery page needs JavaScript)"
+      source: https://www.hornbach.sk/aktuality/doprava-zadarmo-na-vsetky-baliky-od-99-eur/
+      checked: 2026-11-24
+    pickup_kosice:
+      available: unknown
+      price: null
+      currency: EUR
+      note: "The page 'Možnosti doručenia a vyzdvihnutia' exists but its content needs JavaScript; pickup terms not read."
+      source: https://www.hornbach.sk/sluzby/moznosti-dorucenia/
+      checked: 2026-11-24
+    in_scope: true
+    notes: Košice store Moldavská cesta 22. Per-store availability is a shop feature ("moja predajňa").
+
+  - id: obi_sk
+    name: OBI
+    country: SK
+    domain: obi.sk
+    kind: local_chain
+    categories: [diy_garden, tools, home]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: none
+    no_route_reason: "obi.sk answers every page, the homepage included, with an empty HTTP 404 to a plain HTTP client (2026-11-24), so no search URL could be found"
+    unreachable: true
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      OBI operates in Slovakia since 2016 (19 stores per a press release) but https://www.obi.sk/
+      (also /search/...) returns an empty HTTP 404 to the honest probe UA on 2026-11-24; probably silent
+      bot filtering, true search URL scheme unknown.
+      Košice store not verified.
+
+  - id: mountfield_sk
+    name: Mountfield
+    country: SK
+    domain: mountfield.sk
+    kind: local_chain
+    categories: [diy_garden, tools]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.mountfield.sk/kosice
+    ships_to_sk: true
+    search_url_template: "https://www.mountfield.sk/hladani?q={query}"
+    search_template_basis: form
+    shipping_to_sk:
+      price: 2.50
+      currency: EUR
+      free_from: 80
+      method: "pickup point (Balíkovo / Alza Box); courier 3.80 €; standard delivery free from 80 €"
+      source: https://www.mountfield.sk/vsetko-o-nakupe/moznosti-dopravy
+      checked: 2026-11-24
+    pickup_kosice:
+      available: true
+      price: 1.00
+      currency: EUR
+      note: "Osobný odber in a Mountfield store: 1.00 € (whether it is free above 80 € was not stated)."
+      source: https://www.mountfield.sk/vsetko-o-nakupe/moznosti-dopravy
+      checked: 2026-11-24
+    in_scope: true
+    notes: Košice store Pri prachárni 3867/7A.
+
+  # ---------------- Slovak chains: drugstores / pharmacies ----------------
+  - id: dm_sk
+    name: dm drogerie markt (mojadm.sk)
+    country: SK
+    domain: mojadm.sk
+    kind: local_chain
+    categories: [drugstore, beauty]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.mojadm.sk/search?query={query}"
+    search_template_basis: searchaction
+    needs_js: true
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      dm's Slovak e-shop is mojadm.sk (NOT dm-drogeria.sk, which is an unrelated small shop).
+      An OpenStreetMap entry suggests a dm store in the Košice region, not verified. Homepage HTML
+      is small (11 KB), likely a JavaScript app.
+
+  - id: teta_sk
+    name: Teta drogérie
+    country: SK
+    domain: tetadrogerie.sk
+    kind: local_chain
+    categories: [drugstore, beauty]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: none
+    no_route_reason: "the site search is an ASP.NET postback form (POST to default.aspx), so there is no plain search URL (checked 2026-11-24)"
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      An OpenStreetMap node places a Teta at OD Dargov, Košice; the shop's own /predajne page only
+      showed stores near Nitra without JavaScript. No search form found in homepage HTML
+      (/vyhladavanie/?q= and /hladat?q= gave 404); probe skips it (no_search_template).
+
+  - id: drogerie101_sk
+    name: 101 Drogerie
+    country: SK
+    domain: 101drogerie.sk
+    kind: local_chain
+    categories: [drugstore, beauty, home]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://101drogerie.sk/nase-predajne
+    ships_to_sk: true
+    search_url_template: "https://101drogerie.sk/hladat?q={query}"
+    search_template_basis: form
+    shipping_to_sk: null
+    pickup_kosice:
+      available: unknown
+      price: null
+      currency: EUR
+      note: "The homepage links no delivery or pickup page (checked 2026-11-24)."
+      source: https://101drogerie.sk/
+      checked: 2026-11-24
+    in_scope: true
+    notes: Nine Košice stores listed (Aupark, Cassovia, Perešpark, Štúrova 50, Jaltská, ...).
+
+  - id: drmax_sk
+    name: Dr.Max
+    country: SK
+    domain: drmax.sk
+    kind: local_chain
+    categories: [pharmacy, drugstore, beauty]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.drmax.sk/vyhladavanie?q={query}"
+    search_template_basis: guess
+    shipping_to_sk: null   # 2026-11-24: homepage answered with a Cloudflare challenge (403); delivery terms not read
+    in_scope: true
+    notes: Cloudflare challenge on plain HTTP in the homepage check. Košice pharmacies not verified.
+
+  - id: pilulka_sk
+    name: Pilulka.sk
+    country: SK
+    domain: pilulka.sk
+    kind: webshop
+    categories: [pharmacy, drugstore, beauty, home]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.pilulka.sk/vyhladavanie?q={query}"
+    search_template_basis: searchaction
+    shipping_to_sk:
+      price: 1.49
+      currency: EUR
+      free_from: 29
+      method: "collect in a partner pharmacy 1.49 €; pickup points 1.99 €; to the address 3.39 €; all free from 29 €"
+      source: https://www.pilulka.sk/doprava-a-platba
+      checked: 2026-11-24
+    in_scope: true
+    notes: Online pharmacy; no Slovak physical outlet found in search (the Czech Pilulka has pharmacies).
+
+  - id: notino_sk
+    name: Notino.sk
+    country: SK
+    domain: notino.sk
+    kind: webshop
+    categories: [beauty, drugstore]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.notino.sk/search/?f=1-1-1&q={query}"
+    search_template_basis: guess
+    shipping_to_sk: null
+    in_scope: true
+    notes: Perfume/cosmetics; Notino has some physical stores in Slovakia, Košice not verified.
+
+  # ---------------- Slovak chains: furniture ----------------
+  - id: ikea_sk
+    name: IKEA Slovensko
+    country: SK
+    domain: ikea.com
+    kind: webshop
+    categories: [furniture, home]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: true
+    search_url_template: "https://www.ikea.com/sk/sk/search/?q={query}"
+    search_template_basis: form
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      No IKEA store in Košice: only a pickup point (Vodomeračská 1, operated by a logistics firm,
+      no purchases on site) and a planning studio in Aupark per news articles; no store exists in SK
+      east of Bratislava. Shop is the /sk/sk/ section of ikea.com.
+
+  - id: sconto_sk
+    name: Sconto Nábytok
+    country: SK
+    domain: sconto.sk
+    kind: local_chain
+    categories: [furniture, home]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.sconto.sk/search?q={query}"
+    search_template_basis: guess
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Košice store was being built at the former FC Košice stadium (opening planned end of 2025 per a
+      June 2025 article); opening not confirmed. Plain HTTP gets 403 from CloudFront.
+
+  - id: jysk_sk
+    name: JYSK
+    country: SK
+    domain: jysk.sk
+    kind: local_chain
+    categories: [furniture, home]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://jysk.sk/search?query={query}"
+    search_template_basis: form
+    shipping_to_sk: null
+    in_scope: true
+    notes: Košice stores almost certainly exist but the store list needs JavaScript (map), so not verified.
+
+  # ---------------- Slovak chains: supermarkets (OUT OF SCOPE, groceries) ----------------
+  - id: tesco_sk
+    name: Tesco Online Nákupy
+    country: SK
+    domain: potravinydomov.itesco.sk
+    kind: local_chain
+    categories: [grocery]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: guess
+    in_scope: false
+    notes: OUT OF SCOPE (groceries). Online delivery covers Košice per Tesco press releases. Not probed.
+
+  - id: kaufland_sk
+    name: Kaufland
+    country: SK
+    domain: kaufland.sk
+    kind: local_chain
+    categories: [grocery, general]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.obecnovacany.sk/files/2025-11-03-120150-08.11.2025_-_KAUFLAND_Ko__ice___ahanovce.pdf
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: guess
+    in_scope: false
+    notes: OUT OF SCOPE (groceries). Not probed. Bot challenge ("Vyžaduje sa overenie") on plain HTTP.
+
+  - id: lidl_sk
+    name: Lidl
+    country: SK
+    domain: lidl.sk
+    kind: local_chain
+    categories: [grocery]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.teraz.sk/regiony/v-kosiciach-ma-lidl-uz-osem-predajni/287981-clanok.html
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: guess
+    in_scope: false
+    notes: OUT OF SCOPE (groceries). Source is from 2017 (8 Košice stores then). Not probed.
+
+  - id: billa_sk
+    name: BILLA
+    country: SK
+    domain: billa.sk
+    kind: local_chain
+    categories: [grocery]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://wolt.com/en/svk/kosice/district/juh
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: guess
+    in_scope: false
+    notes: OUT OF SCOPE (groceries). Billa Košice stores are listed on Wolt. Not probed.
+
+  # ---------------- Slovak: books and online-only ----------------
+  - id: martinus_sk
+    name: Martinus
+    country: SK
+    domain: martinus.sk
+    kind: webshop
+    categories: [books]   # was [books, general]; "general" made every query ask a bookshop (2026-11-24)
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.martinus.sk/search?q={query}"
+    search_template_basis: searchaction
+    shipping_to_sk: null
+    in_scope: true
+    notes: Books and some gifts/electronics; Košice bookshop not verified (/predajne gave 404).
+
+  - id: andreashop_sk
+    name: Andreashop
+    country: SK
+    domain: andreashop.sk
+    kind: webshop
+    categories: [home, appliances, tools, general]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: true
+    search_url_template: "https://www.andreashop.sk/vyhladavanie?search={query}"
+    search_template_basis: searchaction
+    shipping_to_sk:
+      price: 2.99
+      currency: EUR
+      free_from: null
+      method: "Packeta pickup point; courier (SPS) 3.99 €; no free-delivery threshold stated"
+      source: https://www.andreashop.sk/sposob-nakupu-a-dorucenia-na-andreashop-sk-a271
+      checked: 2026-11-24
+    in_scope: true
+    notes: Online-only household goods.
+
+  - id: istores_sk
+    name: iStores
+    country: SK
+    domain: istores.sk
+    kind: webshop
+    categories: [electronics]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.istores.sk/vyhladavanie?q={query}"
+    search_template_basis: guess
+    shipping_to_sk:
+      price: 2.98
+      currency: EUR
+      free_from: 50
+      method: "Packeta / DPD pickup point or DPD to the address: 2.98 € up to 49 €, free over 50 €"
+      source: https://www.istores.sk/doprava
+      checked: 2026-11-24
+    in_scope: true
+    notes: Apple Premium Partner; physical stores exist in SK, Košice not verified.
+
+  # ---------------- Czech web shops ----------------
+  - id: alza_cz
+    name: Alza.cz
+    country: CZ
+    domain: alza.cz
+    kind: webshop
+    categories: [electronics, appliances, tools, home, beauty, general]
+    currency: CZK
+    has_kosice_branch: false
+    ships_to_sk: unknown
+    search_url_template: "https://www.alza.cz/search.htm?exps={query}"
+    search_template_basis: guess
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Slovak customers normally use alza.sk (see alza_sk), so alza.cz mostly matters as a price
+      reference. Whether alza.cz delivers to a Slovak address was not verified. 403 on plain HTTP.
+
+  - id: datart_cz
+    name: Datart.cz
+    country: CZ
+    domain: datart.cz
+    kind: webshop
+    categories: [electronics, appliances]
+    currency: CZK
+    has_kosice_branch: false
+    ships_to_sk: false
+    ships_to_sk_source: "https://www.datart.cz/napoveda/vsechny-druhy-doprav (2026-11-24): 'Doručujeme po celé ČR. Zaslání do zahraničí bohužel neposkytujeme.'"
+    search_url_template: "https://www.datart.cz/vyhledavani?q={query}"
+    search_template_basis: searchaction
+    shipping_to_sk: null
+    in_scope: true
+    notes: Slovak sister brand is NAY (datart.sk redirects to nay.sk). Delivery to SK not verified.
+
+  - id: mironet_cz
+    name: Mironet.cz
+    country: CZ
+    domain: mironet.cz
+    kind: webshop
+    categories: [electronics, appliances]
+    currency: CZK
+    has_kosice_branch: false
+    ships_to_sk: unknown
+    search_url_template: "https://www.mironet.cz/ProductList/showSearch?EXPF={query}"
+    search_template_basis: searchaction
+    shipping_to_sk: null   # 2026-11-24: the delivery page (doprava-a-ceny+kc143) and the terms list only Czech carriers and do not mention Slovakia; left unknown
+    in_scope: true
+    notes: Has a Slovak site mironet.sk (TLS error on 2026-11-24); delivery from .cz to SK not verified.
+
+  # ---------------- German / Austrian web shops ----------------
+  - id: amazon_de
+    name: Amazon.de
+    country: DE
+    domain: amazon.de
+    kind: webshop
+    categories: [general, electronics, tools, drugstore, beauty, home, books]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: true
+    search_url_template: "https://www.amazon.de/s?k={query}"
+    search_template_basis: form
+    accept_language: "en"
+    link_exclude_regex: "/sspa/click"
+    structured_data: false
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      ships_to_sk=true is based on a 2017 news report (free shipping over 39 EUR to SK) and general
+      knowledge; not re-verified for 2026 and varies per item/seller.
+      robots.txt disallows the language-prefixed URLs (/-/cs/, /-/sk/ ...) except /-/en/ and /-/da/;
+      with a Slovak/Czech Accept-Language Amazon redirects links to /-/cs/..., which a polite client may not
+      fetch, hence accept_language "en". Sponsored results link through /sspa/click (excluded).
+
+  - id: mediamarkt_de
+    name: MediaMarkt Germany
+    country: DE
+    domain: mediamarkt.de
+    kind: webshop
+    categories: [electronics, appliances]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: unknown
+    search_url_template: "https://www.mediamarkt.de/de/search.html?query={query}"
+    search_template_basis: searchaction
+    shipping_to_sk: null   # 2026-11-24: the shop was marked blocked (Cloudflare) by the app that hour; delivery terms not read
+    in_scope: true
+    notes: Delivery to SK addresses not verified (likely Germany only).
+
+  - id: mediamarkt_at
+    name: MediaMarkt Austria
+    country: AT
+    domain: mediamarkt.at
+    kind: webshop
+    categories: [electronics, appliances]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: unknown
+    search_url_template: "https://www.mediamarkt.at/de/search.html?query={query}"
+    search_template_basis: guess
+    shipping_to_sk: null   # 2026-11-24: product pages answered with a Cloudflare challenge; delivery terms not read
+    in_scope: true
+    notes: Same platform as mediamarkt.de. 403 on plain HTTP in the homepage check.
+
+  - id: notebooksbilliger_de
+    name: notebooksbilliger.de
+    country: DE
+    domain: notebooksbilliger.de
+    kind: webshop
+    categories: [electronics]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: unknown
+    search_url_template: null
+    search_template_basis: none
+    no_route_reason: "the homepage answered HTTP 404 (2026-11-24; earlier a 'bot detected' 403), and the guessed search URL gave 404, so no search URL is known"
+    unreachable: true
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Returned "bot detected" (403) to plain HTTP on the homepage check and to the percent-encoded search URL;
+      the +-encoded form gave a plain 404. EU delivery incl. SK not verified.
+
+  # ---------------- Polish web shops ----------------
+  - id: xkom_pl
+    name: x-kom
+    country: PL
+    domain: x-kom.pl
+    kind: webshop
+    categories: [electronics, appliances]
+    currency: PLN
+    has_kosice_branch: false
+    ships_to_sk: unknown
+    search_url_template: "https://www.x-kom.pl/szukaj?q={query}"
+    search_template_basis: guess
+    shipping_to_sk: null
+    in_scope: true
+    notes: Cloudflare challenge on plain HTTP. Delivery to SK not verified.
+
+  - id: morele_net
+    name: Morele.net
+    country: PL
+    domain: morele.net
+    kind: webshop
+    categories: [electronics, appliances, home, beauty]
+    currency: PLN
+    has_kosice_branch: false
+    ships_to_sk: false
+    ships_to_sk_source: "https://www.morele.net/pokaz_pomoc/1107/ (2026-11-24): shipping abroad only for B2B purchases by a foreign company with an active VAT number"
+    search_url_template: "https://www.morele.net/wyszukiwarka/?q={query}"
+    search_template_basis: form
+    shipping_to_sk: null
+    in_scope: true
+    notes: Delivery to SK not verified.
+
+  - id: allegro_sk
+    name: Allegro.sk
+    country: PL
+    domain: allegro.sk
+    kind: webshop
+    categories: [general, electronics, tools, drugstore, beauty, home]
+    currency: EUR
+    has_kosice_branch: false
+    ships_to_sk: true
+    search_url_template: "https://allegro.sk/listing?string={query}"
+    search_template_basis: guess
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Marketplace (many sellers, so one product has many offers). Slovak site launched 2024-02-29;
+      Mall.sk/Mall.cz/CZC.cz storefronts have moved onto Allegro. 403 on plain HTTP.
+
+# Considered and NOT included (verified gone or merged on 2026-11-24).
+excluded:
+  - {name: Datart.sk, reason: "Became NAY on 2024-09-01; datart.sk redirects to nay.sk."}
+  - {name: Hej.sk, reason: "hej.sk now redirects to nay.sk (checked by HTTP redirect)."}
+  - {name: Okay elektro (okay.sk), reason: "Chain closed down per Startitup.sk report; okay.sk now serves only a cashback page."}
+  - {name: Electro World SK, reason: "Merged into NAY."}
+  - {name: Mall.cz / Mall.sk, reason: "Standalone e-shops ended 2025-03; now a seller on Allegro."}
+  - {name: CZC.cz, reason: "Standalone e-shop ended 2025-09; now a seller on Allegro (czc.cz page is an Allegro storefront)."}
+  - {name: dm-drogeria.sk, reason: "Not dm drogerie markt; unrelated small shop. dm's shop is mojadm.sk."}
+  - {name: Uni-hobby.sk, reason: "Site in maintenance mode on 2026-11-24."}
+  - {name: Bauhaus.sk, reason: "Exists but dropped to keep the list at ~35; add later if DIY coverage is thin."}
+  - {name: Euronics-like Expert.sk, reason: "Homepage looks stale (DVD/HIFI era text); not trusted as live."}

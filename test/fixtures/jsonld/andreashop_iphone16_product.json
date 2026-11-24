@@ -1,0 +1,21 @@
+{
+ "source": "trimmed JSON-LD from https://www.andreashop.sk/apple-iphone-16-128gb-biela-p296882, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.andreashop.sk/apple-iphone-16-128gb-biela-p296882",
+ "blocks": [
+  {
+   "@context": "http://schema.org",
+   "@type": "Product",
+   "name": "Apple iPhone 16 128GB biela",
+   "brand": "Apple",
+   "category": "Telefóny/Elektronika a spotrebiče/Mobilné telefóny / Doplnky",
+   "model": "223986",
+   "offers": {
+    "@type": "Offer",
+    "priceCurrency": "EUR",
+    "price": "979",
+    "availability": "http://schema.org/OutOfStock"
+   }
+  }
+ ]
+}

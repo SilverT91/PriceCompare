@@ -1,0 +1,44 @@
+{
+ "source": "trimmed JSON-LD from https://www.martinus.sk/2638963-hobit/kniha, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.martinus.sk/2638963-hobit/kniha",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@id": "https://www.martinus.sk/2638963-hobit/137588",
+   "url": "https://www.martinus.sk/2638963-hobit/137588",
+   "sku": 137588,
+   "name": "Hobit",
+   "@type": [
+    "Product",
+    "Book"
+   ],
+   "isbn": "9788025707418",
+   "productID": "9788025707418",
+   "numberOfPages": "252",
+   "publisher": {
+    "@type": "Organization",
+    "name": "Argo"
+   },
+   "brand": {
+    "@type": "Brand",
+    "name": "Argo"
+   },
+   "bookFormat": "https://schema.org/Paperback",
+   "offers": {
+    "@type": "Offer",
+    "url": "https://www.martinus.sk/2638963-hobit/137588",
+    "price": 14,
+    "priceCurrency": "EUR",
+    "itemCondition": "https://schema.org/NewCondition",
+    "seller": {
+     "@type": "Organization",
+     "name": "Martinus"
+    },
+    "priceValidUntil": "2027-03-31",
+    "availability": "https://schema.org/InStock",
+    "deliveryLeadTime": 1
+   }
+  }
+ ]
+}

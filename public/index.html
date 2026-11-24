@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PriceCompare</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>PriceCompare</h1>
+    <form id="search" autocomplete="off">
+      <input id="q" name="q" type="search" placeholder="Product, e.g. Oral-B Pro 3 3000" required maxlength="200" aria-label="Product">
+      <div class="opts">
+        <label>Near <select id="location" name="location"></select></label>
+        <label>Shops <select id="cat" name="cat"></select></label>
+        <button type="submit">Compare</button>
+      </div>
+    </form>
+    <p id="scope" class="muted small" hidden></p>
+    <p id="progress" class="muted small" hidden></p>
+  </header>
+
+  <main>
+    <section id="products" hidden>
+      <h2>Which one do you mean?</h2>
+      <ol id="product-list" class="products"></ol>
+      <details id="other-products" hidden>
+        <summary>Other products the shops returned (not what you typed)</summary>
+        <ol id="other-list" class="products"></ol>
+      </details>
+    </section>
+
+    <section id="comparison" hidden>
+      <h2 id="cmp-title"></h2>
+      <p id="cmp-headline" class="headline"></p>
+      <p id="cmp-notes" class="muted small"></p>
+      <div id="variants" class="variants"></div>
+      <h3 id="cmp-local-title"></h3>
+      <div id="cmp-local"></div>
+      <h3>Web shops</h3>
+      <div id="cmp-online"></div>
+      <p class="muted small">Prices in EUR at the ECB reference rate, original currency underneath. Totals are item
+        price + pickup in the branch or delivery to Slovakia. Unknown shipping is shown as unknown and never counted
+        as zero; offers with a known total come first. Shops that do not deliver to Slovakia are shown last and not
+        ranked.</p>
+    </section>
+
+    <section id="manual" hidden>
+      <h2>Not checked automatically: open these yourself</h2>
+      <ul id="manual-list" class="manual"></ul>
+    </section>
+
+    <section id="shops" hidden>
+      <details id="shops-details">
+        <summary id="shops-summary"></summary>
+        <div class="shop-cols">
+          <div><h3 id="local-title">Shops with a branch in Košice</h3><ul id="shops-local" class="shops"></ul></div>
+          <div><h3>Web shops</h3><ul id="shops-online" class="shops"></ul></div>
+        </div>
+        <p id="rates-note" class="muted small"></p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="muted small">
+    Local tool. Honours robots.txt, waits 3 s between requests to a shop, never gets around bot protection.
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

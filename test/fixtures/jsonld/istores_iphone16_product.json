@@ -1,0 +1,37 @@
+{
+ "source": "trimmed JSON-LD from https://www.istores.sk/produkt/iphone-16-128-gb-cierna-2242517, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.istores.sk/produkt/iphone-16-128-gb-cierna-2242517",
+ "blocks": [
+  {
+   "@context": "https://schema.org",
+   "@type": "Product",
+   "name": "iPhone 16 128 GB čierna | iStores - Apple Premium Partner – iPhone, iPad, Mac, Apple Watch, AirPods",
+   "sku": "MYE73SX/A",
+   "gtin13": "195949821936",
+   "brand": {
+    "@type": "Brand",
+    "name": "APPLE"
+   },
+   "offers": {
+    "@type": "Offer",
+    "priceCurrency": "EUR",
+    "price": 959,
+    "availability": "https://schema.org/InStock",
+    "url": "http://www.istores.sk/produkt/iphone-16-128-gb-cierna-2242517",
+    "shippingDetails": {
+     "@type": "OfferShippingDetails",
+     "shippingRate": {
+      "@type": "MonetaryAmount",
+      "value": 0,
+      "currency": "EUR"
+     },
+     "shippingDestination": {
+      "@type": "DefinedRegion",
+      "addressCountry": "SK"
+     }
+    }
+   }
+  }
+ ]
+}

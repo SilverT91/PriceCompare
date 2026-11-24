@@ -1,0 +1,263 @@
+{
+ "source": "trimmed JSON-LD from https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "BuyAction",
+   "object": {
+    "@type": "ProductGroup",
+    "brand": {
+     "@type": "Brand",
+     "name": "APPLE"
+    },
+    "sku": "2002635",
+    "gtin13": "0195949821967",
+    "name": "APPLE iPhone 16 128 GB, Schwarz, Dual SIM",
+    "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+    "offers": {
+     "@type": "Offer",
+     "priceCurrency": "EUR",
+     "price": 949,
+     "itemCondition": "https://schema.org/NewCondition",
+     "availability": "https://schema.org/InStock",
+     "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+     "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": {
+        "@type": "Country",
+        "name": "AT"
+       }
+      },
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": 0,
+       "currency": "EUR"
+      }
+     },
+     "addOn": [
+      {
+       "@type": "Offer",
+       "name": "Premium Schutzfolie inkl. professionelle Aufbringung",
+       "priceCurrency": "EUR",
+       "price": 29.99,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock",
+       "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+       "itemOffered": {
+        "@type": "Service",
+        "name": "Premium Schutzfolie inkl. professionelle Aufbringung",
+        "serviceType": "SCREEN_PROTECTION_SERVICE",
+        "areaServed": {
+         "@type": "Country",
+         "name": "AT"
+        }
+       }
+      },
+      {
+       "@type": "Offer",
+       "name": "Privacy Schutzfolie inkl. professionelle Aufbringung",
+       "priceCurrency": "EUR",
+       "price": 34.99,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock",
+       "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+       "itemOffered": {
+        "@type": "Service",
+        "name": "Privacy Schutzfolie inkl. professionelle Aufbringung",
+        "serviceType": "SCREEN_PROTECTION_SERVICE",
+        "areaServed": {
+         "@type": "Country",
+         "name": "AT"
+        }
+       }
+      },
+      {
+       "@type": "Offer",
+       "name": "AppleCare+ inkl. Diebstahl und Verlust, monatliche Zahlweise",
+       "priceCurrency": "EUR",
+       "price": 12.99,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock",
+       "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+       "itemOffered": {
+        "@type": "Service",
+        "name": "AppleCare+ inkl. Diebstahl und Verlust, monatliche Zahlweise",
+        "serviceType": "WARRANTY",
+        "areaServed": {
+         "@type": "Country",
+         "name": "AT"
+        }
+       }
+      },
+      {
+       "@type": "Offer",
+       "name": "AppleCare+ inkl. Diebstahl und Verlust für 2 Jahre, Einmalzahlung",
+       "priceCurrency": "EUR",
+       "price": 249,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock",
+       "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+       "itemOffered": {
+        "@type": "Service",
+        "name": "AppleCare+ inkl. Diebstahl und Verlust für 2 Jahre, Einmalzahlung",
+        "serviceType": "WARRANTY",
+        "areaServed": {
+         "@type": "Country",
+         "name": "AT"
+        }
+       }
+      }
+     ],
+     "priceSpecification": [
+      {
+       "@type": "UnitPriceSpecification",
+       "name": "Standard price (non-loyalty members)",
+       "price": "949",
+       "priceCurrency": "EUR",
+       "validForMemberTier": {
+        "@type": "MemberProgramTier",
+        "name": "Non-loyalty members"
+       }
+      },
+      {
+       "@type": "UnitPriceSpecification",
+       "name": "Standard price (loyalty members)",
+       "price": "949",
+       "priceCurrency": "EUR",
+       "validForMemberTier": {
+        "@type": "MemberProgramTier",
+        "name": "Loyalty member"
+       }
+      },
+      {
+       "@type": "UnitPriceSpecification",
+       "name": "MyMediaMarkt points earned",
+       "price": "949",
+       "priceCurrency": "EUR",
+       "validForMemberTier": {
+        "@type": "MemberProgramTier",
+        "name": "Loyalty member"
+       },
+       "membershipPointsEarned": {
+        "@type": "QuantitativeValue",
+        "value": 9490,
+        "unitText": "points"
+       }
+      }
+     ],
+     "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "MyMediaMarkt",
+      "url": "https://www.mediamarkt.at/de/myaccount/loyalty-benefits"
+     }
+    },
+    "predecessorOf": {
+     "@type": "ProductModel",
+     "url": "https://www.mediamarkt.at/de/product/_apple-iphone-17-256-gb-black-2047039.html",
+     "sku": "2047039",
+     "name": "APPLE iPhone 17, 256 GB, Schwarz, Dual SIM",
+     "gtin13": "0195950643589"
+    },
+    "variesBy": [
+     "color"
+    ],
+    "hasVariant": [
+     {
+      "@type": "Product",
+      "sku": "2002635",
+      "gtin13": "0195949821967",
+      "name": "APPLE iPhone 16 128 GB, Schwarz, Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-128gb-black-2002635.html",
+       "priceCurrency": "EUR",
+       "price": 949,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Schwarz"
+     },
+     {
+      "@type": "Product",
+      "sku": "2002636",
+      "gtin13": "0195949822148",
+      "name": "APPLE iPhone 16 128 GB, White, Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-128gb-white-2002636.html",
+       "priceCurrency": "EUR",
+       "price": 949,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "White"
+     },
+     {
+      "@type": "Product",
+      "sku": "2002637",
+      "gtin13": "0195949822322",
+      "name": "APPLE iPhone 16 128 GB, Pink, Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-128gb-pink-2002637.html",
+       "priceCurrency": "EUR",
+       "price": 949,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Pink"
+     },
+     {
+      "@type": "Product",
+      "sku": "2002638",
+      "gtin13": "0195949822506",
+      "name": "APPLE iPhone 16 128 GB, Ultramarine, Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-128gb-ultramarine-2002638.html",
+       "priceCurrency": "EUR",
+       "price": 949,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Ultramarine"
+     },
+     {
+      "@type": "Product",
+      "sku": "2002639",
+      "gtin13": "0195949822681",
+      "name": "APPLE iPhone 16 128 GB, Teal, Dual SIM",
+      "offers": {
+       "@type": "Offer",
+       "url": "/de/product/_apple-iphone-16-128gb-teal-2002639.html",
+       "priceCurrency": "EUR",
+       "price": 949,
+       "itemCondition": "https://schema.org/NewCondition",
+       "availability": "https://schema.org/InStock"
+      },
+      "color": "Teal"
+     }
+    ],
+    "memberOf": {
+     "@type": "MemberProgram",
+     "name": "MyMediaMarkt",
+     "url": "https://www.mediamarkt.at/de/myaccount/loyalty-benefits",
+     "hasTier": [
+      {
+       "@type": "MemberProgramTier",
+       "name": "Non-loyalty members"
+      },
+      {
+       "@type": "MemberProgramTier",
+       "name": "Loyalty member"
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

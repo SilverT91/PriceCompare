@@ -1,0 +1,89 @@
+{
+ "source": "trimmed JSON-LD from https://www.morele.net/smartfon-apple-iphone-16-128gb-black-mye73-14121922/, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.morele.net/smartfon-apple-iphone-16-128gb-black-mye73-14121922/",
+ "blocks": [
+  [
+   {
+    "@context": "https://schema.org",
+    "@type": "ProductGroup",
+    "@id": "https://www.morele.net/#product-group-169778",
+    "name": "Smartfon Apple iPhone 16 128GB",
+    "productGroupID": "169778",
+    "brand": {
+     "@type": "Brand",
+     "name": "Apple"
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "productID": "14121922",
+    "name": "Smartfon Apple iPhone 16 128GB Black (MYE73)",
+    "category": [
+     "Smartfony i smartwatche > Smartfony",
+     {
+      "@type": "CategoryCode",
+      "inCodeSet": "https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt",
+      "codeValue": "267"
+     }
+    ],
+    "color": "Czarny",
+    "sku": "14121922",
+    "gtin13": "195949821837",
+    "brand": {
+     "@type": "Brand",
+     "name": "Apple"
+    },
+    "url": "https://www.morele.net/smartfon-apple-iphone-16-128gb-black-mye73-14121922/",
+    "offers": {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "price": 3591,
+     "priceCurrency": "PLN",
+     "priceValidUntil": "2026-11-25",
+     "itemCondition": "https://schema.org/NewCondition",
+     "seller": {
+      "@type": "Organization",
+      "name": "Morele.net Sp. z o.o."
+     },
+     "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "minValue": 0,
+       "maxValue": 25.99,
+       "currency": "PLN"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "PL"
+      }
+     }
+    },
+    "model": "MYE73",
+    "mpn": "MYE73",
+    "isVariantOf": {
+     "@id": "https://www.morele.net/#product-group-169778"
+    },
+    "inProductGroupWithID": "169778"
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "isVariantOf": {
+     "@id": "https://www.morele.net/#product-group-169778"
+    },
+    "url": "https://www.morele.net/smartfon-apple-iphone-16-128gb-teal-myed3-flexibleglass-9837620/"
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "isVariantOf": {
+     "@id": "https://www.morele.net/#product-group-169778"
+    },
+    "url": "https://www.morele.net/smartfon-apple-iphone-16-128gb-ultramarine-myec3-flexibleglass-9837622/"
+   }
+  ]
+ ]
+}

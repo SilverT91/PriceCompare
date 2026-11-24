@@ -1,0 +1,53 @@
+{
+ "source": "trimmed JSON-LD from https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "Product",
+   "brand": {
+    "@type": "Brand",
+    "name": "IKEA"
+   },
+   "category": "Stolové kombinácie",
+   "mpn": "694.168.17",
+   "name": "LAGKAPTEN / ALEX Stôl - biela 120x60 cm",
+   "offers": {
+    "@type": "Offer",
+    "availability": "https://schema.org/InStock",
+    "itemCondition": "https://schema.org/NewCondition",
+    "priceSpecification": [
+     {
+      "@type": "UnitPriceSpecification",
+      "price": "104.8",
+      "priceCurrency": "EUR",
+      "validFrom": "2026-09-01Z",
+      "validThrough": "2026-12-29Z"
+     },
+     {
+      "@type": "UnitPriceSpecification",
+      "price": "119.8",
+      "priceCurrency": "EUR",
+      "priceType": "https://schema.org/StrikethroughPrice"
+     }
+    ],
+    "seller": {
+     "@type": "Organization",
+     "name": "IKEA",
+     "url": "https://www.ikea.com/sk/sk/"
+    },
+    "shippingDetails": {
+     "@type": "OfferShippingDetails",
+     "shippingDestination": {
+      "@type": "DefinedRegion",
+      "addressCountry": "SK"
+     }
+    },
+    "url": "https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/"
+   },
+   "sku": "694.168.17",
+   "url": "https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/"
+  }
+ ]
+}

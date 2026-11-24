@@ -1,0 +1,30 @@
+{
+ "source": "trimmed JSON-LD from https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+ "blocks": [
+  {
+   "@type": "Product",
+   "@context": "https://schema.org",
+   "@id": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+   "name": "Aku vŕtačka Bosch GSR 12V-15, 060186810F",
+   "sku": "10114594",
+   "brand": {
+    "@type": "Brand",
+    "name": "Bosch Professional"
+   },
+   "gtin13": "3165140895248",
+   "offers": [
+    {
+     "@type": "Offer",
+     "itemCondition": "https://schema.org/NewCondition",
+     "priceCurrency": "EUR",
+     "price": "133.20",
+     "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+     "availability": "https://schema.org/InStock",
+     "availableDeliveryMethod": "https://schema.org/ParcelService"
+    }
+   ]
+  }
+ ]
+}

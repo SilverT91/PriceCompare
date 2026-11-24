@@ -1,0 +1,5657 @@
+{
+ "meta": {
+  "generated_at": "2026-11-24T20:49:28+00:00",
+  "user_agent": "price-compare-probe/0.1",
+  "min_interval_s_per_host": 3.0,
+  "max_requests_per_shop_per_run": 10,
+  "products": [
+   {
+    "id": "iphone16",
+    "query": "iPhone 16 128GB"
+   },
+   {
+    "id": "bosch_gsr",
+    "query": "Bosch GSR 12V-15"
+   },
+   {
+    "id": "nivea",
+    "query": "Nivea Creme 150 ml"
+   },
+   {
+    "id": "oralb",
+    "query": "Oral-B Pro 3 3000"
+   },
+   {
+    "id": "extra_book",
+    "query": "Hobit Tolkien"
+   },
+   {
+    "id": "extra_desk",
+    "query": "písací stôl 120 cm"
+   }
+  ]
+ },
+ "shops": {
+  "planeo_sk": {
+   "shop_id": "planeo_sk",
+   "domain": "planeo.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.planeo.sk/vyhladavanie$a1013-search?query=iPhone+16+128GB",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.planeo.sk/vyhladavanie$a1013-search?query=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "Planeo Elektro",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://www.planeo.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 8,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.planeo.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 256,
+     "ms": 169
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.planeo.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 256,
+     "ms": 130
+    },
+    {
+     "kind": "product",
+     "url": "https://www.planeo.sk/iphone-16-blue",
+     "hop": 0,
+     "status": 200,
+     "bytes": 95455,
+     "ms": 3037
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: iphone16, oralb",
+   "product_only": {
+    "iphone16": {
+     "url": "https://www.planeo.sk/iphone-16-blue",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/planeo_sk-a857f7d2ff.html",
+     "bytes": 95455,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 0,
+     "structured": null,
+     "status": "needs_js_suspected",
+     "html_price_patterns": [],
+     "price_strings_in_html": 0,
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [
+       "/predajne",
+       "/-f13---EZB9Hr5m/availabilitymodalfilter.js?_linka=f171508"
+      ],
+      "mentions_kosice": false
+     },
+     "proxy_product": false,
+     "note": null
+    }
+   },
+   "verdict_product_route": "needs_js"
+  },
+  "euronics_sk": {
+   "shop_id": "euronics_sk",
+   "domain": "euronics.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "status": "no_search_template"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "no_search_template"
+    }
+   },
+   "name": "Euronics",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://euronics.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 9,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": false
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://euronics.sk/robots.txt",
+     "hop": 0,
+     "status": 301,
+     "bytes": 178,
+     "ms": 81
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.euronics.sk/robots.txt",
+     "hop": 1,
+     "status": 200,
+     "bytes": 245,
+     "ms": 95
+    }
+   ],
+   "verdict": "no_search_template",
+   "verdict_reason": "iphone16=no_search_template, oralb=no_search_template"
+  },
+  "mountfield_sk": {
+   "shop_id": "mountfield_sk",
+   "domain": "mountfield.sk",
+   "products": {
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "search": {
+      "query": "Bosch GSR 12V-15",
+      "url": "https://www.mountfield.sk/hladani?q=Bosch+GSR+12V-15",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Bosch GSR 12V-15"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "Mountfield",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://www.mountfield.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 17,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.mountfield.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1241,
+     "ms": 175
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.mountfield.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1241,
+     "ms": 160
+    },
+    {
+     "kind": "product",
+     "url": "https://www.mountfield.sk/bosch-sada-vrtakov-do-dreva-7-dielov-2dsz6004",
+     "hop": 0,
+     "status": 200,
+     "bytes": 530960,
+     "ms": 3643
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: bosch_gsr",
+   "product_only": {
+    "bosch_gsr": {
+     "url": "https://www.mountfield.sk/bosch-sada-vrtakov-do-dreva-7-dielov-2dsz6004",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/mountfield_sk-7dff6dd3b6.html",
+     "bytes": 530960,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 2,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "Bosch sada vrtákov do dreva, 7 dielov",
+      "price": 15.0,
+      "price_raw": "15",
+      "currency": "EUR",
+      "availability": "InStock",
+      "gtin": "3165140557351",
+      "gtin_key": "gtin13",
+      "brand": null,
+      "sku": "2DSZ6004",
+      "mpn": null,
+      "url": "https://www.mountfield.sk/bosch-sada-vrtakov-do-dreva-7-dielov-2dsz6004",
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 15.0,
+      "price_max": 15.0,
+      "shipping_details": null,
+      "has_return_policy": false,
+      "available_at_or_from": false
+     },
+     "missing": [
+      "brand",
+      "shipping_details"
+     ],
+     "status": "works",
+     "relevance": {
+      "match": "none",
+      "missing_tokens": [
+       "gsr",
+       "12v15"
+      ],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [],
+      "mentions_kosice": false
+     },
+     "proxy_product": true,
+     "note": "Bosch drill-bit set; GSR 12V-15 not found on mountfield.sk"
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "dm_sk": {
+   "shop_id": "dm_sk",
+   "domain": "mojadm.sk",
+   "products": {
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.mojadm.sk/search?query=Nivea+Creme+150+ml",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.mojadm.sk/search?query=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "dm drogerie markt (mojadm.sk)",
+   "probed_at": "2026-11-24T20:48:52+00:00",
+   "robots": {
+    "url": "https://www.mojadm.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 9,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.mojadm.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 273,
+     "ms": 529
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.mojadm.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 273,
+     "ms": 181
+    },
+    {
+     "kind": "product",
+     "url": "https://www.mojadm.sk/p/d/1442173/nivea-univerzalny-krem-creme",
+     "hop": 0,
+     "status": 200,
+     "bytes": 11384,
+     "ms": 2920
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: nivea, oralb",
+   "product_only": {
+    "nivea": {
+     "url": "https://www.mojadm.sk/p/d/1442173/nivea-univerzalny-krem-creme",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/dm_sk-54424611e9.html",
+     "bytes": 11384,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 0,
+     "structured": null,
+     "status": "needs_js_suspected",
+     "html_price_patterns": [],
+     "price_strings_in_html": 0,
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [],
+      "mentions_kosice": false
+     },
+     "proxy_product": true,
+     "note": "Nivea Creme 250 ml, not 150 ml"
+    }
+   },
+   "verdict_product_route": "needs_js"
+  },
+  "teta_sk": {
+   "shop_id": "teta_sk",
+   "domain": "tetadrogerie.sk",
+   "products": {
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "status": "no_search_template"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "no_search_template"
+    }
+   },
+   "name": "Teta drogérie",
+   "probed_at": "2026-11-24T20:48:52+00:00",
+   "robots": {
+    "url": "https://tetadrogerie.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 9,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://tetadrogerie.sk/robots.txt",
+     "hop": 0,
+     "status": 301,
+     "bytes": 0,
+     "ms": 226
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.tetadrogerie.sk/robots.txt",
+     "hop": 1,
+     "status": 200,
+     "bytes": 272,
+     "ms": 1134
+    }
+   ],
+   "verdict": "no_search_template",
+   "verdict_reason": "nivea=no_search_template, oralb=no_search_template"
+  },
+  "conrad_sk": {
+   "shop_id": "conrad_sk",
+   "domain": "conrad.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.conrad.sk/sk/search.html?search=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 403,
+      "final_url": "https://www.conrad.sk/sk/search.html?search=iPhone+16+128GB",
+      "bytes": 5626,
+      "cache_file": ".cache/probe/conrad_sk-10393cb401.html",
+      "bot_wall": {
+       "detected": true,
+       "vendor": "cloudflare"
+      },
+      "status": "blocked"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "blocked"
+    },
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "status": "skipped_after_block"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "skipped_after_block"
+    }
+   },
+   "name": "Conrad Slovensko",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://www.conrad.sk/robots.txt",
+    "http_status": 403,
+    "mode": "allow_all",
+    "n_rules": 0,
+    "error": null,
+    "bot_wall": "cloudflare"
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.conrad.sk/robots.txt",
+     "hop": 0,
+     "status": 403,
+     "bytes": 5487,
+     "ms": 81
+    },
+    {
+     "kind": "search",
+     "url": "https://www.conrad.sk/sk/search.html?search=iPhone+16+128GB",
+     "hop": 0,
+     "status": 403,
+     "bytes": 5626,
+     "ms": 2978
+    }
+   ],
+   "verdict": "blocked",
+   "verdict_reason": "iphone16=blocked, bosch_gsr=blocked, oralb=blocked"
+  },
+  "alza_sk": {
+   "shop_id": "alza_sk",
+   "domain": "alza.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.alza.sk/search.htm?exps=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 403,
+      "final_url": "https://www.alza.sk/search.htm?exps=iPhone+16+128GB",
+      "bytes": 65587,
+      "cache_file": ".cache/probe/alza_sk-52b16d3a59.html",
+      "bot_wall": {
+       "detected": true,
+       "vendor": "cloudflare"
+      },
+      "status": "blocked"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "blocked"
+    },
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "status": "skipped_after_block"
+    },
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "status": "skipped_after_block"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "skipped_after_block"
+    }
+   },
+   "name": "Alza.sk",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://www.alza.sk/robots.txt",
+    "http_status": 403,
+    "mode": "allow_all",
+    "n_rules": 0,
+    "error": null,
+    "bot_wall": "cloudflare"
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.alza.sk/robots.txt",
+     "hop": 0,
+     "status": 403,
+     "bytes": 65488,
+     "ms": 78
+    },
+    {
+     "kind": "search",
+     "url": "https://www.alza.sk/search.htm?exps=iPhone+16+128GB",
+     "hop": 0,
+     "status": 403,
+     "bytes": 65587,
+     "ms": 2988
+    }
+   ],
+   "verdict": "blocked",
+   "verdict_reason": "iphone16=blocked, bosch_gsr=blocked, nivea=blocked, oralb=blocked"
+  },
+  "drmax_sk": {
+   "shop_id": "drmax_sk",
+   "domain": "drmax.sk",
+   "products": {
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.drmax.sk/vyhladavanie?q=Nivea+Creme+150+ml",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.drmax.sk/vyhladavanie?q=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "Dr.Max",
+   "probed_at": "2026-11-24T20:48:54+00:00",
+   "robots": {
+    "url": "https://www.drmax.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 39,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.drmax.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 797,
+     "ms": 71
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.drmax.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 797,
+     "ms": 131
+    },
+    {
+     "kind": "product",
+     "url": "https://www.drmax.sk/nivea-creme-1",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1008292,
+     "ms": 3051
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: nivea, oralb",
+   "product_only": {
+    "nivea": {
+     "url": "https://www.drmax.sk/nivea-creme-1",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/drmax_sk-dfdcc6f986.html",
+     "bytes": 1008292,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 1,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "NIVEA Creme 1×150 ml, univerzálny krém",
+      "price": 5.89,
+      "price_raw": "5.89",
+      "currency": "EUR",
+      "availability": "SoldOut",
+      "gtin": "4005808157976",
+      "gtin_key": "gtin",
+      "brand": "NIVEA",
+      "sku": "X04638",
+      "mpn": null,
+      "url": null,
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 5.89,
+      "price_max": 5.89,
+      "shipping_details": null,
+      "has_return_policy": false,
+      "available_at_or_from": false
+     },
+     "missing": [
+      "shipping_details"
+     ],
+     "status": "works",
+     "relevance": {
+      "match": "exact",
+      "missing_tokens": [],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [
+       "/_nuxt/PickupPlaceCofinancingNotice.BYJq_aIEpiyJ-GZ_.css",
+       "/_nuxt/StockAvailability.51KYzUXYlGRd-V1a.css",
+       "/_nuxt/useStockAlert.ByfGCAeusWFCUlOX.js",
+       "/_nuxt/usePickupTimeLabel.y-slZgRf6RGNfsVe.js"
+      ],
+      "mentions_kosice": false
+     },
+     "proxy_product": false,
+     "note": null
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "pilulka_sk": {
+   "shop_id": "pilulka_sk",
+   "domain": "pilulka.sk",
+   "products": {
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.pilulka.sk/vyhladavanie?q=Nivea+Creme+150+ml",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.pilulka.sk/vyhladavanie?q=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "Pilulka.sk",
+   "probed_at": "2026-11-24T20:48:54+00:00",
+   "robots": {
+    "url": "https://www.pilulka.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 35,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.pilulka.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 3525,
+     "ms": 90
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.pilulka.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 3525,
+     "ms": 76
+    },
+    {
+     "kind": "product",
+     "url": "https://www.pilulka.sk/nivea-men-krem-150ml",
+     "hop": 0,
+     "status": 200,
+     "bytes": 193968,
+     "ms": 3093
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: nivea, oralb",
+   "product_only": {
+    "nivea": {
+     "url": "https://www.pilulka.sk/nivea-men-krem-150ml",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/pilulka_sk-89bab5cae5.html",
+     "bytes": 193968,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 2,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "Nivea Men krém 150 ml",
+      "price": 6.19,
+      "price_raw": "6.19",
+      "currency": "EUR",
+      "availability": "InStock",
+      "gtin": "9005800240053",
+      "gtin_key": "gtin",
+      "brand": "Nivea",
+      "sku": null,
+      "mpn": null,
+      "url": null,
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 6.19,
+      "price_max": 6.19,
+      "shipping_details": {
+       "rate": "1.99",
+       "currency": "EUR",
+       "destination": "SK",
+       "delivery_time": false
+      },
+      "has_return_policy": false,
+      "available_at_or_from": false
+     },
+     "missing": [],
+     "status": "works",
+     "relevance": {
+      "match": "partial",
+      "missing_tokens": [
+       "creme"
+      ],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [
+       "/volnopredajne-lieky",
+       "/volnopredajne-lieky-telo-a-pohyb-vitaminy-a-mineraly"
+      ],
+      "mentions_kosice": false
+     },
+     "proxy_product": true,
+     "note": "Nivea Men cream 150 ml"
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "obi_sk": {
+   "shop_id": "obi_sk",
+   "domain": "obi.sk",
+   "products": {
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "search": {
+      "query": "Bosch GSR 12V-15",
+      "url": "https://www.obi.sk/search/Bosch+GSR+12V-15/",
+      "robots_allowed": true,
+      "http_status": 404,
+      "final_url": "https://www.obi.sk/search/Bosch+GSR+12V-15/",
+      "bytes": 0,
+      "cache_file": ".cache/probe/obi_sk-a05ea796ba.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "status": "http_error"
+     },
+     "queries_tried": [
+      "Bosch GSR 12V-15"
+     ],
+     "status": "http_error"
+    }
+   },
+   "name": "OBI",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://www.obi.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 22,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.obi.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 835,
+     "ms": 114
+    },
+    {
+     "kind": "search",
+     "url": "https://www.obi.sk/search/Bosch+GSR+12V-15/",
+     "hop": 0,
+     "status": 404,
+     "bytes": 0,
+     "ms": 2901
+    }
+   ],
+   "verdict": "unreachable",
+   "verdict_reason": "bosch_gsr=unreachable"
+  },
+  "ikea_sk": {
+   "shop_id": "ikea_sk",
+   "domain": "ikea.com",
+   "products": {
+    "extra_desk": {
+     "product": "extra_desk",
+     "query": "písací stôl 120 cm",
+     "search": {
+      "query": "písací stôl 120 cm",
+      "url": "https://www.ikea.com/sk/sk/search/?q=p%C3%ADsac%C3%AD+st%C3%B4l+120+cm",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "písací stôl 120 cm"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "IKEA Slovensko",
+   "probed_at": "2026-11-24T20:48:54+00:00",
+   "robots": {
+    "url": "https://www.ikea.com/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 95,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.ikea.com/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 4089,
+     "ms": 75
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.ikea.com/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 4089,
+     "ms": 127
+    },
+    {
+     "kind": "product",
+     "url": "https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1120317,
+     "ms": 3468
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: extra_desk",
+   "product_only": {
+    "extra_desk": {
+     "url": "https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/ikea_sk-9646496611.html",
+     "bytes": 1120317,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 1,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "LAGKAPTEN / ALEX Stôl - biela 120x60 cm",
+      "price": 104.8,
+      "price_raw": "104.8",
+      "currency": "EUR",
+      "availability": "InStock",
+      "gtin": null,
+      "gtin_key": null,
+      "brand": "IKEA",
+      "sku": "694.168.17",
+      "mpn": "694.168.17",
+      "url": "https://www.ikea.com/sk/sk/p/lagkapten-alex-stol-biela-s69416817/",
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 104.8,
+      "price_max": 104.8,
+      "shipping_details": {
+       "rate": null,
+       "currency": null,
+       "destination": "SK",
+       "delivery_time": false
+      },
+      "has_return_policy": false,
+      "available_at_or_from": false
+     },
+     "missing": [
+      "gtin"
+     ],
+     "status": "works",
+     "relevance": {
+      "match": "none",
+      "missing_tokens": [
+       "pisaci",
+       "120cm"
+      ],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [
+       "/global/assets/dwf/pip/get-availability-DNmM5nvj.js",
+       "/sk/sk/lower-funnel-fragments/product-availability/?itemNo=69416817&source=pip"
+      ],
+      "mentions_kosice": true
+     },
+     "proxy_product": true,
+     "note": "desk 120x60"
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "jysk_sk": {
+   "shop_id": "jysk_sk",
+   "domain": "jysk.sk",
+   "products": {
+    "extra_desk": {
+     "product": "extra_desk",
+     "query": "písací stôl 120 cm",
+     "search": {
+      "query": "písací stôl 120 cm",
+      "url": "https://jysk.sk/search?query=p%C3%ADsac%C3%AD+st%C3%B4l+120+cm",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "písací stôl 120 cm"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "JYSK",
+   "probed_at": "2026-11-24T20:48:55+00:00",
+   "robots": {
+    "url": "https://jysk.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 69,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://jysk.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2454,
+     "ms": 128
+    },
+    {
+     "kind": "robots",
+     "url": "https://jysk.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2454,
+     "ms": 143
+    },
+    {
+     "kind": "product",
+     "url": "https://jysk.sk/pracovna/pisacie-stoly-pocitacove-stoly/pisaci-stol-hjallese-50x120-tmava-pieskova",
+     "hop": 0,
+     "status": 200,
+     "bytes": 487270,
+     "ms": 3183
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: extra_desk",
+   "product_only": {
+    "extra_desk": {
+     "url": "https://jysk.sk/pracovna/pisacie-stoly-pocitacove-stoly/pisaci-stol-hjallese-50x120-tmava-pieskova",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/jysk_sk-0bca0428fc.html",
+     "bytes": 487270,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 1,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "Písací stôl HJALLESE 50x120 tmavá piesková",
+      "price": 100.0,
+      "price_raw": "100",
+      "currency": "EUR",
+      "availability": null,
+      "gtin": null,
+      "gtin_key": null,
+      "brand": "JYSK",
+      "sku": "3640437",
+      "mpn": null,
+      "url": null,
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 100.0,
+      "price_max": 100.0,
+      "shipping_details": null,
+      "has_return_policy": true,
+      "available_at_or_from": false
+     },
+     "missing": [
+      "availability",
+      "gtin",
+      "shipping_details"
+     ],
+     "status": "works",
+     "relevance": {
+      "match": "partial",
+      "missing_tokens": [
+       "120cm"
+      ],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [
+       {
+        "signal": "sk_in_store_availability",
+        "snippet": "0161ir\\u0161iu \\u0161k\\u00e1lu v\\u00fdrobkov, ktor\\u00e9 nem\\u00e1me be\\u017ene skladom v predajniach. Objedn\\u00e1vku jednoducho vlo\\u017e\\u00edte do ko\\u0161\\u00edku (tla\\u010didlo K\\u00fapi\\u0165 o"
+       },
+       {
+        "signal": "en_in_store_availability",
+        "snippet": "-basket\"> <a href=\"/bas"
+       }
+      ],
+      "endpoint_candidates": [
+       "/predajne"
+      ],
+      "mentions_kosice": false
+     },
+     "proxy_product": true,
+     "note": "desk 50x120 (an earlier ABBETVED URL returned a category page)"
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "martinus_sk": {
+   "shop_id": "martinus_sk",
+   "domain": "martinus.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.martinus.sk/search?q=iPhone+16+128GB",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "search": {
+      "query": "Bosch GSR 12V-15",
+      "url": "https://www.martinus.sk/search?q=Bosch+GSR+12V-15",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Bosch GSR 12V-15"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.martinus.sk/search?q=Nivea+Creme+150+ml",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.martinus.sk/search?q=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "extra_book": {
+     "product": "extra_book",
+     "query": "Hobit Tolkien",
+     "search": {
+      "query": "Hobit Tolkien",
+      "url": "https://www.martinus.sk/search?q=Hobit+Tolkien",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Hobit Tolkien"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "Martinus",
+   "probed_at": "2026-11-24T20:48:55+00:00",
+   "robots": {
+    "url": "https://www.martinus.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 150,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.martinus.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 5900,
+     "ms": 98
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.martinus.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 5900,
+     "ms": 227
+    },
+    {
+     "kind": "product",
+     "url": "https://www.martinus.sk/2638963-hobit/kniha",
+     "hop": 0,
+     "status": 200,
+     "bytes": 347130,
+     "ms": 3645
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: iphone16, bosch_gsr, nivea, oralb, extra_book",
+   "product_only": {
+    "extra_book": {
+     "url": "https://www.martinus.sk/2638963-hobit/kniha",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/martinus_sk-98fb25b40b.html",
+     "bytes": 347130,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 1,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product",
+       "Book"
+      ],
+      "name": "Hobit",
+      "price": 14.0,
+      "price_raw": "14",
+      "currency": "EUR",
+      "availability": "InStock",
+      "gtin": "9788025707418",
+      "gtin_key": "isbn",
+      "brand": "Argo",
+      "sku": "137588",
+      "mpn": null,
+      "url": "https://www.martinus.sk/2638963-hobit/137588",
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 14.0,
+      "price_max": 14.0,
+      "shipping_details": null,
+      "has_return_policy": false,
+      "available_at_or_from": false
+     },
+     "missing": [
+      "shipping_details"
+     ],
+     "status": "works",
+     "relevance": {
+      "match": "partial",
+      "missing_tokens": [
+       "tolkien"
+      ],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [],
+      "mentions_kosice": false
+     },
+     "proxy_product": false,
+     "note": null
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "notino_sk": {
+   "shop_id": "notino_sk",
+   "domain": "notino.sk",
+   "products": {
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.notino.sk/search/?f=1-1-1&q=Nivea+Creme+150+ml",
+      "robots_allowed": true,
+      "http_status": 403,
+      "final_url": "https://www.notino.sk/search/?f=1-1-1&q=Nivea+Creme+150+ml",
+      "bytes": 5638,
+      "cache_file": ".cache/probe/notino_sk-71b004589a.html",
+      "bot_wall": {
+       "detected": true,
+       "vendor": "cloudflare"
+      },
+      "status": "blocked"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "blocked"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "skipped_after_block"
+    }
+   },
+   "name": "Notino.sk",
+   "probed_at": "2026-11-24T20:48:54+00:00",
+   "robots": {
+    "url": "https://www.notino.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 32,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.notino.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2966,
+     "ms": 82
+    },
+    {
+     "kind": "search",
+     "url": "https://www.notino.sk/search/?f=1-1-1&q=Nivea+Creme+150+ml",
+     "hop": 0,
+     "status": 403,
+     "bytes": 5638,
+     "ms": 2947
+    }
+   ],
+   "verdict": "blocked",
+   "verdict_reason": "nivea=blocked, oralb=blocked"
+  },
+  "sconto_sk": {
+   "shop_id": "sconto_sk",
+   "domain": "sconto.sk",
+   "products": {
+    "extra_desk": {
+     "product": "extra_desk",
+     "query": "písací stôl 120 cm",
+     "search": {
+      "query": "písací stôl 120 cm",
+      "url": "https://www.sconto.sk/search?q=p%C3%ADsac%C3%AD+st%C3%B4l+120+cm",
+      "robots_allowed": true,
+      "http_status": 403,
+      "final_url": "https://www.sconto.sk/search?q=p%C3%ADsac%C3%AD+st%C3%B4l+120+cm",
+      "bytes": 919,
+      "cache_file": ".cache/probe/sconto_sk-2518a55c6e.html",
+      "bot_wall": {
+       "detected": true,
+       "vendor": "cloudfront"
+      },
+      "status": "blocked"
+     },
+     "queries_tried": [
+      "písací stôl 120 cm"
+     ],
+     "status": "blocked"
+    }
+   },
+   "name": "Sconto Nábytok",
+   "probed_at": "2026-11-24T20:48:54+00:00",
+   "robots": {
+    "url": "https://www.sconto.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 1,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.sconto.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 157,
+     "ms": 234
+    },
+    {
+     "kind": "search",
+     "url": "https://www.sconto.sk/search?q=p%C3%ADsac%C3%AD+st%C3%B4l+120+cm",
+     "hop": 0,
+     "status": 403,
+     "bytes": 919,
+     "ms": 2781
+    }
+   ],
+   "verdict": "blocked",
+   "verdict_reason": "extra_desk=blocked"
+  },
+  "istores_sk": {
+   "shop_id": "istores_sk",
+   "domain": "istores.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.istores.sk/vyhladavanie?q=iPhone+16+128GB",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.istores.sk/vyhladavanie?q=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "iStores",
+   "probed_at": "2026-11-24T20:48:57+00:00",
+   "robots": {
+    "url": "https://www.istores.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 9,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.istores.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 398,
+     "ms": 141
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.istores.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 398,
+     "ms": 253
+    },
+    {
+     "kind": "product",
+     "url": "https://www.istores.sk/produkt/iphone-16-128-gb-cierna-2242517",
+     "hop": 0,
+     "status": 200,
+     "bytes": 913700,
+     "ms": 2996
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: iphone16, oralb",
+   "product_only": {
+    "iphone16": {
+     "url": "https://www.istores.sk/produkt/iphone-16-128-gb-cierna-2242517",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/istores_sk-2496b52e06.html",
+     "bytes": 913700,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 1,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "iPhone 16 128 GB čierna | iStores - Apple Premium Partner – iPhone, iPad, Mac, Apple Watch, AirPods",
+      "price": 959.0,
+      "price_raw": "959",
+      "currency": "EUR",
+      "availability": "InStock",
+      "gtin": "195949821936",
+      "gtin_key": "gtin13",
+      "brand": "APPLE",
+      "sku": "MYE73SX/A",
+      "mpn": null,
+      "url": null,
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 959.0,
+      "price_max": 959.0,
+      "shipping_details": {
+       "rate": "0",
+       "currency": "EUR",
+       "destination": "SK",
+       "delivery_time": true
+      },
+      "has_return_policy": false,
+      "available_at_or_from": false
+     },
+     "missing": [],
+     "status": "works",
+     "relevance": {
+      "match": "exact",
+      "missing_tokens": [],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [
+       "/predajne"
+      ],
+      "mentions_kosice": true
+     },
+     "proxy_product": false,
+     "note": null
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "datart_cz": {
+   "shop_id": "datart_cz",
+   "domain": "datart.cz",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.datart.cz/vyhledavani?q=iPhone+16+128GB",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.datart.cz/vyhledavani?q=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "Datart.cz",
+   "probed_at": "2026-11-24T20:48:58+00:00",
+   "robots": {
+    "url": "https://www.datart.cz/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 27,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.datart.cz/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 671,
+     "ms": 105
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.datart.cz/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 671,
+     "ms": 62
+    },
+    {
+     "kind": "product",
+     "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a.html",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1930108,
+     "ms": 3319
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: iphone16, oralb",
+   "product_only": {
+    "iphone16": {
+     "url": "https://www.datart.cz/mobilni-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a.html",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/datart_cz-1aeba4e374.html",
+     "bytes": 1930108,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 5,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "Mobilní telefon Apple iPhone 16 128 GB modrozelený (MYED3SX/A)",
+      "price": 19990.0,
+      "price_raw": "19990",
+      "currency": "CZK",
+      "availability": "InStock",
+      "gtin": "195949822650",
+      "gtin_key": "gtin",
+      "brand": "Apple",
+      "sku": "APPMYED3SXA",
+      "mpn": null,
+      "url": null,
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 19990.0,
+      "price_max": 19990.0,
+      "shipping_details": null,
+      "has_return_policy": true,
+      "available_at_or_from": false
+     },
+     "missing": [
+      "shipping_details"
+     ],
+     "status": "works",
+     "relevance": {
+      "match": "exact",
+      "missing_tokens": [],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [
+       {
+        "signal": "cz_in_store_availability",
+        "snippet": "k expedici. Uvedené datum je předpokládané nejrychlejší dodání (včetně osobního vyzvednutí na prodejně).\">? <span class=\"product-availability-estimated-delivery\" data-qa=\"product-availability-estimate"
+       }
+      ],
+      "endpoint_candidates": [],
+      "mentions_kosice": false
+     },
+     "proxy_product": false,
+     "note": null
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "hornbach_sk": {
+   "shop_id": "hornbach_sk",
+   "domain": "hornbach.sk",
+   "products": {
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "search": {
+      "query": "Bosch GSR 12V-15",
+      "url": "https://www.hornbach.sk/s/Bosch+GSR+12V-15",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.hornbach.sk/s/Bosch%2BGSR%2B12V-15?isInitialRequest=false",
+      "bytes": 132926,
+      "cache_file": ".cache/probe/hornbach_sk-f6868dcdbf.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 1,
+       "item_list_items": 2,
+       "products": 2,
+       "products_with_price": 2,
+       "sources": [
+        "json-ld"
+       ],
+       "product_list": [
+        {
+         "name": "Aku vŕtačka Bosch GSR 12V-15, 060186810F",
+         "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+         "price": 133.2,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": "InStock"
+        },
+        {
+         "name": "Kotúč Bosch Inox na GWS 12V, 5 ks",
+         "url": "https://www.hornbach.sk/p/kotuc-bosch-inox-na-gws-12v-5-ks/6358524/",
+         "price": 8.46,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": "InStock"
+        }
+       ],
+       "item_urls": [
+        "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+        "https://www.hornbach.sk/p/kotuc-bosch-inox-na-gws-12v-5-ks/6358524/"
+       ],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": true,
+       "blobs": [
+        {
+         "kind": "__APOLLO_STATE__",
+         "price_fields": 2,
+         "key": "price",
+         "script_bytes": 7327
+        }
+       ]
+      },
+      "n_candidates": 2,
+      "hits": [
+       {
+        "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+        "text": "Aku vŕtačka Bosch GSR 12V-15, 060186810F Aku vŕtačka Bosch GSR 12V-15, 060186810F",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.hornbach.sk/p/kotuc-bosch-inox-na-gws-12v-5-ks/6358524/",
+        "text": "Kotúč Bosch Inox na GWS 12V, 5 ks",
+        "score": 1,
+        "of": 3,
+        "all_tokens": false,
+        "from": "ItemList"
+       }
+      ],
+      "n_hits_all_tokens": 1,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 3563,
+      "price_strings_in_html": 5,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Bosch GSR 12V-15"
+     ],
+     "first_hit": {
+      "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+      "text": "Aku vŕtačka Bosch GSR 12V-15, 060186810F Aku vŕtačka Bosch GSR 12V-15, 060186810F",
+      "score": 3,
+      "of": 3,
+      "all_tokens": true,
+      "from": "ItemList"
+     },
+     "product_page": {
+      "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/hornbach_sk-3fc219823d.html",
+      "bytes": 168821,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 1,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "Aku vŕtačka Bosch GSR 12V-15, 060186810F",
+       "price": 133.2,
+       "price_raw": "133.20",
+       "currency": "EUR",
+       "availability": "InStock",
+       "gtin": "3165140895248",
+       "gtin_key": "gtin13",
+       "brand": "Bosch Professional",
+       "sku": "10114594",
+       "mpn": null,
+       "url": null,
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 133.2,
+       "price_max": 133.2,
+       "shipping_details": null,
+       "has_return_policy": false,
+       "available_at_or_from": false
+      },
+      "missing": [
+       "shipping_details"
+      ],
+      "status": "works",
+      "relevance": {
+       "match": "exact",
+       "missing_tokens": [],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "sk_in_store_availability",
+         "snippet": " /> <a title=\"Moja predajňa\" class=\"hbhd-nav-element hbhd-nav-element--my-current-market hdhb-market-info-bar hbhd-js-my-current-market\" data-tes"
+        },
+        {
+         "signal": "json_store_fields",
+         "snippet": "re\",\"mainAddress\":{\"__typename\":\"Address\",\"city\":\"Košice\"},\"merchantId\":\"SK746\",\"storeId\":\"746\",\"name\":\"HORNBACH Košice\",\"id\":\"746\"},\"ROOT_QUERY\":{\"__typename\":\"Query\",\"activeFeatureList\":[\"RATING\"],\""
+        }
+       ],
+       "endpoint_candidates": [
+        "/moja-predajna/prehlad-predajni/",
+        "/moja-predajna/predajne-hornbach/",
+        "/moja-predajna/drive-in/"
+       ],
+       "mentions_kosice": true
+      }
+     },
+     "status": "works"
+    }
+   },
+   "name": "HORNBACH",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://www.hornbach.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 10,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 4,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.hornbach.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 448,
+     "ms": 153
+    },
+    {
+     "kind": "search",
+     "url": "https://www.hornbach.sk/s/Bosch+GSR+12V-15",
+     "hop": 0,
+     "status": 301,
+     "bytes": 0,
+     "ms": 3258
+    },
+    {
+     "kind": "search",
+     "url": "https://www.hornbach.sk/s/Bosch%2BGSR%2B12V-15?isInitialRequest=false",
+     "hop": 1,
+     "status": 200,
+     "bytes": 132926,
+     "ms": 3025
+    },
+    {
+     "kind": "product",
+     "url": "https://www.hornbach.sk/p/aku-vrtacka-bosch-gsr-12v-15-060186810f/10114594/",
+     "hop": 0,
+     "status": 200,
+     "bytes": 168821,
+     "ms": 2650
+    }
+   ],
+   "verdict": "works",
+   "verdict_reason": "bosch_gsr=works"
+  },
+  "alza_cz": {
+   "shop_id": "alza_cz",
+   "domain": "alza.cz",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.alza.cz/search.htm?exps=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 403,
+      "final_url": "https://www.alza.cz/search.htm?exps=iPhone+16+128GB",
+      "bytes": 65609,
+      "cache_file": ".cache/probe/alza_cz-3cfdf44872.html",
+      "bot_wall": {
+       "detected": true,
+       "vendor": "cloudflare"
+      },
+      "status": "blocked"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "blocked"
+    },
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "status": "skipped_after_block"
+    },
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "status": "skipped_after_block"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "skipped_after_block"
+    }
+   },
+   "name": "Alza.cz",
+   "probed_at": "2026-11-24T20:48:58+00:00",
+   "robots": {
+    "url": "https://www.alza.cz/robots.txt",
+    "http_status": 403,
+    "mode": "allow_all",
+    "n_rules": 0,
+    "error": null,
+    "bot_wall": "cloudflare"
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.alza.cz/robots.txt",
+     "hop": 0,
+     "status": 403,
+     "bytes": 65488,
+     "ms": 175
+    },
+    {
+     "kind": "search",
+     "url": "https://www.alza.cz/search.htm?exps=iPhone+16+128GB",
+     "hop": 0,
+     "status": 403,
+     "bytes": 65609,
+     "ms": 2874
+    }
+   ],
+   "verdict": "blocked",
+   "verdict_reason": "iphone16=blocked, bosch_gsr=blocked, nivea=blocked, oralb=blocked"
+  },
+  "drogerie101_sk": {
+   "shop_id": "drogerie101_sk",
+   "domain": "101drogerie.sk",
+   "products": {
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://101drogerie.sk/hladat?q=Nivea+Creme+150+ml",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://101drogerie.sk/hladat?q=Nivea+Creme+150+ml",
+      "bytes": 31587,
+      "cache_file": ".cache/probe/drogerie101_sk-a26a9a033a.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 0,
+      "hits": [],
+      "n_hits_all_tokens": 0,
+      "first_all_tokens_rank": null,
+      "visible_text_chars": 2150,
+      "price_strings_in_html": 0,
+      "no_results_text": true,
+      "status": "no_results"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "no_results"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3",
+      "url": "https://101drogerie.sk/hladat?q=Oral-B+Pro+3",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://101drogerie.sk/hladat?q=Oral-B+Pro+3",
+      "bytes": 31581,
+      "cache_file": ".cache/probe/drogerie101_sk-449af4822b.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 0,
+      "hits": [],
+      "n_hits_all_tokens": 0,
+      "first_all_tokens_rank": null,
+      "visible_text_chars": 2150,
+      "price_strings_in_html": 0,
+      "no_results_text": true,
+      "status": "no_results",
+      "first_query_status": "no_results"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000",
+      "Oral-B Pro 3"
+     ],
+     "status": "no_results"
+    }
+   },
+   "name": "101 Drogerie",
+   "probed_at": "2026-11-24T20:48:54+00:00",
+   "robots": {
+    "url": "https://101drogerie.sk/robots.txt",
+    "http_status": 200,
+    "mode": "allow_all",
+    "n_rules": 0,
+    "error": null,
+    "bot_wall": null
+   },
+   "requests_used_this_run": 5,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://101drogerie.sk/robots.txt",
+     "hop": 0,
+     "status": 302,
+     "bytes": 334,
+     "ms": 203
+    },
+    {
+     "kind": "robots",
+     "url": "https://101drogerie.sk",
+     "hop": 1,
+     "status": 200,
+     "bytes": 83672,
+     "ms": 2996
+    },
+    {
+     "kind": "search",
+     "url": "https://101drogerie.sk/hladat?q=Nivea+Creme+150+ml",
+     "hop": 0,
+     "status": 200,
+     "bytes": 31587,
+     "ms": 3021
+    },
+    {
+     "kind": "search",
+     "url": "https://101drogerie.sk/hladat?q=Oral-B+Pro+3+3000",
+     "hop": 0,
+     "status": 200,
+     "bytes": 31586,
+     "ms": 2981
+    },
+    {
+     "kind": "search",
+     "url": "https://101drogerie.sk/hladat?q=Oral-B+Pro+3",
+     "hop": 0,
+     "status": 200,
+     "bytes": 31581,
+     "ms": 3072
+    }
+   ],
+   "verdict": "no_results",
+   "verdict_reason": "nivea=no_results, oralb=no_results"
+  },
+  "mediamarkt_at": {
+   "shop_id": "mediamarkt_at",
+   "domain": "mediamarkt.at",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.mediamarkt.at/de/search.html?query=iPhone+16+128GB",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.mediamarkt.at/de/search.html?query=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "MediaMarkt Austria",
+   "probed_at": "2026-11-24T20:49:06+00:00",
+   "robots": {
+    "url": "https://www.mediamarkt.at/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 21,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.mediamarkt.at/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2912,
+     "ms": 93
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.mediamarkt.at/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2912,
+     "ms": 173
+    },
+    {
+     "kind": "product",
+     "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1273155,
+     "ms": 2948
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: iphone16, oralb",
+   "product_only": {
+    "iphone16": {
+     "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/mediamarkt_at-1239d59117.html",
+     "bytes": 1273155,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 7,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "ProductGroup"
+      ],
+      "name": "APPLE iPhone 16 128 GB, Schwarz, Dual SIM",
+      "price": 949.0,
+      "price_raw": "949",
+      "currency": "EUR",
+      "availability": "InStock",
+      "gtin": "0195949821967",
+      "gtin_key": "gtin13",
+      "brand": "APPLE",
+      "sku": "2002635",
+      "mpn": null,
+      "url": "https://www.mediamarkt.at/de/product/_apple-iphone-16-128gb-black-2002635.html",
+      "n_offers": 1,
+      "n_variants": 5,
+      "price_min": 949.0,
+      "price_max": 949.0,
+      "shipping_details": {
+       "rate": "0",
+       "currency": "EUR",
+       "destination": "AT",
+       "delivery_time": true
+      },
+      "has_return_policy": true,
+      "available_at_or_from": false
+     },
+     "missing": [],
+     "status": "works",
+     "relevance": {
+      "match": "exact",
+      "missing_tokens": [],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [
+       {
+        "signal": "de_in_store_availability",
+        "snippet": "er Stadt ein, um Märkte in deiner Nähe anzuzeigen. Dadurch kannst du die Produktverfügbarkeit im Markt überprüfen.\",\"noResults\":\"PLZ \\u002F Stadt nicht gültig.\",\"noStoresAvailable\":\"Keine Märkte verfü"
+       },
+       {
+        "signal": "en_in_store_availability",
+        "snippet": "rketPickupOnPdp\":\"Abholbereit ab {{date}} nach Bestellung\",\"marketPickupToday\":\"Click & Collect: in 30 Minuten im Markt abholbar\",\"marketPickupTodayPdp\":\"Click & Collect: in 30 Minuten im Markt abholb"
+       },
+       {
+        "signal": "json_store_fields",
+        "snippet": "29687]\":{\"__typename\":\"CofrPickupFeature\",\"id\":\"Media:de:145655712[1831029687]\",\"storeId\":null,\"isInAssortment\":null,\"isProductOfTypeMarketplace\":true,\"pickupStatus\":\"NO_RETAIL_PRODUCT\",\"displayStatus"
+       }
+      ],
+      "endpoint_candidates": [],
+      "mentions_kosice": false
+     },
+     "proxy_product": false,
+     "note": null
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "nay_sk": {
+   "shop_id": "nay_sk",
+   "domain": "nay.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.nay.sk/vyhladavanie?q=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.nay.sk/apple-iphone-16",
+      "bytes": 1665948,
+      "cache_file": ".cache/probe/nay_sk-2e33c6d31f.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 1,
+       "item_list_items": 9,
+       "products": 9,
+       "products_with_price": 9,
+       "sources": [
+        "json-ld"
+       ],
+       "product_list": [
+        {
+         "name": "Mobilný telefón Apple iPhone 16 128 GB modrozelený (MYED3SX/A)",
+         "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+         "price": 849.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16 128 GB ultramarínový (MYEC3SX/A)",
+         "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ultramarinovy-myec3sx-a",
+         "price": 849.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16 128 GB ružový (MYEA3SX/A)",
+         "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ruzovy-myea3sx-a",
+         "price": 849.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16e 128 GB čierny (MD1Q4SX/A)",
+         "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16e-128-gb-cierny-md1q4sx-a",
+         "price": 669.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16e 128 GB biely (MD1R4SX/A)",
+         "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16e-128-gb-biely-md1r4sx-a",
+         "price": 669.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16 128 GB čierny (MYE73SX/A)",
+         "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-cierny-mye73sx-a",
+         "price": 849.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16 128 GB biely (MYE93SX/A)",
+         "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-biely-mye93sx-a",
+         "price": 849.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16 128 GB černý (MYE73SX/A) - zánovný - 24 mesiacov záruka",
+         "url": "https://www.nay.sk/bazar/mobilny-telefon-apple-iphone-16-128-gb-cerny-mye73sx-a-zanovny-24-mesiacov-zaruka",
+         "price": 789.9,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "Mobilný telefón Apple iPhone 16 Plus 128 GB ultramarínový (MXVX3SX/A) - zánovný - 24 mesiacov záruka",
+         "url": "https://www.nay.sk/bazar/mobilny-telefon-apple-iphone-16-plus-128-gb-ultramarinovy-mxvx3sx-a-zanovny-24-mesiacov-zaruka",
+         "price": 854.9,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        }
+       ],
+       "item_urls": [
+        "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+        "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ultramarinovy-myec3sx-a",
+        "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ruzovy-myea3sx-a",
+        "https://www.nay.sk/mobilny-telefon-apple-iphone-16e-128-gb-cierny-md1q4sx-a",
+        "https://www.nay.sk/mobilny-telefon-apple-iphone-16e-128-gb-biely-md1r4sx-a",
+        "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-cierny-mye73sx-a",
+        "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-biely-mye93sx-a",
+        "https://www.nay.sk/bazar/mobilny-telefon-apple-iphone-16-128-gb-cerny-mye73sx-a-zanovny-24-mesiacov-zaruka",
+        "https://www.nay.sk/bazar/mobilny-telefon-apple-iphone-16-plus-128-gb-ultramarinovy-mxvx3sx-a-zanovny-24-mesiacov-zaruka"
+       ],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 18,
+      "hits": [
+       {
+        "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+        "text": "Mobilný telefón Apple 128 GB modrozelený ",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ultramarinovy-myec3sx-a",
+        "text": "Mobilný telefón Apple 128 GB ultramarínový ",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-ruzovy-myea3sx-a",
+        "text": "Mobilný telefón Apple 128 GB ružový ",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16e-128-gb-cierny-md1q4sx-a",
+        "text": "Mobilný telefón Apple 128 GB čierny ",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16e-128-gb-biely-md1r4sx-a",
+        "text": "Mobilný telefón Apple 128 GB biely ",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-cierny-mye73sx-a",
+        "text": "",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-biely-mye93sx-a",
+        "text": "",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/bazar/mobilny-telefon-apple-iphone-16-128-gb-cerny-mye73sx-a-zanovny-24-mesiacov-zaruka",
+        "text": "Mobilný telefón Apple 128 GB černý ",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/bazar/mobilny-telefon-apple-iphone-16-plus-128-gb-ultramarinovy-mxvx3sx-a-zanovny-24-mesiacov-zaruka",
+        "text": "Mobilný telefón Apple 128 GB ultramarínový ",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.nay.sk/novinky/produkty/novinky-v-iphone-16",
+        "text": "Novinky v iPhone 16: Všetky modely stvorené pre AI",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.nay.sk/iphone-16-pro",
+        "text": "iPhone 16 Pro iPhone 16 Pro",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.nay.sk/iphone-16",
+        "text": "iPhone 16 iPhone 16",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       }
+      ],
+      "n_hits_all_tokens": 7,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 66586,
+      "price_strings_in_html": 52,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "first_hit": {
+      "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+      "text": "Mobilný telefón Apple 128 GB modrozelený ",
+      "score": 3,
+      "of": 3,
+      "all_tokens": true,
+      "from": "ItemList"
+     },
+     "product_page": {
+      "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/nay_sk-e168e7c7ef.html",
+      "bytes": 1787432,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 5,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "Mobilný telefón Apple iPhone 16 128 GB modrozelený (MYED3SX/A)",
+       "price": 1029.0,
+       "price_raw": "1029",
+       "currency": "EUR",
+       "availability": "InStock",
+       "gtin": "195949822650",
+       "gtin_key": "gtin",
+       "brand": "Apple",
+       "sku": "APPMYED3SXA",
+       "mpn": null,
+       "url": null,
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 1029.0,
+       "price_max": 1029.0,
+       "shipping_details": null,
+       "has_return_policy": true,
+       "available_at_or_from": false
+      },
+      "missing": [
+       "shipping_details"
+      ],
+      "status": "works",
+      "relevance": {
+       "match": "exact",
+       "missing_tokens": [],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [],
+       "endpoint_candidates": [
+        "/predajne",
+        "/napoveda/rezervacie-a-vyzdvihnutie-v-predajni"
+       ],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.nay.sk/vyhladavanie?q=Oral-B+Pro+3+3000",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.nay.sk/vyhladavanie?q=Oral-B+Pro+3+3000",
+      "bytes": 1787545,
+      "cache_file": ".cache/probe/nay_sk-1841ecadb3.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 5,
+      "hits": [
+       {
+        "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king",
+        "text": "",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-kids-ladove-kralovstvo-3",
+        "text": "",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-kids-spiderman-3",
+        "text": "",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.nay.sk/bazar/zubna-kefka-oral-b-pro-kids-spiderman-3-s-kozmetickou-chybou-12-mesiacov-zaruka",
+        "text": "",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.nay.sk/nahradne-hlavice-oral-b-pro-kids-3-levi-kral-4-ks",
+        "text": "",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       }
+      ],
+      "n_hits_all_tokens": 0,
+      "first_all_tokens_rank": null,
+      "visible_text_chars": 73870,
+      "price_strings_in_html": 78,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "first_hit": {
+      "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king",
+      "text": "",
+      "score": 3,
+      "of": 4,
+      "all_tokens": false
+     },
+     "product_page": {
+      "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/nay_sk-a2d3ede94f.html",
+      "bytes": 1615385,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 1,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "Zubná kefka Oral-B PRO 3 Kids Lion King",
+       "price": 49.9,
+       "price_raw": "49.9",
+       "currency": "EUR",
+       "availability": "InStock",
+       "gtin": "8700216297172",
+       "gtin_key": "gtin",
+       "brand": "Oral-B",
+       "sku": "BRAD103LION",
+       "mpn": null,
+       "url": null,
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 49.9,
+       "price_max": 49.9,
+       "shipping_details": null,
+       "has_return_policy": true,
+       "available_at_or_from": false
+      },
+      "missing": [
+       "shipping_details"
+      ],
+      "status": "works",
+      "relevance": {
+       "match": "none",
+       "missing_tokens": [
+        "3000"
+       ],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [],
+       "endpoint_candidates": [
+        "/predajne",
+        "/napoveda/rezervacie-a-vyzdvihnutie-v-predajni"
+       ],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    }
+   },
+   "name": "NAY",
+   "probed_at": "2026-11-24T20:48:51+00:00",
+   "robots": {
+    "url": "https://www.nay.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 6,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 6,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.nay.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 192,
+     "ms": 82
+    },
+    {
+     "kind": "search",
+     "url": "https://www.nay.sk/vyhladavanie?q=iPhone+16+128GB",
+     "hop": 0,
+     "status": 301,
+     "bytes": 87,
+     "ms": 3029
+    },
+    {
+     "kind": "search",
+     "url": "https://www.nay.sk/apple-iphone-16",
+     "hop": 1,
+     "status": 200,
+     "bytes": 1665948,
+     "ms": 3219
+    },
+    {
+     "kind": "product",
+     "url": "https://www.nay.sk/mobilny-telefon-apple-iphone-16-128-gb-modrozeleny-myed3sx-a",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1787432,
+     "ms": 2390
+    },
+    {
+     "kind": "search",
+     "url": "https://www.nay.sk/vyhladavanie?q=Oral-B+Pro+3+3000",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1787545,
+     "ms": 2767
+    },
+    {
+     "kind": "product",
+     "url": "https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1615385,
+     "ms": 1811
+    }
+   ],
+   "verdict": "works",
+   "verdict_reason": "iphone16=works, oralb=works"
+  },
+  "mironet_cz": {
+   "shop_id": "mironet_cz",
+   "domain": "mironet.cz",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.mironet.cz/ProductList/showSearch?EXPF=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.mironet.cz/ProductList/showSearch?EXPF=iPhone+16+128GB",
+      "bytes": 244518,
+      "cache_file": ".cache/probe/mironet_cz-d942852ad2.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 8,
+      "hits": [
+       {
+        "url": "https://www.mironet.cz/apple-iphone-16-128gb-cerna-61-128gb-ios18+dp702612/",
+        "text": "Apple iPhone 16 128GB černá / 6.1\" / 128GB / iOS18",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.mironet.cz/apple-iphone-16-128gb-bila-61-128gb-ios18+dp702614/",
+        "text": "Apple iPhone 16 128GB bílá / 6.1\" / 128GB / iOS18",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.mironet.cz/apple-iphone-16-128gb-zelena-61-128gb-ios18+dp702615/",
+        "text": "Apple iPhone 16 128GB zelená / 6.1\" / 128GB / iOS18",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.mironet.cz/apple-iphone-16-128gb-ruzova-61-128gb-ios18+dp702613/",
+        "text": "Apple iPhone 16 128GB růžová / 6.1\" / 128GB / iOS18",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.mironet.cz/apple-iphone-16-128gb-modra-61-128gb-ios18+dp702610/",
+        "text": "Apple iPhone 16 128GB modrá / 6.1\" / 128GB / iOS18",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.mironet.cz/apple-iphone-16e-128gb-bila-61-128gb-ios184+dp731566/",
+        "text": "Apple iPhone 16e 128GB bílá / 6.1\" / 128GB / iOS18.4",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/apple-iphone-15-128gb-modra-61-128gb-ios173+dp612908/",
+        "text": "Apple iPhone 15 128GB modrá / 6.1\" / 128GB / iOS17.3",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/apple-iphone-15-128gb-cerna-61-128gb-ios173+dp612926/",
+        "text": "Apple iPhone 15 128GB černá / 6.1\" / 128GB / iOS17.3",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       }
+      ],
+      "n_hits_all_tokens": 5,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 11331,
+      "price_strings_in_html": 23,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "first_hit": {
+      "url": "https://www.mironet.cz/apple-iphone-16-128gb-cerna-61-128gb-ios18+dp702612/",
+      "text": "Apple iPhone 16 128GB černá / 6.1\" / 128GB / iOS18",
+      "score": 3,
+      "of": 3,
+      "all_tokens": true
+     },
+     "product_page": {
+      "url": "https://www.mironet.cz/apple-iphone-16-128gb-cerna-61-128gb-ios18+dp702612/",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/mironet_cz-db548d9a46.html",
+      "bytes": 671705,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 1,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "Apple iPhone 16 128GB černá / 6.1\" / 128GB / iOS18",
+       "price": 19990.0,
+       "price_raw": "19990",
+       "currency": "CZK",
+       "availability": "InStock",
+       "gtin": null,
+       "gtin_key": null,
+       "brand": "Apple",
+       "sku": "93109300",
+       "mpn": "MYE73",
+       "url": null,
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 19990.0,
+       "price_max": 19990.0,
+       "shipping_details": {
+        "rate": null,
+        "currency": null,
+        "destination": null,
+        "delivery_time": false
+       },
+       "has_return_policy": true,
+       "available_at_or_from": false
+      },
+      "missing": [
+       "gtin"
+      ],
+      "status": "works",
+      "relevance": {
+       "match": "exact",
+       "missing_tokens": [],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.mironet.cz/ProductList/showSearch?EXPF=Oral-B+Pro+3+3000",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.mironet.cz/ProductList/showSearch?EXPF=Oral-B+Pro+3+3000",
+      "bytes": 614639,
+      "cache_file": ".cache/probe/mironet_cz-b0f126896a.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 8,
+      "hits": [
+       {
+        "url": "https://www.mironet.cz/oralb-vitality-pro-fialovy-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646615/",
+        "text": "Oral-B Vitality Pro fialový / Elektrický zubní kartáček / oscilační / 3 režimy / časovač",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/oralb-vitality-pro-cerny-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646617/",
+        "text": "Oral-B Vitality Pro černý / Elektrický zubní kartáček / oscilační / 3 režimy / časovač",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/oralb-vitality-pro-modry-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646621/",
+        "text": "Oral-B Vitality Pro modrý / Elektrický zubní kartáček / oscilační / 3 režimy / časovač",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/oralb-pro-series-1-modry-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac-pouzdro+dp646467/",
+        "text": "Oral-B Pro Series 1 modrý / Elektrický zubní kartáček / oscilační / 3 režimy / časovač / pouzdro ",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/oralb-pro-series-1-cross-action-cerny-elektricky-zubni-kartacek-oscilacni-3-rezimy-senzor-tlaku+dp646476/",
+        "text": "Oral-B Pro Series 1 Cross Action černý / Elektrický zubní kartáček / oscilační / 3 režimy / senzor tlaku ",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/oralb-vitality-pro-protect-x-clean-modra-eletricky-zubni-kartacek-oscilacni-3-rezimy-2d-technologie+dp646438/",
+        "text": "Oral-B Vitality Pro Protect X Clean modrá / Eletrický zubní kartáček / oscilační / 3 režimy / 2D technologie ",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/oralb-pro-series-1-modra-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646441/",
+        "text": "Oral-B Pro Series 1 modrá / Elektrický zubní kartáček / oscilační / 3 režimy / časovač ",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.mironet.cz/oralb-pro-kids-3-frozen-elektricky-detsky-zubni-kartacek-sonicky-2-rezimy-od-3-let+dp646449/",
+        "text": "Oral-B Pro Kids 3+ Frozen / Elektrický dětský zubní kartáček / sonický / 2 režimy / od 3 let",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       }
+      ],
+      "n_hits_all_tokens": 0,
+      "first_all_tokens_rank": null,
+      "visible_text_chars": 14173,
+      "price_strings_in_html": 53,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "first_hit": {
+      "url": "https://www.mironet.cz/oralb-vitality-pro-fialovy-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646615/",
+      "text": "Oral-B Vitality Pro fialový / Elektrický zubní kartáček / oscilační / 3 režimy / časovač",
+      "score": 3,
+      "of": 4,
+      "all_tokens": false
+     },
+     "product_page": {
+      "url": "https://www.mironet.cz/oralb-vitality-pro-fialovy-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646615/",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/mironet_cz-6d513f6cbc.html",
+      "bytes": 144346,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 1,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "Oral-B Vitality Pro fialový / Elektrický zubní kartáček / oscilační / 3 režimy / časovač",
+       "price": 544.0,
+       "price_raw": "544",
+       "currency": "CZK",
+       "availability": "InStock",
+       "gtin": null,
+       "gtin_key": null,
+       "brand": "Oral-B",
+       "sku": "84016788",
+       "mpn": "426967",
+       "url": null,
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 544.0,
+       "price_max": 544.0,
+       "shipping_details": {
+        "rate": null,
+        "currency": null,
+        "destination": null,
+        "delivery_time": false
+       },
+       "has_return_policy": true,
+       "available_at_or_from": false
+      },
+      "missing": [
+       "gtin"
+      ],
+      "status": "works",
+      "relevance": {
+       "match": "none",
+       "missing_tokens": [
+        "3000"
+       ],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    }
+   },
+   "name": "Mironet.cz",
+   "probed_at": "2026-11-24T20:48:58+00:00",
+   "robots": {
+    "url": "https://www.mironet.cz/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 19,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 5,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.mironet.cz/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1426,
+     "ms": 170
+    },
+    {
+     "kind": "search",
+     "url": "https://www.mironet.cz/ProductList/showSearch?EXPF=iPhone+16+128GB",
+     "hop": 0,
+     "status": 200,
+     "bytes": 244518,
+     "ms": 3296
+    },
+    {
+     "kind": "product",
+     "url": "https://www.mironet.cz/apple-iphone-16-128gb-cerna-61-128gb-ios18+dp702612/",
+     "hop": 0,
+     "status": 200,
+     "bytes": 671705,
+     "ms": 3506
+    },
+    {
+     "kind": "search",
+     "url": "https://www.mironet.cz/ProductList/showSearch?EXPF=Oral-B+Pro+3+3000",
+     "hop": 0,
+     "status": 200,
+     "bytes": 614639,
+     "ms": 2901
+    },
+    {
+     "kind": "product",
+     "url": "https://www.mironet.cz/oralb-vitality-pro-fialovy-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646615/",
+     "hop": 0,
+     "status": 200,
+     "bytes": 144346,
+     "ms": 1420
+    }
+   ],
+   "verdict": "works",
+   "verdict_reason": "iphone16=works, oralb=works"
+  },
+  "xkom_pl": {
+   "shop_id": "xkom_pl",
+   "domain": "x-kom.pl",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.x-kom.pl/szukaj?q=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 403,
+      "final_url": "https://www.x-kom.pl/szukaj?q=iPhone+16+128GB",
+      "bytes": 5628,
+      "cache_file": ".cache/probe/xkom_pl-a428682812.html",
+      "bot_wall": {
+       "detected": true,
+       "vendor": "cloudflare"
+      },
+      "status": "blocked"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "blocked"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "skipped_after_block"
+    }
+   },
+   "name": "x-kom",
+   "probed_at": "2026-11-24T20:49:07+00:00",
+   "robots": {
+    "url": "https://www.x-kom.pl/robots.txt",
+    "http_status": 403,
+    "mode": "allow_all",
+    "n_rules": 0,
+    "error": null,
+    "bot_wall": "cloudflare"
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.x-kom.pl/robots.txt",
+     "hop": 0,
+     "status": 403,
+     "bytes": 5550,
+     "ms": 73
+    },
+    {
+     "kind": "search",
+     "url": "https://www.x-kom.pl/szukaj?q=iPhone+16+128GB",
+     "hop": 0,
+     "status": 403,
+     "bytes": 5628,
+     "ms": 2983
+    }
+   ],
+   "verdict": "blocked",
+   "verdict_reason": "iphone16=blocked, oralb=blocked"
+  },
+  "morele_net": {
+   "shop_id": "morele_net",
+   "domain": "morele.net",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.morele.net/wyszukiwarka/?q=iPhone+16+128GB",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.morele.net/wyszukiwarka/?q=Nivea+Creme+150+ml",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "disallowed_by_robots"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.morele.net/wyszukiwarka/?q=Oral-B+Pro+3+3000",
+      "robots_allowed": false,
+      "status": "disallowed_by_robots"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "disallowed_by_robots"
+    }
+   },
+   "name": "Morele.net",
+   "probed_at": "2026-11-24T20:49:10+00:00",
+   "robots": {
+    "url": "https://www.morele.net/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 30,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 1,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.morele.net/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 9457,
+     "ms": 162
+    },
+    {
+     "kind": "robots",
+     "url": "https://www.morele.net/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 9457,
+     "ms": 439
+    },
+    {
+     "kind": "product",
+     "url": "https://www.morele.net/smartfon-apple-iphone-16-128gb-black-mye73-14121922/",
+     "hop": 0,
+     "status": 200,
+     "bytes": 688334,
+     "ms": 3348
+    }
+   ],
+   "verdict": "robots_disallowed",
+   "verdict_reason": "robots.txt disallows the search URL: iphone16, nivea, oralb",
+   "product_only": {
+    "iphone16": {
+     "url": "https://www.morele.net/smartfon-apple-iphone-16-128gb-black-mye73-14121922/",
+     "robots_allowed": true,
+     "http_status": 200,
+     "cache_file": ".cache/probe/morele_net-64b8f90937.html",
+     "bytes": 688334,
+     "bot_wall": {
+      "detected": false,
+      "vendor": null
+     },
+     "extruct_error": null,
+     "n_product_nodes": 9,
+     "structured": {
+      "source": "json-ld",
+      "types": [
+       "Product"
+      ],
+      "name": "Smartfon Apple iPhone 16 128GB Black (MYE73)",
+      "price": 3591.0,
+      "price_raw": "3591",
+      "currency": "PLN",
+      "availability": "InStock",
+      "gtin": "195949821837",
+      "gtin_key": "gtin13",
+      "brand": "Apple",
+      "sku": "14121922",
+      "mpn": "MYE73",
+      "url": "https://www.morele.net/smartfon-apple-iphone-16-128gb-black-mye73-14121922/",
+      "n_offers": 1,
+      "n_variants": 0,
+      "price_min": 3591.0,
+      "price_max": 3591.0,
+      "shipping_details": {
+       "rate": null,
+       "currency": "PLN",
+       "destination": "PL",
+       "delivery_time": true
+      },
+      "has_return_policy": true,
+      "available_at_or_from": false
+     },
+     "missing": [],
+     "status": "works",
+     "relevance": {
+      "match": "exact",
+      "missing_tokens": [],
+      "variant_words": []
+     },
+     "branch_stock": {
+      "signals": [],
+      "endpoint_candidates": [],
+      "mentions_kosice": false
+     },
+     "proxy_product": false,
+     "note": null
+    }
+   },
+   "verdict_product_route": "works"
+  },
+  "notebooksbilliger_de": {
+   "shop_id": "notebooksbilliger_de",
+   "domain": "notebooksbilliger.de",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.notebooksbilliger.de/produkte/iPhone%2016%20128GB",
+      "robots_allowed": true,
+      "http_status": 404,
+      "final_url": "https://www.notebooksbilliger.de/produkte/iPhone%2016%20128GB",
+      "bytes": 3274,
+      "cache_file": ".cache/probe/notebooksbilliger_de-4daea74fe2.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "status": "http_error"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "http_error"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.notebooksbilliger.de/produkte/Oral-B%20Pro%203%203000",
+      "robots_allowed": true,
+      "http_status": 404,
+      "final_url": "https://www.notebooksbilliger.de/produkte/Oral-B%20Pro%203%203000",
+      "bytes": 3274,
+      "cache_file": ".cache/probe/notebooksbilliger_de-a2525fb263.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "status": "http_error"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "status": "http_error"
+    }
+   },
+   "name": "notebooksbilliger.de",
+   "probed_at": "2026-11-24T20:49:06+00:00",
+   "robots": {
+    "url": "https://www.notebooksbilliger.de/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 11,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 3,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.notebooksbilliger.de/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1357,
+     "ms": 127
+    },
+    {
+     "kind": "search",
+     "url": "https://www.notebooksbilliger.de/produkte/iPhone%2016%20128GB",
+     "hop": 0,
+     "status": 404,
+     "bytes": 3274,
+     "ms": 2970
+    },
+    {
+     "kind": "search",
+     "url": "https://www.notebooksbilliger.de/produkte/Oral-B%20Pro%203%203000",
+     "hop": 0,
+     "status": 404,
+     "bytes": 3274,
+     "ms": 2984
+    }
+   ],
+   "verdict": "unreachable",
+   "verdict_reason": "iphone16=unreachable, oralb=unreachable"
+  },
+  "mediamarkt_de": {
+   "shop_id": "mediamarkt_de",
+   "domain": "mediamarkt.de",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.mediamarkt.de/de/search.html?query=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.mediamarkt.de/de/search.html?query=iPhone+16+128GB",
+      "bytes": 1350728,
+      "cache_file": ".cache/probe/mediamarkt_de-3727a7e96a.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 1,
+       "item_list_items": 12,
+       "products": 12,
+       "products_with_price": 12,
+       "sources": [
+        "json-ld"
+       ],
+       "product_list": [
+        {
+         "name": "APPLE IPHONE 16 PRO 128GB DESERT TITANIUM 128 GB Titan Wüstensand Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+         "price": 721.33,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PRO 128GB WHITE TITANIUM 128 GB Titan Weiß Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-145607287.html",
+         "price": 750.9,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PRO 128GB NATURAL TITANIUM 128 GB Titan Natur Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-pro-128gb-natural-titanium-smartphone-128-gb-graues-silber-dual-sim-147052588.html",
+         "price": 737.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PLUS 128GB WHITE 128 GB Weiß Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-white-smartphone-128-gb-weiss-dual-sim-147051613.html",
+         "price": 776.67,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PLUS 128GB PINK 128 GB Pink Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-pink-smartphone-128-gb-rosa-dual-sim-147052596.html",
+         "price": 672.9,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PLUS 128GB TEAL 128 GB Teal",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-turkis-dual-sim-146562868.html",
+         "price": 719.59,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PLUS 128GB PINK 128 GB Pink Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-pink-dual-sim-146562776.html",
+         "price": 675.07,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE iPhone 16 128 GB Schwarz Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-schwarz-dual-sim-168735593.html",
+         "price": 1046.97,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PRO 128GB WHITE TITANIUM 128 GB White Titanium",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-146563409.html",
+         "price": 766.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE IPHONE 16 PRO 128GB BLACK TITANIUM 128 GB Titan Schwarz Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-schwarz-dual-sim-145607125.html",
+         "price": 760.89,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE iPhone 16 128 GB Blau Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-blau-dual-sim-177259451.html",
+         "price": 1074.58,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "APPLE iPhone  16 iPhone 16 128 GB Pink Dual SIM",
+         "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-pink-dual-sim-146562561.html",
+         "price": 648.0,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        }
+       ],
+       "item_urls": [
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-145607287.html",
+        "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-pro-128gb-natural-titanium-smartphone-128-gb-graues-silber-dual-sim-147052588.html",
+        "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-white-smartphone-128-gb-weiss-dual-sim-147051613.html",
+        "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-pink-smartphone-128-gb-rosa-dual-sim-147052596.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-turkis-dual-sim-146562868.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-pink-dual-sim-146562776.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-schwarz-dual-sim-168735593.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-146563409.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-schwarz-dual-sim-145607125.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-blau-dual-sim-177259451.html",
+        "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-pink-dual-sim-146562561.html"
+       ],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": true,
+       "blobs": [
+        {
+         "kind": "__PRELOADED_STATE__",
+         "price_fields": 27,
+         "key": "priceAmount",
+         "script_bytes": 682454
+        }
+       ]
+      },
+      "n_candidates": 12,
+      "hits": [
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+        "text": "APPLE IPHONE 16 PRO 128GB DESERT TITANIUM 128 GB Titan Wüstensand Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-145607287.html",
+        "text": "APPLE IPHONE 16 PRO 128GB WHITE TITANIUM 128 GB Titan Weiß Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-pro-128gb-natural-titanium-smartphone-128-gb-graues-silber-dual-sim-147052588.html",
+        "text": "APPLE IPHONE 16 PRO 128GB NATURAL TITANIUM 128 GB Titan Natur Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-white-smartphone-128-gb-weiss-dual-sim-147051613.html",
+        "text": "APPLE IPHONE 16 PLUS 128GB WHITE 128 GB Weiß Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-apple-iphone-16-plus-128gb-pink-smartphone-128-gb-rosa-dual-sim-147052596.html",
+        "text": "APPLE IPHONE 16 PLUS 128GB PINK 128 GB Pink Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-turkis-dual-sim-146562868.html",
+        "text": "APPLE IPHONE 16 PLUS 128GB TEAL 128 GB Teal",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-plus-128-gb-pink-dual-sim-146562776.html",
+        "text": "APPLE IPHONE 16 PLUS 128GB PINK 128 GB Pink Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-schwarz-dual-sim-168735593.html",
+        "text": "APPLE iPhone 16 128 GB Schwarz Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-weiss-dual-sim-146563409.html",
+        "text": "APPLE IPHONE 16 PRO 128GB WHITE TITANIUM 128 GB White Titanium",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-schwarz-dual-sim-145607125.html",
+        "text": "APPLE IPHONE 16 PRO 128GB BLACK TITANIUM 128 GB Titan Schwarz Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-blau-dual-sim-177259451.html",
+        "text": "APPLE iPhone 16 128 GB Blau Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-128-gb-pink-dual-sim-146562561.html",
+        "text": "APPLE iPhone 16 iPhone 16 128 GB Pink Dual SIM",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true,
+        "from": "ItemList"
+       }
+      ],
+      "n_hits_all_tokens": 12,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 34202,
+      "price_strings_in_html": 77,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "first_hit": {
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+      "text": "APPLE IPHONE 16 PRO 128GB DESERT TITANIUM 128 GB Titan Wüstensand Dual SIM",
+      "score": 3,
+      "of": 3,
+      "all_tokens": true,
+      "from": "ItemList"
+     },
+     "product_page": {
+      "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/mediamarkt_de-1c2ceb1937.html",
+      "bytes": 1209770,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 8,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "ProductGroup"
+       ],
+       "name": "APPLE IPHONE 16 PRO 128GB DESERT TITANIUM 128 GB Titan Wüstensand Dual SIM",
+       "price": 721.33,
+       "price_raw": "721.33",
+       "currency": "EUR",
+       "availability": "InStock",
+       "gtin": "0195949771583",
+       "gtin_key": "gtin13",
+       "brand": "APPLE",
+       "sku": "145402270",
+       "mpn": null,
+       "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+       "n_offers": 3,
+       "n_variants": 7,
+       "price_min": 656.9,
+       "price_max": 721.33,
+       "shipping_details": {
+        "rate": "0",
+        "currency": "EUR",
+        "destination": "DE",
+        "delivery_time": true
+       },
+       "has_return_policy": false,
+       "available_at_or_from": false
+      },
+      "missing": [],
+      "status": "works",
+      "relevance": {
+       "match": "exact_tokens_plus_variant_words",
+       "missing_tokens": [],
+       "variant_words": [
+        "pro"
+       ]
+      },
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "de_in_store_availability",
+         "snippet": "mediamarkt.de/de/service/lieferung/abholung-markt\">Online bestellen &amp; heute im Markt abholen <span clas"
+        },
+        {
+         "signal": "json_store_fields",
+         "snippet": "34717]\":{\"__typename\":\"CofrPickupFeature\",\"id\":\"Media:de:145402270[1884534717]\",\"storeId\":null,\"isInAssortment\":null,\"isProductOfTypeMarketplace\":true,\"pickupStatus\":\"NO_RETAIL_PRODUCT\",\"displayStatus"
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.mediamarkt.de/de/search.html?query=Oral-B+Pro+3+3000",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.mediamarkt.de/de/search.html?query=Oral-B+Pro+3+3000",
+      "bytes": 1155204,
+      "cache_file": ".cache/probe/mediamarkt_de-7b547fbdec.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 1,
+       "item_list_items": 12,
+       "products": 12,
+       "products_with_price": 12,
+       "sources": [
+        "json-ld"
+       ],
+       "product_list": [
+        {
+         "name": "ORAL-B Pro 3 3000 Elektrische Zahnbürste Black",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+         "price": 117.62,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B PRO 3-3900 DUOPACK BLACK EDITION Elektrische Zahnbürste Schwarz",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3900-elektrische-zahnburste-schwarz-102823946.html",
+         "price": 124.59,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B Pro Kids 3+ Frozen Elektrische Kinderzahnbürste Hellblau, Reinigungstechnologie: Oszillierend / Rotierend (2D)",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-frozen-elektrosche-zahnburste-hellblau-2881384.html",
+         "price": 22.99,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B Pro Kids 3+ Frozen Elektrische Zahnbürste Blau",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-elektrische-zahnburste-blau-188751514.html",
+         "price": 36.26,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B Pro Kids für Kinder ab 3 Jahren, König der Löwen, 4 Stück Aufsteckbürsten",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-3-stuck-aufsteckbursten-2945137.html",
+         "price": 9.99,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B Pro Kids 3+ Frozen, 4 Stück Aufsteckbürsten",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-4-stuck-aufsteckbursten-2877025.html",
+         "price": 16.99,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B EB18-3 Aufsteckbürsten",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-oral-b-3d-white-ersatz-3-stck-102209785.html",
+         "price": 29.99,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B VITALITY PRO 103 KIDS SPIDERMAN Elektrische Zahnbürste Blau",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-vitality-pro-103-kids-spiderman-elektrische-zahnburste-blau-142257895.html",
+         "price": 25.29,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B JUNIOR PRO FROZEN Elektrische Kinderzahnbürste Weiß",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-junior-pro-frozen-elektrische-kinderzahnburste-weiss-144915882.html",
+         "price": 56.55,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B Pro Kids für Kinder ab 3 Jahren, König der Löwen, 8 Stück Aufsteckbürsten",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-8-stuck-aufsteckbursten-2945138.html",
+         "price": 27.06,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B Pro Kids 3+ Spiderman, 4 Stück Aufsteckbürsten",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-spiderman-4-stuck-aufsteckbursten-2877028.html",
+         "price": 16.99,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        },
+        {
+         "name": "ORAL-B Kids Pro 3+ Ersatzbürstenköpfe",
+         "url": "https://www.mediamarkt.de/de/product/_oral-b-kids-pro-3-ersatzburstenkopfe-137560137.html",
+         "price": 27.8,
+         "currency": "EUR",
+         "gtin": null,
+         "availability": null
+        }
+       ],
+       "item_urls": [
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3900-elektrische-zahnburste-schwarz-102823946.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-frozen-elektrosche-zahnburste-hellblau-2881384.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-elektrische-zahnburste-blau-188751514.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-3-stuck-aufsteckbursten-2945137.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-4-stuck-aufsteckbursten-2877025.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-oral-b-3d-white-ersatz-3-stck-102209785.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-vitality-pro-103-kids-spiderman-elektrische-zahnburste-blau-142257895.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-junior-pro-frozen-elektrische-kinderzahnburste-weiss-144915882.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-8-stuck-aufsteckbursten-2945138.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-spiderman-4-stuck-aufsteckbursten-2877028.html",
+        "https://www.mediamarkt.de/de/product/_oral-b-kids-pro-3-ersatzburstenkopfe-137560137.html"
+       ],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": true,
+       "blobs": [
+        {
+         "kind": "__PRELOADED_STATE__",
+         "price_fields": 27,
+         "key": "priceAmount",
+         "script_bytes": 639253
+        }
+       ]
+      },
+      "n_candidates": 13,
+      "hits": [
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+        "text": "ORAL-B Pro 3 3000 Elektrische Zahnbürste Black",
+        "score": 4,
+        "of": 4,
+        "all_tokens": true,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3900-elektrische-zahnburste-schwarz-102823946.html",
+        "text": "ORAL-B PRO 3-3900 DUOPACK BLACK EDITION Elektrische Zahnbürste Schwarz",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-frozen-elektrosche-zahnburste-hellblau-2881384.html",
+        "text": "ORAL-B Pro Kids 3+ Frozen Elektrische Kinderzahnbürste Hellblau, Reinigungstechnologie: Oszillierend / Rotierend (2D)",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-elektrische-zahnburste-blau-188751514.html",
+        "text": "ORAL-B Pro Kids 3+ Frozen Elektrische Zahnbürste Blau",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-3-stuck-aufsteckbursten-2945137.html",
+        "text": "ORAL-B Pro Kids für Kinder ab 3 Jahren, König der Löwen, 4 Stück Aufsteckbürsten",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-frozen-4-stuck-aufsteckbursten-2877025.html",
+        "text": "ORAL-B Pro Kids 3+ Frozen, 4 Stück Aufsteckbürsten",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-oral-b-3d-white-ersatz-3-stck-102209785.html",
+        "text": "ORAL-B EB18-3 Aufsteckbürsten",
+        "score": 2,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-vitality-pro-103-kids-spiderman-elektrische-zahnburste-blau-142257895.html",
+        "text": "ORAL-B VITALITY PRO 103 KIDS SPIDERMAN Elektrische Zahnbürste Blau",
+        "score": 2,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-junior-pro-frozen-elektrische-kinderzahnburste-weiss-144915882.html",
+        "text": "ORAL-B JUNIOR PRO FROZEN Elektrische Kinderzahnbürste Weiß",
+        "score": 2,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-fur-kinder-ab-3-jahren-konig-der-lowen-8-stuck-aufsteckbursten-2945138.html",
+        "text": "ORAL-B Pro Kids für Kinder ab 3 Jahren, König der Löwen, 8 Stück Aufsteckbürsten",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-kids-3-spiderman-4-stuck-aufsteckbursten-2877028.html",
+        "text": "ORAL-B Pro Kids 3+ Spiderman, 4 Stück Aufsteckbürsten",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       },
+       {
+        "url": "https://www.mediamarkt.de/de/product/_oral-b-kids-pro-3-ersatzburstenkopfe-137560137.html",
+        "text": "ORAL-B Kids Pro 3+ Ersatzbürstenköpfe",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false,
+        "from": "ItemList"
+       }
+      ],
+      "n_hits_all_tokens": 2,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 31790,
+      "price_strings_in_html": 63,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "first_hit": {
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+      "text": "ORAL-B Pro 3 3000 Elektrische Zahnbürste Black",
+      "score": 4,
+      "of": 4,
+      "all_tokens": true,
+      "from": "ItemList"
+     },
+     "product_page": {
+      "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/mediamarkt_de-d7bd120b0d.html",
+      "bytes": 856182,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 1,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "ORAL-B Pro 3 3000 Elektrische Zahnbürste Black",
+       "price": 117.62,
+       "price_raw": "117.62",
+       "currency": "EUR",
+       "availability": "InStock",
+       "gtin": "8006540759790",
+       "gtin_key": "gtin13",
+       "brand": "ORAL-B",
+       "sku": "100959625",
+       "mpn": null,
+       "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 117.62,
+       "price_max": 117.62,
+       "shipping_details": {
+        "rate": "7.9",
+        "currency": "EUR",
+        "destination": "DE",
+        "delivery_time": true
+       },
+       "has_return_policy": false,
+       "available_at_or_from": false
+      },
+      "missing": [],
+      "status": "works",
+      "relevance": {
+       "match": "exact",
+       "missing_tokens": [],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "de_in_store_availability",
+         "snippet": "mediamarkt.de/de/service/lieferung/abholung-markt\">Online bestellen &amp; heute im Markt abholen <span clas"
+        },
+        {
+         "signal": "json_store_fields",
+         "snippet": "00920]\":{\"__typename\":\"CofrPickupFeature\",\"id\":\"Media:de:100959625[1861600920]\",\"storeId\":null,\"isInAssortment\":null,\"isProductOfTypeMarketplace\":true,\"pickupStatus\":\"NO_RETAIL_PRODUCT\",\"displayStatus"
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    }
+   },
+   "name": "MediaMarkt Germany",
+   "probed_at": "2026-11-24T20:49:01+00:00",
+   "robots": {
+    "url": "https://www.mediamarkt.de/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 41,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 5,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.mediamarkt.de/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 4268,
+     "ms": 103
+    },
+    {
+     "kind": "search",
+     "url": "https://www.mediamarkt.de/de/search.html?query=iPhone+16+128GB",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1350728,
+     "ms": 4445
+    },
+    {
+     "kind": "product",
+     "url": "https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1209770,
+     "ms": 1283
+    },
+    {
+     "kind": "search",
+     "url": "https://www.mediamarkt.de/de/search.html?query=Oral-B+Pro+3+3000",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1155204,
+     "ms": 5076
+    },
+    {
+     "kind": "product",
+     "url": "https://www.mediamarkt.de/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html",
+     "hop": 0,
+     "status": 200,
+     "bytes": 856182,
+     "ms": 606
+    }
+   ],
+   "verdict": "works",
+   "verdict_reason": "iphone16=works, oralb=works"
+  },
+  "allegro_sk": {
+   "shop_id": "allegro_sk",
+   "domain": "allegro.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://allegro.sk/listing?string=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 403,
+      "final_url": "https://allegro.sk/listing?string=iPhone+16+128GB",
+      "bytes": 806,
+      "cache_file": ".cache/probe/allegro_sk-2a028bc4b1.html",
+      "bot_wall": {
+       "detected": true,
+       "vendor": "datadome"
+      },
+      "status": "blocked"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "status": "blocked"
+    },
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "status": "skipped_after_block"
+    },
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "status": "skipped_after_block"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "status": "skipped_after_block"
+    }
+   },
+   "name": "Allegro.sk",
+   "probed_at": "2026-11-24T20:49:10+00:00",
+   "robots": {
+    "url": "https://allegro.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 18,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": false
+   },
+   "requests_used_this_run": 2,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://allegro.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1159,
+     "ms": 94
+    },
+    {
+     "kind": "search",
+     "url": "https://allegro.sk/listing?string=iPhone+16+128GB",
+     "hop": 0,
+     "status": 403,
+     "bytes": 806,
+     "ms": 2941
+    }
+   ],
+   "verdict": "blocked",
+   "verdict_reason": "iphone16=blocked, bosch_gsr=blocked, nivea=blocked, oralb=blocked"
+  },
+  "andreashop_sk": {
+   "shop_id": "andreashop_sk",
+   "domain": "andreashop.sk",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.andreashop.sk/vyhladavanie?search=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.andreashop.sk/vyhladavanie?search=iPhone+16+128GB",
+      "bytes": 544536,
+      "cache_file": ".cache/probe/andreashop_sk-f4b9bf65be.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": true,
+       "blobs": [
+        {
+         "kind": "dataLayer",
+         "price_fields": 5,
+         "key": "price",
+         "script_bytes": 1424
+        }
+       ]
+      },
+      "n_candidates": 5,
+      "hits": [
+       {
+        "url": "https://www.andreashop.sk/apple-iphone-16-128gb-biela-p296882",
+        "text": "Apple iPhone 16 128GB biela - Mobilný telefón Apple iPhone 16 128GB biela",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.andreashop.sk/apple-iphone-16-128gb-ruzova-p296885",
+        "text": "Apple iPhone 16 128GB ružová - Mobilný telefón Apple iPhone 16 128GB ružová",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.andreashop.sk/apple-iphone-16-128gb-cierna-p296883",
+        "text": "Apple iPhone 16 128GB čierna - Mobilný telefón Apple iPhone 16 128GB čierna",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.andreashop.sk/apple-iphone-16-128gb-modrozelena-p296886",
+        "text": "Apple iPhone 16 128GB modrozelená - Mobilný telefón Apple iPhone 16 128GB modrozelená",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.andreashop.sk/apple-iphone-16-128gb-ultramarinova-p296884",
+        "text": "Apple iPhone 16 128GB ultramarínová - Mobilný telefón Apple iPhone 16 128GB ultramarínová",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       }
+      ],
+      "n_hits_all_tokens": 5,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 17042,
+      "price_strings_in_html": 9,
+      "no_results_text": true,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "first_hit": {
+      "url": "https://www.andreashop.sk/apple-iphone-16-128gb-biela-p296882",
+      "text": "Apple iPhone 16 128GB biela - Mobilný telefón Apple iPhone 16 128GB biela",
+      "score": 3,
+      "of": 3,
+      "all_tokens": true
+     },
+     "product_page": {
+      "url": "https://www.andreashop.sk/apple-iphone-16-128gb-biela-p296882",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/andreashop_sk-44209f1de6.html",
+      "bytes": 723950,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 1,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "Apple iPhone 16 128GB biela",
+       "price": 979.0,
+       "price_raw": "979",
+       "currency": "EUR",
+       "availability": "OutOfStock",
+       "gtin": null,
+       "gtin_key": null,
+       "brand": "Apple",
+       "sku": null,
+       "mpn": null,
+       "url": null,
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 979.0,
+       "price_max": 979.0,
+       "shipping_details": null,
+       "has_return_policy": false,
+       "available_at_or_from": false
+      },
+      "missing": [
+       "gtin",
+       "shipping_details"
+      ],
+      "status": "works",
+      "relevance": {
+       "match": "exact",
+       "missing_tokens": [],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "sk_in_store_availability",
+         "snippet": "data-dismiss=\"modal\"> Dostupnosť v predajniach <div id=\"warranty-conflict-modal\" class=\"modal fade \" ta"
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    },
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "search": {
+      "query": "Bosch GSR 12V-15",
+      "url": "https://www.andreashop.sk/vyhladavanie?search=Bosch+GSR+12V-15",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.andreashop.sk/vyhladavanie?search=Bosch+GSR+12V-15",
+      "bytes": 590147,
+      "cache_file": ".cache/probe/andreashop_sk-1b45c7177f.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": true,
+       "blobs": [
+        {
+         "kind": "dataLayer",
+         "price_fields": 12,
+         "key": "price",
+         "script_bytes": 3436
+        }
+       ]
+      },
+      "n_candidates": 0,
+      "hits": [],
+      "n_hits_all_tokens": 0,
+      "first_all_tokens_rank": null,
+      "visible_text_chars": 17266,
+      "price_strings_in_html": 24,
+      "no_results_text": true,
+      "status": "no_results"
+     },
+     "queries_tried": [
+      "Bosch GSR 12V-15"
+     ],
+     "status": "no_results"
+    },
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.andreashop.sk/vyhladavanie?search=Nivea+Creme+150+ml",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.andreashop.sk/vyhladavanie?search=Nivea+Creme+150+ml",
+      "bytes": 577008,
+      "cache_file": ".cache/probe/andreashop_sk-5574fae9ba.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": true,
+       "blobs": [
+        {
+         "kind": "dataLayer",
+         "price_fields": 12,
+         "key": "price",
+         "script_bytes": 2945
+        }
+       ]
+      },
+      "n_candidates": 0,
+      "hits": [],
+      "n_hits_all_tokens": 0,
+      "first_all_tokens_rank": null,
+      "visible_text_chars": 18066,
+      "price_strings_in_html": 26,
+      "no_results_text": true,
+      "status": "no_results"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "status": "no_results"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3",
+      "url": "https://www.andreashop.sk/vyhladavanie?search=Oral-B+Pro+3",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.andreashop.sk/vyhladavanie?search=Oral-B+Pro+3",
+      "bytes": 595410,
+      "cache_file": ".cache/probe/andreashop_sk-508996f9da.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": true,
+       "blobs": [
+        {
+         "kind": "dataLayer",
+         "price_fields": 12,
+         "key": "price",
+         "script_bytes": 4550
+        }
+       ]
+      },
+      "n_candidates": 6,
+      "hits": [
+       {
+        "url": "https://www.andreashop.sk/oral-b-cross-action-pro-p176809",
+        "text": "ORAL-B CROSS ACTION PRO - Náhradná zubná kefka ORAL-B CROSS ACTION PRO",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.andreashop.sk/oral-b-precision-clean-pro-p318652",
+        "text": "ORAL-B Precision Clean Pro - Náhradná zubná kefka ORAL-B Precision Clean Pro",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.andreashop.sk/oral-b-io-series-3-pink-p318647",
+        "text": "ORAL-B IO Series 3 PINK + Cashback 10€ pri nákupe min. za 70€ - Elektrická zubná kefka ORAL-B IO Series 3 PINK + Cashback 10€ pri nákupe min",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.andreashop.sk/oral-b-io-series-3-ice-blue-p296140",
+        "text": "ORAL-B IO Series 3 Ice Blue + Cashback 10€ pri nákupe min. za 70€ - Elektrická zubná kefka ORAL-B IO Series 3 Ice Blue + Cashback 10€ pri ná",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.andreashop.sk/oral-b-vitality-pro-d103-vitality-kids-d100-frozen-p296145",
+        "text": "ORAL-B Vitality PRO D103+Vitality Kids D100 Frozen - Zubná kefka Family edition ORAL-B Vitality PRO D103+Vitality Kids D100 Frozen",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.andreashop.sk/oral-b-series-io-2-black-p343825",
+        "text": "Typ : Zubná kefka • Použitie : Pre dospelých • Napájanie : Akumulátorové • Počet rýchlostí : 3 ORAL-B Series iO 2 Black + Cashback 10€ pri n",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       }
+      ],
+      "n_hits_all_tokens": 0,
+      "first_all_tokens_rank": null,
+      "visible_text_chars": 18288,
+      "price_strings_in_html": 36,
+      "no_results_text": true,
+      "status": "ok",
+      "first_query_status": "no_results"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000",
+      "Oral-B Pro 3"
+     ],
+     "first_hit": {
+      "url": "https://www.andreashop.sk/oral-b-cross-action-pro-p176809",
+      "text": "ORAL-B CROSS ACTION PRO - Náhradná zubná kefka ORAL-B CROSS ACTION PRO",
+      "score": 2,
+      "of": 3,
+      "all_tokens": false
+     },
+     "product_page": {
+      "url": "https://www.andreashop.sk/oral-b-cross-action-pro-p176809",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/andreashop_sk-880695120a.html",
+      "bytes": 541298,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 1,
+      "structured": {
+       "source": "json-ld",
+       "types": [
+        "Product"
+       ],
+       "name": "ORAL-B CROSS ACTION PRO",
+       "price": 16.99,
+       "price_raw": "16.99",
+       "currency": "EUR",
+       "availability": "InStock",
+       "gtin": null,
+       "gtin_key": null,
+       "brand": "ORAL-B",
+       "sku": null,
+       "mpn": null,
+       "url": null,
+       "n_offers": 1,
+       "n_variants": 0,
+       "price_min": 16.99,
+       "price_max": 16.99,
+       "shipping_details": null,
+       "has_return_policy": false,
+       "available_at_or_from": false
+      },
+      "missing": [
+       "gtin",
+       "shipping_details"
+      ],
+      "status": "works",
+      "relevance": {
+       "match": "none",
+       "missing_tokens": [
+        "3"
+       ],
+       "variant_words": []
+      },
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "sk_in_store_availability",
+         "snippet": "data-dismiss=\"modal\"> Dostupnosť v predajniach <div id=\"warranty-conflict-modal\" class=\"modal fade \" ta"
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "works"
+    }
+   },
+   "name": "Andreashop",
+   "probed_at": "2026-11-24T20:48:55+00:00",
+   "robots": {
+    "url": "https://www.andreashop.sk/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 2,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": true
+   },
+   "requests_used_this_run": 8,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.andreashop.sk/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 194,
+     "ms": 75
+    },
+    {
+     "kind": "search",
+     "url": "https://www.andreashop.sk/vyhladavanie?search=iPhone+16+128GB",
+     "hop": 0,
+     "status": 200,
+     "bytes": 544536,
+     "ms": 3964
+    },
+    {
+     "kind": "product",
+     "url": "https://www.andreashop.sk/apple-iphone-16-128gb-biela-p296882",
+     "hop": 0,
+     "status": 200,
+     "bytes": 723950,
+     "ms": 2521
+    },
+    {
+     "kind": "search",
+     "url": "https://www.andreashop.sk/vyhladavanie?search=Bosch+GSR+12V-15",
+     "hop": 0,
+     "status": 200,
+     "bytes": 590147,
+     "ms": 3368
+    },
+    {
+     "kind": "search",
+     "url": "https://www.andreashop.sk/vyhladavanie?search=Nivea+Creme+150+ml",
+     "hop": 0,
+     "status": 200,
+     "bytes": 577008,
+     "ms": 2239
+    },
+    {
+     "kind": "search",
+     "url": "https://www.andreashop.sk/vyhladavanie?search=Oral-B+Pro+3+3000",
+     "hop": 0,
+     "status": 200,
+     "bytes": 595465,
+     "ms": 2809
+    },
+    {
+     "kind": "search",
+     "url": "https://www.andreashop.sk/vyhladavanie?search=Oral-B+Pro+3",
+     "hop": 0,
+     "status": 200,
+     "bytes": 595410,
+     "ms": 2744
+    },
+    {
+     "kind": "product",
+     "url": "https://www.andreashop.sk/oral-b-cross-action-pro-p176809",
+     "hop": 0,
+     "status": 200,
+     "bytes": 541298,
+     "ms": 1570
+    }
+   ],
+   "verdict": "works",
+   "verdict_reason": "iphone16=works, bosch_gsr=no_results, nivea=no_results, oralb=works"
+  },
+  "amazon_de": {
+   "shop_id": "amazon_de",
+   "domain": "amazon.de",
+   "products": {
+    "iphone16": {
+     "product": "iphone16",
+     "query": "iPhone 16 128GB",
+     "search": {
+      "query": "iPhone 16 128GB",
+      "url": "https://www.amazon.de/s?k=iPhone+16+128GB",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.amazon.de/s?k=iPhone+16+128GB",
+      "bytes": 1303360,
+      "cache_file": ".cache/probe/amazon_de-af897e3b5b.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 43,
+      "hits": [
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHY5KG8/ref=sr_1_3?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+        "text": "Apple iPhone 16 128GB: 5G Mobile Phone with Camera Control, A18 Chip and a Real Boost for Battery. Works with AirPods, Black",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHY5KG8/ref=vo_sr_l_dp?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+        "text": "2 sizes Options: 2 sizes",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHY5KG8/ref=cs_sr_dp_1?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+        "text": "black",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGTDWCDG/ref=cs_sr_dp_2?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+        "text": "blue-green",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGTCGG7B/ref=cs_sr_dp_3?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+        "text": "rosé",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGT3V68Y/ref=cs_sr_dp_4?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+        "text": "ultramarine",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGTB1BXR/ref=cs_sr_dp_5?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+        "text": "White",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHN7913/ref=sr_1_4?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-4",
+        "text": "Apple iPhone 16 128GB: 5G Phone with Camera Control, A18 Chip and a Real Boost for Battery. Works with AirPods, White",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHN7913/ref=vo_sr_l_dp?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-4",
+        "text": "2 sizes Options: 2 sizes",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHN7913/ref=cs_sr_dp_1?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-4",
+        "text": "White",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGTDWCDG/ref=cs_sr_dp_2?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-4",
+        "text": "blue-green",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGTCGG7B/ref=cs_sr_dp_3?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-4",
+        "text": "rosé",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       }
+      ],
+      "n_hits_all_tokens": 18,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 28917,
+      "price_strings_in_html": 139,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "iPhone 16 128GB"
+     ],
+     "first_hit": {
+      "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHY5KG8/ref=sr_1_3?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+      "text": "Apple iPhone 16 128GB: 5G Mobile Phone with Camera Control, A18 Chip and a Real Boost for Battery. Works with AirPods, Black",
+      "score": 3,
+      "of": 3,
+      "all_tokens": true
+     },
+     "product_page": {
+      "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHY5KG8/ref=sr_1_3?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/amazon_de-dc0dd3f528.html",
+      "bytes": 1931295,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 0,
+      "structured": null,
+      "status": "no_structured_data",
+      "html_price_patterns": [
+       {
+        "pattern": "visible_text:.a-section .apex-core-price-identifier",
+        "example": "€878.56 € 878 . 56"
+       }
+      ],
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "json_store_fields",
+         "snippet": "e=\"hidden\" id=\"sr\" name=\"sr\" value=\"8-3\"> "
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "no_structured_data"
+    },
+    "bosch_gsr": {
+     "product": "bosch_gsr",
+     "query": "Bosch GSR 12V-15",
+     "search": {
+      "query": "Bosch GSR 12V-15",
+      "url": "https://www.amazon.de/s?k=Bosch+GSR+12V-15",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.amazon.de/s?k=Bosch+GSR+12V-15",
+      "bytes": 1100003,
+      "cache_file": ".cache/probe/amazon_de-87ddde9f79.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 17,
+      "hits": [
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-12V-15-Cordless-Keyless/dp/B003VEILMG/ref=sr_1_1?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-1",
+        "text": "Bosch Professional GSR 12V-15 12V Naked Cordless Li-Ion Drill Driver with Keyless Chuck",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-12V-15-Cordless-Drill-class/dp/B08LNW67PN/ref=sr_1_3?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-3",
+        "text": "Bosch PRO GSR 12V-15 Cordless Drill | Bosch 12 Volt class drill - with a balance between power and size",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/TRAPANO-BATTERIA-PERCUSSIONE-GSB12-BOSCH/dp/B00YYBBUBY/ref=sr_1_4?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-4",
+        "text": "TRAPANO BATTERIA PERCUSSIONE GSB12 V – 15 V . LI PRO BOSCH",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-Battery-12-2-LI-Accessory/dp/B015WGDX6E/ref=sr_1_5?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-5",
+        "text": "Bosch Professional Battery drill GSR 12-2-LI with 39 PCs. Accessory Set, 2x battery 2,0 Ah, Charger in Bag, 12 V",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-Cordless-39-Piece-Accessory/dp/B00MQIZWUM/ref=sr_1_6?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-6",
+        "text": "Bosch Professional GSR 12V-15 12V System Cordless Drill (39-Piece Accessory | 39 pieces. Accessory set; 1x 2.0 and 4.0Ah b...",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-Cordless-Charger-Battery/dp/B08221SD6W/ref=sr_1_7?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-7",
+        "text": "Bosch Professional GSR 18V-55 18V System Cordless Drill (Max. Torque 55 Nm, 1,800 min-¹, Charger) Battery Powered",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-12V-15-Cordless-Drill/dp/B01MY6O96N/ref=sr_1_12?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-12",
+        "text": "Bosch Professional GSR 12V-15 FC Cordless Drill 2 x 2.0 Ah L-Box",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-Cordless-Advanced-Brushless/dp/B0FQTYDW69/ref=sr_1_13?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-13",
+        "text": "Bosch Professional 12 V Cordless Drill GSR 12V-32 (Advanced KickBack Control, Brushless Motor)",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-Cordless-Rechargeable-0601868109/dp/B00ABOBRWU/ref=sr_1_17?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-17",
+        "text": "Bosch Professional GSR 12V-15 Cordless Drill (2x2,0 Ah battery, 10 mm drill chuck, 950 g incl. Rechargeable battery, 12 V,...",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-System-Cordless-12V-15/dp/B09Z2B2W3P/ref=sr_1_18?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-18",
+        "text": "Bosch Professional 12V System Cordless Drill GSR 12V-15 FC - FlexiClick System (Including 2x 2.0 GBA 12V Battery, Charger,...",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-without-battery-diameter/dp/B01NCX7ZVO/ref=sr_1_20?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-20",
+        "text": "Bosch Professional GSR 12V-15 FC (without battery, 12 Volt, screw diameter max. 7 mm, in box)",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Bosch-Professional-12V-15-0-Ah-Akku-Ladeger%C3%A4t/dp/B0C7ZRFZ9K/ref=sr_1_21?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-21",
+        "text": "Bosch Professional Combo Kit GSR 12V-15 + GWS 12V-76 (inkl. 2x 2,0-Ah-Akku, Ladegerät GAL 12V-40, in L-BOXX)",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       }
+      ],
+      "n_hits_all_tokens": 10,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 14929,
+      "price_strings_in_html": 140,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Bosch GSR 12V-15"
+     ],
+     "first_hit": {
+      "url": "https://www.amazon.de/-/en/Bosch-Professional-12V-15-Cordless-Keyless/dp/B003VEILMG/ref=sr_1_1?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-1",
+      "text": "Bosch Professional GSR 12V-15 12V Naked Cordless Li-Ion Drill Driver with Keyless Chuck",
+      "score": 3,
+      "of": 3,
+      "all_tokens": true
+     },
+     "product_page": {
+      "url": "https://www.amazon.de/-/en/Bosch-Professional-12V-15-Cordless-Keyless/dp/B003VEILMG/ref=sr_1_1?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-1",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/amazon_de-679c29cf8f.html",
+      "bytes": 2763179,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 0,
+      "structured": null,
+      "status": "no_structured_data",
+      "html_price_patterns": [
+       {
+        "pattern": "visible_text:.a-spacing-top-mini .apex-core-price-identifier",
+        "example": "€51.67 € 51 . 67"
+       }
+      ],
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "json_store_fields",
+         "snippet": "e=\"hidden\" id=\"sr\" name=\"sr\" value=\"8-1\"> "
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "no_structured_data"
+    },
+    "nivea": {
+     "product": "nivea",
+     "query": "Nivea Creme 150 ml",
+     "search": {
+      "query": "Nivea Creme 150 ml",
+      "url": "https://www.amazon.de/s?k=Nivea+Creme+150+ml",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.amazon.de/s?k=Nivea+Creme+150+ml",
+      "bytes": 1689117,
+      "cache_file": ".cache/probe/amazon_de-3e8e4cda2d.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 41,
+      "hits": [
+       {
+        "url": "https://www.amazon.de/-/en/NIVEA-Moisturiser-Texture-Enriched-Multi-Purpose/dp/B07YQG4M32/ref=sr_1_6?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-6",
+        "text": "NIVEA Cream for Face, Body & Hands (1 x 150 ml), Moisturiser with Creamy Texture, Enriched with Eucerit, Multi-Purpose Moi...",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/nourishes-protects-velvety-texture-fragrance/dp/B0D7J2BSDX/ref=sr_1_8?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&rdc=1&sr=8-8",
+        "text": "Nivea Creme 100ml | Hand, body and face cream, nourishes and protects, velvety texture, Nivea fragrance",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/NIVEA-nourishes-protects-velvety-fragrance/dp/B0D6XCGXWK/ref=sr_1_9?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-9",
+        "text": "NIVEA Creme 150ml Beyou | Hand, body and face cream, nourishes and protects, velvety texture, Nivea fragrance",
+        "score": 3,
+        "of": 3,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Creme-Eucerit-moisture-velvety-texture/dp/B0CTR82ZJF/ref=sr_1_10?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&rdc=1&sr=8-10",
+        "text": "Nivea Creme 30ml | Rich care with Eucerit for face, body and hands, 72h moisture, velvety texture, for the whole family",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Eucerit-moisture-velvety-texture-family/dp/B0CT3WRFD9/ref=sr_1_16?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-16",
+        "text": "Nivea Creme 400ml | Rich care with Eucerit for face, body and hands, 72h moisture, velvety texture, for the whole family",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Anti-Impurities-Cleanser-Salicylic-Niacinamide-Complexion/dp/B0DG62YYNJ/ref=sr_1_17?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&rdc=1&sr=8-17",
+        "text": "Nivea Derma Skin Clear Anti-Impurities Peeling, 150 ml | Facial Cleanser with Salicylic Acid and Niacinamide, Visibly Impr...",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Creme-nourishes-protects-velvety-fragrance/dp/B0D6X69F9J/ref=sr_1_18?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&rdc=1&sr=8-18",
+        "text": "Nivea Creme 250ml | Hand, body and face cream, nourishes and protects, velvety texture, Nivea fragrance",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/NIVEA-limited-moisture-nostalgia-designs/dp/B0HGH4K1CY/ref=sr_1_19?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-19",
+        "text": "NIVEA Cream, face, body and hand cream, limited edition tin, 150 ml | Cream for face, hand and body for 72 hours of moistu...",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Beiersdorf-80104-01030-39-Nivea-Cream-150/dp/B086NH1DV5/ref=sr_1_23?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-23",
+        "text": "Nivea Cream 150 ml",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/NIVEA-MEN-Nourishing-Intensive-Moisture/dp/B0F8QWYKLQ/ref=sr_1_24?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-24",
+        "text": "Cream, Nourishing Skin Cream with Vitamin E for Intensive Moisture, Skin Care for Men, Ideal for Body, Face and Hands (150 ml) (Pack of 3)",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/NIVEA-Natural-Classic-Moisturising-Moisture/dp/B0HCR52QJV/ref=sr_1_25?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-25",
+        "text": "NIVEA Creme Natural Touch, Classic Moisturising Cream for All Skin Types, Rich Natural Based Skin Care for 72h Moisture (1...",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/200mlErfrischende-Feuchtigkeitscreme-vitamin-moisture-absorbs/dp/B0C7W3VYRP/ref=sr_1_26?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&rdc=1&sr=8-26",
+        "text": "Nivea soft Creme 200mlErfrischende Feuchtigkeitscreme | Face, body and hand cream with vitamin E and jojoba oil, 48h moist...",
+        "score": 2,
+        "of": 3,
+        "all_tokens": false
+       }
+      ],
+      "n_hits_all_tokens": 4,
+      "first_all_tokens_rank": 3,
+      "visible_text_chars": 28678,
+      "price_strings_in_html": 380,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Nivea Creme 150 ml"
+     ],
+     "first_hit": {
+      "url": "https://www.amazon.de/-/en/NIVEA-Moisturiser-Texture-Enriched-Multi-Purpose/dp/B07YQG4M32/ref=sr_1_6?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-6",
+      "text": "NIVEA Cream for Face, Body & Hands (1 x 150 ml), Moisturiser with Creamy Texture, Enriched with Eucerit, Multi-Purpose Moi...",
+      "score": 2,
+      "of": 3,
+      "all_tokens": false
+     },
+     "product_page": {
+      "url": "https://www.amazon.de/-/en/NIVEA-Moisturiser-Texture-Enriched-Multi-Purpose/dp/B07YQG4M32/ref=sr_1_6?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-6",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/amazon_de-6ebb0bfade.html",
+      "bytes": 2176460,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 0,
+      "structured": null,
+      "status": "no_structured_data",
+      "html_price_patterns": [
+       {
+        "pattern": "visible_text:.a-price .a-text-normal .aok-align-center .reinventPriceAccor",
+        "example": "€2.94 € 2 . 94"
+       }
+      ],
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "json_store_fields",
+         "snippet": "e=\"hidden\" id=\"sr\" name=\"sr\" value=\"8-6\"> "
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "no_structured_data"
+    },
+    "oralb": {
+     "product": "oralb",
+     "query": "Oral-B Pro 3 3000",
+     "search": {
+      "query": "Oral-B Pro 3 3000",
+      "url": "https://www.amazon.de/s?k=Oral-B+Pro+3+3000",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.amazon.de/s?k=Oral-B+Pro+3+3000",
+      "bytes": 1932033,
+      "cache_file": ".cache/probe/amazon_de-bfde0b6b75.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 13,
+      "hits": [
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-Pro-Electric-Toothbrush-Duo/dp/B0B4WQYYB2/ref=sr_1_6?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-6",
+        "text": "Oral-B Pro Series 3 Electric Toothbrush Duo",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-Twin-Pack-Electric-Toothbrush/dp/B0C6MJC9HJ/ref=sr_1_8?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-8",
+        "text": "Oral-B Pro Series 1 Twin Pack Electric Toothbrush - Pink/Black | Includes 2 replacement brushes, electric toothbrush, 3 cl...",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-Pro-Electric-Toothbrush-replacement/dp/B097JWGZ67/ref=sr_1_11?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-11",
+        "text": "Oral-B Pro Series 1 Electric Toothbrush - Black | Includes 3 replacement brushes, electric toothbrush, 3 cleaning modes fo...",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-Vitality-Electric-Toothbrush-toothbrush/dp/B0B4SCYCLS/ref=sr_1_17?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-17",
+        "text": "Oral-B Vitality Pro Electric Toothbrush, 3 Cleaning Modes for Dental Care | Includes 1 brush head, electric toothbrush wit...",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-Electric-Toothbrush-Replacement-Cleaning/dp/B0B4WTB4DG/ref=sr_1_19?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-19",
+        "text": "Oral-B Pro 3 3900 Electric Toothbrush, Double Pack & 3 Replacement Brushes, 3 Cleaning Modes, 360° Pressure Control for De...",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Replacement-Toothbrush-Vitality-Compatible-Precision/dp/B08ZN519S6/ref=sr_1_34?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-34",
+        "text": "Hsytek Replacement Toothbrush Heads for Oral B Vitality Pro, Genius X, Pro 1 750, Pro 3 Electric Toothbrush Heads, Compati...",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-Toothbrush-including-rotations-pulsations/dp/B0C6MBSN9Q/ref=sr_1_43?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-43",
+        "text": "Oral-B Electric Toothbrush Pro 1 with Spare Brush Pink | 3 cleaning modes, including softness, brushes with oscillo rotati...",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-3000-Cross-Action-Pink/dp/B0C6MCVKM8/ref=sr_1_44?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-44",
+        "text": "Oral-B Pro 3 3000 Cross Action Pink,Pink",
+        "score": 4,
+        "of": 4,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/Oral-B-Electric-Toothbrush-Cleaning-Pressure/dp/B0B4SFJMH3/ref=sr_1_52?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-52",
+        "text": "Oral-B Pro Series 3 3500 Electric Toothbrush or Electric Toothbrush, with 3 Cleaning Modes and Visual 360° Pressure Contro...",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/s?k=oral-b+pro+3+3500&ref=rsl_sug_0_0&pd_rd_w=78UPG&content-id=amzn1.sym.801cfa10-3589-4225-ad5b-c367a55071d3:amzn1.sym.801cfa10-3589-4225-ad5b-c367a55071d3&pf_rd_p=801cfa10-3589-4225-ad5b-c367a55071d3&pf_rd_r=95XXZ7RQGRNKV2A6Q13D&pd_rd_wg=XkQAK&pd_rd_r=898618e5-f851-48a2-afcf-312b1978ca85&qid=1795553362",
+        "text": "oral-b pro 3 3500",
+        "score": 3,
+        "of": 4,
+        "all_tokens": false
+       },
+       {
+        "url": "https://www.amazon.de/-/en/s?k=oral-b+pro+3+3000+aufsteckb%C3%BCrsten&ref=rsl_sug_0_3&pd_rd_w=78UPG&content-id=amzn1.sym.801cfa10-3589-4225-ad5b-c367a55071d3:amzn1.sym.801cfa10-3589-4225-ad5b-c367a55071d3&pf_rd_p=801cfa10-3589-4225-ad5b-c367a55071d3&pf_rd_r=95XXZ7RQGRNKV2A6Q13D&pd_rd_wg=XkQAK&pd_rd_r=898618e5-f851-48a2-afcf-312b1978ca85&qid=1795553362",
+        "text": "oral-b pro 3 3000 aufsteckbürsten",
+        "score": 4,
+        "of": 4,
+        "all_tokens": true
+       },
+       {
+        "url": "https://www.amazon.de/-/en/s?k=oral-b+pro+3+3000+ersatzb%C3%BCrsten&ref=rsl_sug_0_4&pd_rd_w=78UPG&content-id=amzn1.sym.801cfa10-3589-4225-ad5b-c367a55071d3:amzn1.sym.801cfa10-3589-4225-ad5b-c367a55071d3&pf_rd_p=801cfa10-3589-4225-ad5b-c367a55071d3&pf_rd_r=95XXZ7RQGRNKV2A6Q13D&pd_rd_wg=XkQAK&pd_rd_r=898618e5-f851-48a2-afcf-312b1978ca85&qid=1795553362",
+        "text": "oral-b pro 3 3000 ersatzbürsten",
+        "score": 4,
+        "of": 4,
+        "all_tokens": true
+       }
+      ],
+      "n_hits_all_tokens": 3,
+      "first_all_tokens_rank": 8,
+      "visible_text_chars": 55312,
+      "price_strings_in_html": 410,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Oral-B Pro 3 3000"
+     ],
+     "first_hit": {
+      "url": "https://www.amazon.de/-/en/Oral-B-Pro-Electric-Toothbrush-Duo/dp/B0B4WQYYB2/ref=sr_1_6?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-6",
+      "text": "Oral-B Pro Series 3 Electric Toothbrush Duo",
+      "score": 3,
+      "of": 4,
+      "all_tokens": false
+     },
+     "product_page": {
+      "url": "https://www.amazon.de/-/en/Oral-B-Pro-Electric-Toothbrush-Duo/dp/B0B4WQYYB2/ref=sr_1_6?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-6",
+      "robots_allowed": true,
+      "http_status": 200,
+      "cache_file": ".cache/probe/amazon_de-05318009f6.html",
+      "bytes": 2528334,
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "extruct_error": null,
+      "n_product_nodes": 0,
+      "structured": null,
+      "status": "no_structured_data",
+      "html_price_patterns": [
+       {
+        "pattern": "visible_text:.a-section .apex-core-price-identifier",
+        "example": "€131.49 € 131 . 49"
+       }
+      ],
+      "branch_stock": {
+       "signals": [
+        {
+         "signal": "json_store_fields",
+         "snippet": "e=\"hidden\" id=\"sr\" name=\"sr\" value=\"8-6\"> "
+        }
+       ],
+       "endpoint_candidates": [],
+       "mentions_kosice": false
+      }
+     },
+     "status": "no_structured_data"
+    },
+    "extra_book": {
+     "product": "extra_book",
+     "query": "Hobit Tolkien",
+     "search": {
+      "query": "Hobit Tolkien",
+      "url": "https://www.amazon.de/s?k=Hobit+Tolkien",
+      "robots_allowed": true,
+      "http_status": 200,
+      "final_url": "https://www.amazon.de/s?k=Hobit+Tolkien",
+      "bytes": 977679,
+      "cache_file": ".cache/probe/amazon_de-9dcb22d3cb.html",
+      "bot_wall": {
+       "detected": false,
+       "vendor": null
+      },
+      "structured": {
+       "item_lists": 0,
+       "item_list_items": 0,
+       "products": 0,
+       "products_with_price": 0,
+       "sources": [],
+       "product_list": [],
+       "item_urls": [],
+       "extruct_error": null
+      },
+      "embedded_state": {
+       "found": false,
+       "blobs": []
+      },
+      "n_candidates": 1,
+      "hits": [
+       {
+        "url": "https://www.amazon.de/-/en/s?k=Hobit+Tolkien&dc&ref=a9_asc_1",
+        "text": "Search instead for Hobit Tolkien",
+        "score": 2,
+        "of": 2,
+        "all_tokens": true
+       }
+      ],
+      "n_hits_all_tokens": 1,
+      "first_all_tokens_rank": 1,
+      "visible_text_chars": 14713,
+      "price_strings_in_html": 190,
+      "no_results_text": false,
+      "status": "ok"
+     },
+     "queries_tried": [
+      "Hobit Tolkien"
+     ],
+     "first_hit": {
+      "url": "https://www.amazon.de/-/en/s?k=Hobit+Tolkien&dc&ref=a9_asc_1",
+      "text": "Search instead for Hobit Tolkien",
+      "score": 2,
+      "of": 2,
+      "all_tokens": true
+     },
+     "product_page": {
+      "url": "https://www.amazon.de/-/en/s?k=Hobit+Tolkien&dc&ref=a9_asc_1",
+      "robots_allowed": true,
+      "status": "budget_exhausted"
+     },
+     "status": "budget_exhausted"
+    }
+   },
+   "name": "Amazon.de",
+   "probed_at": "2026-11-24T20:49:01+00:00",
+   "robots": {
+    "url": "https://www.amazon.de/robots.txt",
+    "http_status": 200,
+    "mode": "rules",
+    "n_rules": 113,
+    "error": null,
+    "bot_wall": null,
+    "sitemap_hint": false
+   },
+   "requests_used_this_run": 10,
+   "request_log": [
+    {
+     "kind": "robots",
+     "url": "https://www.amazon.de/robots.txt",
+     "hop": 0,
+     "status": 200,
+     "bytes": 7508,
+     "ms": 152
+    },
+    {
+     "kind": "search",
+     "url": "https://www.amazon.de/s?k=iPhone+16+128GB",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1303360,
+     "ms": 3638
+    },
+    {
+     "kind": "product",
+     "url": "https://www.amazon.de/-/en/Apple-iPhone-16-128GB-Battery/dp/B0DGHY5KG8/ref=sr_1_3?dib=eyJ2IjoiMSJ9.xhMuG4Db4QWpFqBhypbbqFNDK309da0b8yemVePZcqQmy6ZF425aSTb0NsCG0V9FBNSSSwh4_UcYEWWxVY2oJTnVRBPEBFlFuZl-Cl16swL3KyeOQ6CxenA9CjRNJg_xodBWJcJ1WfNWyTpcgWhKLpiPHfjzcU7cqL3-cuYkjr9of-6-BNqB9YgKXZPxaoBX9QgDofupg_d29CA_-3EVhozxdP6AeqYseTXA84qvY_w.XTV1Z4NRrh10xA_mzF4uutXa4fhJsU8OiNK1EJOnUGU&dib_tag=se&keywords=iPhone+16+128GB&qid=1795553344&sr=8-3",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1931295,
+     "ms": 3057
+    },
+    {
+     "kind": "search",
+     "url": "https://www.amazon.de/s?k=Bosch+GSR+12V-15",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1100003,
+     "ms": 1598
+    },
+    {
+     "kind": "product",
+     "url": "https://www.amazon.de/-/en/Bosch-Professional-12V-15-Cordless-Keyless/dp/B003VEILMG/ref=sr_1_1?dib=eyJ2IjoiMSJ9.X6zcOyveIN9Ev1HKQLrsl4Y6TJpu9XwYMr_I-pCzcjKWbE76i1meL9oZyruXY69YZs9RtQDOh5JUOKBbL78YG3fgkm7mkyOTXMmnC41ZJfR33GXJxf_6LiZvg7y8SIxWZdrAharbpwtVrphTN1C0FrjiaEfqs-3dJKCdHPGMRCyLgfOjaM2W_WLXYaZgBrKov3DkWUJWuc29E-SDyBgooHB7KLpglJg6zV-1-runwlk.XRUWRM9fdWy16tbhhvNZRLz2JCHNtNeZeETKPQygP0I&dib_tag=se&keywords=Bosch+GSR+12V-15&qid=1795553350&sr=8-1",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2763179,
+     "ms": 3586
+    },
+    {
+     "kind": "search",
+     "url": "https://www.amazon.de/s?k=Nivea+Creme+150+ml",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1689117,
+     "ms": 1827
+    },
+    {
+     "kind": "product",
+     "url": "https://www.amazon.de/-/en/NIVEA-Moisturiser-Texture-Enriched-Multi-Purpose/dp/B07YQG4M32/ref=sr_1_6?dib=eyJ2IjoiMSJ9.nSFY2lVN2Uj3xwhMaIndHi-mzU7lRSdempflM2vp5x5RB5kd6kTfkCkJMGdRsmnP_e30tsGySqh5kZ0-us8KhQlSUqL7uR5P-_2GB7UI2R57W6wZPz02dJfo9rVYLLp9Cj5ETxBAUUBNr8c88gCwselQv5NaWrNQvw3AzV3r5ouGxSsLjfITcYmwBrUoIOxRMC7t5YC2B3MpYXk8P5dkQQVUDN1KS4OAWZaE-8-dAmy_QtCGGKJsdYHLeOP20ME6edJK-GyXNu2iTryaEfhdTmcuHkJxry4GOgylBIP591o.Ic7e6XCsNKJygXKavZGrp9qJJKe5oMdaqLdcYK_fJNY&dib_tag=se&keywords=Nivea+Creme+150+ml&qid=1795553356&sr=8-6",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2176460,
+     "ms": 3228
+    },
+    {
+     "kind": "search",
+     "url": "https://www.amazon.de/s?k=Oral-B+Pro+3+3000",
+     "hop": 0,
+     "status": 200,
+     "bytes": 1932033,
+     "ms": 1920
+    },
+    {
+     "kind": "product",
+     "url": "https://www.amazon.de/-/en/Oral-B-Pro-Electric-Toothbrush-Duo/dp/B0B4WQYYB2/ref=sr_1_6?dib=eyJ2IjoiMSJ9.gzO-w_8pDRUbCxj9JZDA0Rglgk-3ogDM62YG2hyxWWjL4yJ-DL2b4ZNNLUZd2QQsBdxs7ESgGAaoq27KqrlOLgLlqFGf38a4lQiR036IevtfqHLbzG-S3e9c1jcsamHUNq_WTHgNP3EN1IST5zYaqhcE5-uxfgXMG44MRZ35T7Qo1CYxsY2ZBw1HOfEBCetzzhzE-urPzT2ChEYMzHn4nRmUuaWMNmjHFTmYIG7CDtAEn3gZY6MCqX4kjnazPSVns-soGKZ5C8ZmMGlRfcEylt8JurHVM936NGOtEiH00Co.3GyNrSaICONfrTK_hIhHS_hG5OU1YZtVvxpv3PIIFuI&dib_tag=se&keywords=Oral-B+Pro+3+3000&qid=1795553362&sr=8-6",
+     "hop": 0,
+     "status": 200,
+     "bytes": 2528334,
+     "ms": 3619
+    },
+    {
+     "kind": "search",
+     "url": "https://www.amazon.de/s?k=Hobit+Tolkien",
+     "hop": 0,
+     "status": 200,
+     "bytes": 977679,
+     "ms": 1554
+    }
+   ],
+   "verdict": "no_structured_data",
+   "verdict_reason": "iphone16=no_structured_data, bosch_gsr=no_structured_data, nivea=no_structured_data, oralb=no_structured_data, extra_book=unreachable"
+  }
+ }
+}

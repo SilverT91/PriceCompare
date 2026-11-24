@@ -1,0 +1,28 @@
+{
+ "source": "trimmed JSON-LD from https://www.drmax.sk/nivea-creme-1, fetched 2026-11-24 by tools/probe_shops.py",
+ "kind": "product",
+ "url": "https://www.drmax.sk/nivea-creme-1",
+ "blocks": [
+  {
+   "@context": "https://schema.org/",
+   "@type": "Product",
+   "@id": "https://www.drmax.sk/nivea-creme-1#product",
+   "name": "NIVEA Creme 1×150 ml, univerzálny krém",
+   "sku": "X04638",
+   "gtin": "4005808157976",
+   "brand": {
+    "@type": "Brand",
+    "name": "NIVEA",
+    "url": "https://www.drmax.sk/nivea"
+   },
+   "offers": {
+    "@type": "Offer",
+    "itemCondition": "https://schema.org/NewCondition",
+    "priceCurrency": "EUR",
+    "price": 5.89,
+    "url": "https://www.drmax.sk/nivea-creme-1",
+    "availability": "http://schema.org/SoldOut"
+   }
+  }
+ ]
+}
