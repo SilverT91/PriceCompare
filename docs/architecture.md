@@ -90,7 +90,7 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 
 | Path | What it is |
 |---|---|
-| `public/index.html`, `app.js`, `style.css` | Plain HTML/CSS/JS, no build step. `app.js` opens an `EventSource` on `/api/search`, keeps one `state` object, and renders products, the similar models (`renderNearby()`, only what the `products` event carries), the comparison for the selected product, the manual-link list and per-shop statuses. Choosing a product ("Which one do you mean?") happens in the browser, not on the server. `app.js` re-implements `headlineText`, `sortOffers`, and the status summary from core (comments say "Mirrors"), so a change to those rules needs a matching change here. |
+| `public/index.html`, `app.js`, `style.css` | Plain HTML/CSS/JS, no build step. `app.js` opens an `EventSource` on `/api/search`, keeps one `state` object, and renders products, the similar models (`renderNearby()`, only what the `products` event carries), the comparison for the selected product, the manual-link list and per-shop statuses. Choosing a product ("Which one do you mean?") happens in the browser, not on the server; until the user picks one, the comparison follows the first product in the list as results arrive. `app.js` re-implements `headlineText`, `sortOffers`, and the status summary from core (comments say "Mirrors"), so a change to those rules needs a matching change here. |
 | `tools/extract_fixtures.ts` | Builds test fixtures from pages cached by the probe, or (`--fetch`) from one page fetched now under the request rules (section 8). |
 | `tools/fetch_info.ts` | Reads one shop page under the same request rules, to fill in `shops.yaml` facts by hand (`--links`, `--grep`, `--forms`). |
 | `tools/measure_site_search.ts` | Runs the real pipeline against the web-search route and counts queries and hits. Makes live requests. |
@@ -531,6 +531,12 @@ fits there. Suggested shape:
 
 Note that the README currently states a rule of no headless browser; adding this route changes that
 rule, so it needs a deliberate decision first.
+
+Measured by hand on 2026-11-25 with a browser engine: dm's product page carries JSON-LD `Product`
+with price, GTIN and availability once rendered. Loading the page made about 200 requests, most of
+them images, fonts and third-party scripts, so a renderer should switch those off. dm is the only
+shop it would add today: Pilulka's pages without product data are pages of products that are
+currently unavailable, and a browser shows no product data on them either.
 
 ### Add a field to `data/shops.yaml`
 

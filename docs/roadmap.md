@@ -72,8 +72,9 @@ In this order.
 1. **Decide on a browser engine for dm (mojadm.sk).** The hand check showed it would work: the
    rendered product page has price, GTIN and stock. It would add one shop (Pilulka is not a second
    case) at the price of a large dependency (Playwright with its own Chromium) and about 200
-   requests per rendered page unless images, fonts and third-party scripts are switched off. If it
-   is built:
+   requests per rendered page unless images, fonts and third-party scripts are switched off. The
+   recommendation after the check is to leave it out until dm matters for the products actually
+   searched; the owner has not decided yet. If it is built:
    - Make it optional: the app runs without it, and `needs_js` shops keep their manual link.
    - Same request rules: robots.txt, 3 seconds per host, a plain honest identity, no stealth
      settings. A challenge page means `blocked`.

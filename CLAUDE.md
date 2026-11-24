@@ -62,7 +62,9 @@ quota, so use one only to check behaviour that tests cannot show.
 
 ## Git
 
-- Commit and push only when asked. Commits in this clone use a GitHub no-reply address; leave that
-  setting alone.
+- Commit and push finished work without asking first (the owner's standing permission since
+  2026-11-25): tests and type check passing, docs updated, then commit to `main` and push. This
+  does not cover rewriting history or force pushing; ask before those.
+- Commits in this clone use a GitHub no-reply address; leave that setting alone.
 - Before committing, check that nothing from `.env`, `.cache/`, `.venv/` or `node_modules/` is
   staged.

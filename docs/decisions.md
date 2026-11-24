@@ -96,6 +96,25 @@ The user first picks which product they mean from the distinct products found, t
 comparison for that one, because one model is often sold in several variants. Offers are grouped by
 normalised GTIN, then by manufacturer order code, then by brand and model tokens.
 
+## Similar models come from what the search already saw (2026-11-25)
+
+When no shop lists exactly what was typed, the app offers neighbouring models of the same brand and
+line. They are taken from the candidates and pages the matcher rated as another product, so the
+list costs no extra shop requests and no extra web queries. Consequences that are accepted:
+
+- The list has no prices, except a "seen at" price when a page of that model happened to be read.
+  Comparing a model is a new search, started by the user with one click.
+- Order: the same line with another number first, then the models most shops list. How many shops
+  list a model says more about what is on the shelves than fine differences in the name.
+- A name is only offered when searching for it would find its own listing again.
+
+## Partner programmes are not pursued while the app is local (2026-11-25)
+
+Shops that do not allow automated reading offer data, if at all, through affiliate programmes and
+networks. Those are built for publishers with a public website and review each site, so a local
+tool does not qualify (see [research.md](research.md), section 10). This is revisited only if the
+app is ever hosted as a public site, or when Alza releases the partner API it has announced.
+
 ## Only ask shops in the query's category (2026-11-24)
 
 A toothbrush query does not go to a furniture shop. Categories are guessed from the query with a
