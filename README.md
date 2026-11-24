@@ -4,10 +4,14 @@ A local tool that compares the price of one non-food product across shops with a
 city (Košice, Slovakia, for now) and web shops that deliver to Slovakia.
 
 The point is to show **the right product** and to be **honest about what could not be checked**.
-Comparators such as Heureka mix variants: the "cheapest" offer is often another colour, a bundle or
-another model. PriceCompare groups offers into distinct products first ("Which one do you mean?"),
-then compares only the one you pick, and gives every shop an explicit status, with a link to search
-the shop by hand when it could not be checked automatically.
+The same model is often sold in several colours, bundles and package sizes, so PriceCompare groups
+offers into distinct products first ("Which one do you mean?"), then compares only the one you
+pick. Every shop gets an explicit status, with a link to search the shop by hand when it could not
+be checked automatically.
+
+This is a small personal tool with a narrow focus: one product, one city, a short list of shops.
+It is not a replacement for the established price comparison services, which cover far more shops
+and products; it links to one of them for every search.
 
 Status: first working version (2026-11). Coverage is partial on purpose; see "Coverage" below.
 
@@ -242,3 +246,10 @@ file): NAY (pickup free, delivery from 1.99 €), Mountfield (pickup 1 €, deli
 iStores (2.98 €, free from 50 €), Pilulka (1.49 €, free from 29 €). Datart.cz does not deliver abroad;
 Morele.net ships abroad only to companies with a VAT number. Unknown: Dr.Max (blocked), Mironet.cz
 (no mention of Slovakia), MediaMarkt.de/.at (blocked), 101 Drogerie (no delivery page found).
+
+## More documentation
+
+- [docs/roadmap.md](docs/roadmap.md): current state, next steps, known problems.
+- [docs/decisions.md](docs/decisions.md): the choices made and why.
+- [docs/research.md](docs/research.md): market research, data sources, the shop probe.
+- [docs/architecture.md](docs/architecture.md): how the code is organised.
