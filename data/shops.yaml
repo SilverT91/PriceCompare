@@ -91,12 +91,15 @@ shops:
     ships_to_sk: true
     search_url_template: "https://www.planeo.sk/vyhladavanie$a1013-search?query={query}"
     search_template_basis: form
-    needs_js: true
     shipping_to_sk: null
     in_scope: true
     notes: >
       Source (2025-07-25) lists Košice OC Optima among newly taken-over stores; an older source
       lists Toryská 5 (OC Galéria). Planeo's own /predajne page is empty without JavaScript.
+      Re-checked 2026-11-24: the search page is disallowed by robots.txt and needs JavaScript, but
+      product pages are static HTML with JSON-LD Product including price and GTIN (HTTP 200 for
+      https://www.planeo.sk/oral-b-pro-3-3500-cross-action and https://www.planeo.sk/philips-hx3671-11),
+      so `needs_js` was removed and the shop is read through the web search route.
 
   - id: euronics_sk
     name: Euronics
@@ -269,6 +272,9 @@ shops:
       An OpenStreetMap node places a Teta at OD Dargov, Košice; the shop's own /predajne page only
       showed stores near Nitra without JavaScript. No search form found in homepage HTML
       (/vyhladavanie/?q= and /hladat?q= gave 404); probe skips it (no_search_template).
+      Re-checked 2026-11-24: product pages are readable (HTTP 200, JSON-LD Product with price and GTIN, e.g.
+      https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D169320-Oral-B-iO-2-elektricka-zubna-kefka-zelena/),
+      so a web search provider can find them even though the shop's own search has no plain URL.
 
   - id: drogerie101_sk
     name: 101 Drogerie
@@ -513,6 +519,268 @@ shops:
     in_scope: true
     notes: Apple Premium Partner; physical stores exist in SK, Košice not verified.
 
+  # ---------------- Slovak: small appliances, personal care, dental (added 2026-11-24) ----------------
+  # Each shop below was probed with the project's own request rules on 2026-11-24: a real product page
+  # (an electric toothbrush, or a shaver for holime_eu) answered HTTP 200 without a challenge page and
+  # carried a schema.org Product with price and currency in static HTML. Search templates were tested
+  # where robots.txt allows the search page; where it does not, the template is kept as the form gave it
+  # and the app takes the web search route (same as Pilulka).
+  - id: datacomp_sk
+    name: Datacomp
+    country: SK
+    domain: datacomp.sk
+    kind: local_chain
+    categories: [electronics, appliances, home]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://datacomp.sk/prevadzky.html
+    ships_to_sk: true
+    search_url_template: "https://datacomp.sk/default.asp?cls=stoitems&fulltext={query}"
+    search_template_basis: form
+    shipping_to_sk:
+      price: 1.99
+      currency: EUR
+      free_from: null
+      method: "Packeta pickup point, prepaid (courier to an address and cash on delivery cost more; those prices were not read)"
+      source: https://datacomp.sk/zasielkovna.html
+      checked: 2026-11-24
+    pickup_kosice:
+      available: true
+      price: null
+      currency: EUR
+      note: "Checkout offers 'Osobne na predajni' (collect in one of the branches; the shop emails or phones when the order is ready). No fee is stated on the page."
+      source: https://datacomp.sk/ako-nakupovat.html
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Košice branch: OC Optima, Moldavská cesta 32 (read 2026-11-24). Product page
+      https://datacomp.sk/oral-b-pulsonic-slim-1000-elektricka-zubna-kefka_d393055.html (HTTP 200):
+      JSON-LD Product with price and availability, no GTIN. Own search page is allowed by robots.txt
+      and its result links name the products (no JSON-LD list).
+
+  - id: abcom_kosice_sk
+    name: ABCOM Košice
+    country: SK
+    domain: eshop.abcomke.sk
+    kind: webshop
+    categories: [electronics, appliances, beauty]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://eshop.abcomke.sk/kontakt/
+    ships_to_sk: true
+    search_url_template: "https://eshop.abcomke.sk/hladanie/?q={query}"
+    search_template_basis: searchaction
+    shipping_to_sk:
+      price: 3.50
+      currency: EUR
+      free_from: null
+      method: "Packeta (parcels up to 5 kg); courier prices for larger parcels not read; the shop delivers only within Slovakia"
+      source: https://eshop.abcomke.sk/obchodne-podmienky/
+      checked: 2026-11-24
+    pickup_kosice:
+      available: true
+      price: 0
+      currency: EUR
+      note: "'Osobný odber' is 0 € in the shop's delivery table. The contact page gives the Košice address with opening hours; that this is a walk-in counter is inferred from those two facts."
+      source: https://eshop.abcomke.sk/obchodne-podmienky/
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Operated by ABCOM Košice s.r.o., Gudernova 3, Košice (contact page, 2026-11-24). Product pages
+      (HTTP 200) carry JSON-LD Product with price and GTIN, for example
+      https://eshop.abcomke.sk/oral-b-io-series-10-cosmic-black-zubni-kartacek/. Search is a GET page
+      allowed by robots.txt; its result links name the products. The site is partly in Czech wording.
+
+  - id: tpd_sk
+    name: TPD Euronics
+    country: SK
+    domain: tpd.sk
+    kind: local_chain
+    categories: [electronics, appliances, home]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.tpd.sk/vyhladavanie?search={query}"
+    search_template_basis: searchaction
+    shipping_to_sk:
+      price: 2.99
+      currency: EUR
+      free_from: null
+      method: "Packeta pickup point or box; larger parcels by courier from 14.99 €"
+      source: https://www.tpd.sk/poplatky-za-rezervaciu-a-dorucenie-tovaru-a22
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Online shop of a store network that calls itself a member of the Euronics network (a different
+      operator from the euronics_sk entry). Branch list not readable without JavaScript, and the contact
+      page names no Košice branch, so has_kosice_branch stays unknown. Reservation in a branch costs
+      1.00 € (same delivery page). Product page https://www.tpd.sk/oral-b-vitality-protect-x-d103-p291809
+      (HTTP 200): JSON-LD Product with price, no GTIN. Search page allowed by robots.txt; result links
+      name the products.
+
+  - id: mojalekaren_sk
+    name: MojaLekáreň.sk
+    country: SK
+    domain: mojalekaren.sk
+    kind: webshop
+    categories: [pharmacy, drugstore, beauty]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: null
+    search_template_basis: none
+    no_route_reason: "the site search is a POST form (/nasepkavac/), so there is no plain search URL; product pages come from web search"
+    shipping_to_sk:
+      price: 0.99
+      currency: EUR
+      free_from: 40
+      method: "from 0.99 € (Slovenská pošta pickup point); Packeta pickup 1.99 €; free from 40 € with selected carriers (which carriers are free was not read exactly)"
+      source: https://www.mojalekaren.sk/doprava-a-platba/
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Online pharmacy and drugstore with 300+ pickup points. Product page
+      https://www.mojalekaren.sk/oral-b-series-io-3-black-elektricka-zubna-kefka/ (HTTP 200): JSON-LD
+      Product with price, MPN and an SK shipping entry without a rate; no GTIN in the markup.
+
+  - id: vasalekaren_sk
+    name: Vaša Lekáreň
+    country: SK
+    domain: vasalekaren.sk
+    kind: webshop
+    categories: [pharmacy, drugstore, beauty]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.vasalekaren.sk/vyhladavanie?search={query}"
+    search_template_basis: searchaction
+    shipping_to_sk:
+      price: 0.99
+      currency: EUR
+      free_from: 36.90
+      method: "GLS ParcelShop 0.99 €; Packeta pickup 1.99 €; SPS/Balíkovo pickup 2.49 €; courier to the address from 2.99 €; free from 36.90 € (pickup in a Vaša Lekáreň pharmacy is also free from that value)"
+      source: https://www.vasalekaren.sk/moznosti-dopravy-a17
+      checked: 2026-11-24
+    pickup_kosice:
+      available: unknown
+      price: null
+      currency: EUR
+      note: "The delivery page offers pickup in selected Vaša Lekáreň pharmacies; whether one is in Košice was not read."
+      source: https://www.vasalekaren.sk/moznosti-dopravy-a17
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Online shop of a pharmacy network. Product page
+      https://www.vasalekaren.sk/oral-b-vitality-100-sensi-ultra-thin-blue-p44097 (HTTP 200): JSON-LD
+      Product with price, GTIN and an SK shipping entry. robots.txt disallows the search page, so
+      the app takes the web search route.
+
+  - id: nazuby_eu
+    name: Nazuby.eu
+    country: SK
+    domain: nazuby.eu
+    kind: webshop
+    categories: [drugstore, appliances, beauty]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.nazuby.eu/vyhledavanie/{query_path}"
+    search_template_basis: form
+    shipping_to_sk:
+      price: 2.49
+      currency: EUR
+      free_from: 54.9
+      method: "SPS Parcelshop/Parcelbox 2.49 €; Packeta pickup 3.09 €; Packeta courier 4.49 €; free from 54.9 €"
+      source: https://www.nazuby.eu/doprava
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Dental-care specialist (electric toothbrushes, oral irrigators, whitening). The SearchAction in the
+      homepage JSON-LD names /vyhledavani/{term}, which answers 404; /vyhledavanie/{term} (with %20 for
+      spaces) works and is allowed by robots.txt (checked 2026-11-24). Product page
+      https://www.nazuby.eu/oral-b-io-series-3-black-magneticka-kefka (HTTP 200): JSON-LD Product with
+      price and SK shipping rates, no GTIN. Same shop software, phone number and delivery wording as
+      holime_eu.
+
+  - id: holime_eu
+    name: Holime.eu
+    country: SK
+    domain: holime.eu
+    kind: webshop
+    categories: [appliances, beauty]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.holime.eu/vyhledavanie/{query_path}"
+    search_template_basis: form
+    shipping_to_sk:
+      price: 2.49
+      currency: EUR
+      free_from: 400
+      method: "SPS Parcelshop/Parcelbox 2.49 €; Packeta pickup 3.09 €; Packeta courier 4.49 €; free-delivery threshold 400 € read from the basket counter on the delivery page"
+      source: https://www.holime.eu/doprava
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Specialist for electric shavers and trimmers (Philips OneBlade, Braun). Search path works like
+      nazuby_eu's (checked 2026-11-24, allowed by robots.txt). Product page
+      https://www.holime.eu/philips-oneblade-qp2530-20-zastrihavac-fuzov (HTTP 200): JSON-LD Product with
+      price and SK shipping rates, no GTIN. No toothbrush page was probed: the shop presents itself as a
+      shaver specialist.
+
+  - id: profimed_eu
+    name: Profimed
+    country: SK
+    domain: profimed.eu
+    kind: local_chain
+    categories: [drugstore, appliances, beauty]
+    currency: EUR
+    has_kosice_branch: true
+    has_kosice_branch_source: https://www.profimed.eu/predajne
+    ships_to_sk: true
+    search_url_template: "https://www.profimed.eu/vyhledavani?s={query}"
+    search_template_basis: form
+    shipping_to_sk:
+      price: 3.39
+      currency: EUR
+      free_from: 39
+      method: "Packeta pickup point 3.39 €; PPL ParcelShop 3.75 €; SPS courier 4.49 €; Packeta courier 3.89 €; Profimed pays delivery from 39 €"
+      source: https://www.profimed.eu/zpusob-doruceni
+      checked: 2026-11-24
+    pickup_kosice:
+      available: true
+      price: null
+      currency: EUR
+      note: "'Osobný odber' in the Profimed store network, after the shop confirms the order by email or SMS. No fee is stated on the page; the Košice store is Aupark, Námestie osloboditeľov 1."
+      source: https://www.profimed.eu/zpusob-doruceni
+      checked: 2026-11-24
+    in_scope: true
+    notes: >
+      Dental and medical supplies chain. Product page
+      https://www.profimed.eu/oral-b-io-series-3-ice-blue-elektricka-zubna-kefka-p82014 (HTTP 200):
+      JSON-LD Product with price and GTIN. robots.txt disallows the search page, so the app takes the web
+      search route.
+
+  - id: sanitino_sk
+    name: Sanitino
+    country: SK
+    domain: sanitino.sk
+    kind: webshop
+    categories: [appliances, beauty, home]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: true
+    search_url_template: "https://www.sanitino.sk/vyhladavanie$b829-search?query={query}"
+    search_template_basis: form
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Bathroom and personal-care web shop. The delivery page names SPS, GLS, DPD and Toptrans but its
+      prices were not read, so shipping stays unknown. Product page
+      https://www.sanitino.sk/oral-b-elektricka-kefka-io-series-3-modra-8006540731321 (HTTP 200):
+      JSON-LD Product with price and GTIN. robots.txt disallows the search page, so the app takes the web
+      search route.
+
   # ---------------- Czech web shops ----------------
   - id: alza_cz
     name: Alza.cz
@@ -695,4 +963,5 @@ excluded:
   - {name: dm-drogeria.sk, reason: "Not dm drogerie markt; unrelated small shop. dm's shop is mojadm.sk."}
   - {name: Uni-hobby.sk, reason: "Site in maintenance mode on 2026-11-24."}
   - {name: Bauhaus.sk, reason: "Exists but dropped to keep the list at ~35; add later if DIY coverage is thin."}
-  - {name: Euronics-like Expert.sk, reason: "Homepage looks stale (DVD/HIFI era text); not trusted as live."}
+  - {name: Expert.sk, reason: "Could not confirm on 2026-11-24 that the shop is still trading; left out until verified."}
+  - {name: Electroworld.cz, reason: "Product pages redirect to datart.cz (checked 2026-11-24), which does not deliver abroad."}

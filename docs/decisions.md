@@ -53,6 +53,11 @@ in `src/node/`. This is a requirement, not a preference: it is what keeps the Cl
 The probe showed 12 of 30 shops disallow their search page but allow their product pages, so the
 second route is needed for about 40% of shops.
 
+Amended the same day: when the shop's own search works but finds nothing matching, the web search
+is tried as well before the shop is reported as `no_match`. A shop's search page often lists
+related products first and misses the exact one. This costs one or two more web queries per product
+search; the limit of 6 requests per shop covers both routes together.
+
 ## Brave first, Serper as fallback (2026-11-24)
 
 Both found the right pages equally often in the measurement. Brave's free credit renews every month

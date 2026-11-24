@@ -239,6 +239,31 @@ function brandOf(node: Node): string | null {
   return str(node.brand ?? null) ?? (isObj(node.manufacturer) ? str(node.manufacturer.name ?? null) : null);
 }
 
+/**
+ * The URL an offer links to: the structured data's url, unless it cannot be the product page, in
+ * which case the page the offer was read from. Nazuby.eu gives every offer "url": "https://www.nazuby.eu"
+ * (the site root), which would send the user to the homepage.
+ */
+export function offerUrl(declared: string | null | undefined, pageUrl: string): string {
+  let page: URL;
+  try {
+    page = new URL(pageUrl);
+  } catch {
+    return declared ?? pageUrl;
+  }
+  if (!declared) return page.href;
+  let u: URL;
+  try {
+    u = new URL(declared, page);
+  } catch {
+    return page.href;
+  }
+  if (!/^https?:$/.test(u.protocol)) return page.href;
+  const root = u.pathname === '/' || u.pathname === '' || /^\/(index\.(html?|php|aspx?)|[a-z]{2}(-[a-z]{2})?\/?)$/i.test(u.pathname);
+  const pageIsRoot = page.pathname === '/' || page.pathname === '';
+  return root && !pageIsRoot && !u.search ? page.href : u.href;
+}
+
 function productOffers(node: Node, ctx: { shopId: string; pageUrl: string; byId: Map<string, Node> },
   inherited: { name?: string | null; brand?: string | null; source: string; currency?: string | null }): RawOffer[] {
   const name = str(node.name ?? null) ?? inherited.name ?? null;
@@ -252,12 +277,7 @@ function productOffers(node: Node, ctx: { shopId: string; pageUrl: string; byId:
     for (const b of offerBits(o, ctx.byId, inherited.currency ?? null)) {
       // Datart publishes sold-out items with price 0: that is "no price", not a free product.
       if (!(b.price > 0)) continue;
-      let url = b.url ?? str(node.url ?? null) ?? ctx.pageUrl;
-      try {
-        url = new URL(url, ctx.pageUrl).href;
-      } catch {
-        url = ctx.pageUrl;
-      }
+      const url = offerUrl(b.url ?? str(node.url ?? null), ctx.pageUrl);
       out.push({
         shopId: ctx.shopId, url, title: name, brand, gtin: gtin ?? b.gtin,
         sku: str(node.sku ?? null), mpn: str(node.mpn ?? null), color: str(node.color ?? null),

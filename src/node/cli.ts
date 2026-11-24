@@ -173,6 +173,7 @@ const skipped = shopResults.filter((r) => r.status === 'not_relevant');
 if (skipped.length) console.log(`Not asked (categories do not fit): ${skipped.map((r) => r.shopName).join(', ')}`);
 if (summary) {
   const calls = summary.providerCalls.length;
-  console.log(`\nCost: ${summary.shopsAsked} shops asked, ${summary.shopRequests} shop requests, ${summary.siteQueries} web search quer${summary.siteQueries === 1 ? 'y' : 'ies'} (${calls} new API call${calls === 1 ? '' : 's'}, the rest from the cache)`);
+  const second = summary.fallbackQueries ? `; ${summary.fallbackQueries} of them for ${summary.fallbackShops} shop(s) whose own search found nothing matching` : '';
+  console.log(`\nCost: ${summary.shopsAsked} shops asked, ${summary.shopRequests} shop requests, ${summary.siteQueries} web search quer${summary.siteQueries === 1 ? 'y' : 'ies'} (${calls} new API call${calls === 1 ? '' : 's'}, the rest from the cache${second})`);
 }
 store.close();

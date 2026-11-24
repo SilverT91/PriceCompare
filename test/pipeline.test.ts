@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { HostScheduler, type FetchLike } from '../src/core/http.ts';
-import { runSearch, type SearchEvent } from '../src/core/pipeline.ts';
+import { dedupeOffers, runSearch, type SearchEvent } from '../src/core/pipeline.ts';
 import { SerperProvider } from '../src/core/search/serper.ts';
 import { DEFAULT_LOCATION, validateShops } from '../src/core/shops.ts';
 import type { ShopResult } from '../src/core/types.ts';
@@ -121,6 +121,191 @@ test('with a search provider: robots-disallowed shop found via a site: query, CZ
   assert.equal(calls.filter((u) => u.includes('serper')).length, 1, 'shop A declined, one query for F');
   const done = events.at(-1) as Extract<SearchEvent, { type: 'done' }>;
   assert.equal(done.summary.providerCalls.length, 1);
+});
+
+// ---- second route: own search found nothing matching -> web search ---------------------------------
+
+const Q = 'Oral-B Pro 3 3000';
+const QS = 'Oral-B+Pro+3+3000';
+const list = (...items: [string, string][]) => `<html><script type="application/ld+json">{"@type":"ItemList","itemListElement":[${
+  items.map(([name, url]) => `{"@type":"ListItem","item":{"@type":"Product","name":"${name}","url":"${url}"}}`).join(',')}]}</script></html>`;
+const robotsOk = () => new Response('User-agent: *\nDisallow: /cart');
+
+const { shops: fbShops } = validateShops({
+  shops: ['g', 'h', 'j', 'k', 'm'].map((id) => ({
+    id, name: `Shop ${id.toUpperCase()}`, domain: `${id}.test`, country: 'SK', currency: 'EUR', search_url_template: `https://${id}.test/s?q={query}`,
+  })),
+});
+
+function fallbackSite(serper: (q: string) => Response) {
+  const calls: string[] = [];
+  const serperQueries: string[] = [];
+  const routes: Record<string, () => Response> = {
+    'https://api.frankfurter.dev/v2/providers/ecb/rates?base=EUR&quotes=CZK': () => new Response('[]'),
+    // g: the own search lists nothing; the web search finds the product.
+    'https://g.test/robots.txt': robotsOk,
+    [`https://g.test/s?q=${QS}`]: () => new Response('<html><body><p>Nenašli sme žiadne produkty.</p></body></html>'),
+    'https://g.test/oral-b-pro-3-3000-cierna': () => new Response(product('Oral-B Pro 3 3000 čierna', 59.9, '8006540759790')),
+    // h: the own search lists a page that turns out to be another model; the web search finds the model,
+    // with a tracking parameter, and the page the first route already read.
+    'https://h.test/robots.txt': () => new Response('User-agent: *\nDisallow: /*srsltid='),
+    [`https://h.test/s?q=${QS}`]: () => new Response(list(['Oral-B Pro 3 3000 Black', 'https://h.test/p/old'])),
+    'https://h.test/p/old': () => new Response(product('Oral-B Pro 3 3500 Black', 64.9, '8006540760000')),
+    'https://h.test/p/new': () => new Response(product('Oral-B Pro 3 3000 Cross Action čierna', 61.5, '8006540759790')),
+    // j: the own search finds the product, but its page has no schema.org data -> needs_js, no second route.
+    'https://j.test/robots.txt': robotsOk,
+    [`https://j.test/s?q=${QS}`]: () => new Response(list(['Oral-B Pro 3 3000', 'https://j.test/p/1'])),
+    'https://j.test/p/1': () => new Response('<html><body>price rendered later</body></html>'),
+    // k: bot protection on the search page -> blocked, no second route.
+    'https://k.test/robots.txt': robotsOk,
+    [`https://k.test/s?q=${QS}`]: () => new Response('<title>Just a moment...</title>', { status: 403 }),
+    // m: the own search uses 5 of the 6 requests (robots, search, 3 pages, all another model).
+    'https://m.test/robots.txt': robotsOk,
+    [`https://m.test/s?q=${QS}`]: () => new Response(list(['Oral-B Pro 3 3000 A', 'https://m.test/p/a'], ['Oral-B Pro 3 3000 B', 'https://m.test/p/b'], ['Oral-B Pro 3 3000 C', 'https://m.test/p/c'])),
+    'https://m.test/p/a': () => new Response(product('Oral-B Pro 3 3500 A', 70, '8006540761001')),
+    'https://m.test/p/b': () => new Response(product('Oral-B Pro 3 3500 B', 70, '8006540761002')),
+    'https://m.test/p/c': () => new Response(product('Oral-B Pro 3 3500 C', 70, '8006540761003')),
+    'https://m.test/p/q1': () => new Response(product('Oral-B Pro 3 3000 Black', 58, '8006540759790')),
+    'https://m.test/p/q2': () => new Response(product('Oral-B Pro 3 3000 White', 58, '8006540760161')),
+  };
+  const f: FetchLike = async (url, init) => {
+    if (url === 'https://google.serper.dev/search') {
+      const q = JSON.parse(String(init?.body)).q as string;
+      serperQueries.push(q);
+      return serper(q);
+    }
+    calls.push(url);
+    const r = routes[url];
+    return r ? r() : new Response('nf', { status: 404 });
+  };
+  return { f, calls, serperQueries };
+}
+
+const organic = (...links: [string, string][]) => new Response(JSON.stringify({ organic: links.map(([title, link]) => ({ title, link })) }));
+const allHits = () => organic(
+  ['Oral-B Pro 3 3000 čierna', 'https://g.test/oral-b-pro-3-3000-cierna'],
+  ['Oral-B Pro 3 3000 Black', 'https://h.test/p/old'],
+  ['Oral-B Pro 3 3000 Cross Action', 'https://h.test/p/new?srsltid=AfmBOo123'],
+  ['Oral-B Pro 3 3000 Black', 'https://m.test/p/q1'],
+  ['Oral-B Pro 3 3000 White', 'https://m.test/p/q2'],
+);
+
+async function fallbackRun(f: FetchLike, ids: string[], providers = [new SerperProvider('test')]) {
+  const events = await collect(runSearch(Q, {
+    shops: fbShops.filter((s) => ids.includes(s.id)), cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }),
+    location: DEFAULT_LOCATION, providers, fetch: f, category: 'all', fallbackDeadlineMs: 50,
+  }));
+  const results = new Map(events.filter((e): e is Extract<SearchEvent, { type: 'shop' }> => e.type === 'shop').map((e) => [e.result.shopId, e.result]));
+  const done = (events.at(-1) as Extract<SearchEvent, { type: 'done' }>).summary;
+  return { results, done };
+}
+
+test('second route: own search found nothing matching -> one batched web search for those shops; others do not get it', async () => {
+  const { f, calls, serperQueries } = fallbackSite(allHits);
+  const { results, done } = await fallbackRun(f, ['g', 'h', 'j', 'k']);
+  const g = results.get('g') as ShopResult;
+  const h = results.get('h') as ShopResult;
+  assert.equal(g.status, 'ok');
+  assert.equal(g.route, 'both');
+  assert.match(g.detail, /both routes tried/);
+  assert.match(g.detail, /shop search: the shop search returned no products/);
+  assert.equal(h.status, 'ok');
+  assert.equal(h.route, 'both');
+  // the uncertain match stays "possible"
+  assert.match(h.detail, /0 exact, 1 possible/);
+  assert.ok(h.offers.some((o) => o.url === 'https://h.test/p/new' && o.match.level === 'possible'));
+  // one query for both shops (several site: domains), none for the needs_js and the blocked shop
+  assert.equal(serperQueries.length, 1);
+  assert.match(serperQueries[0], /site:g\.test OR site:h\.test$/);
+  assert.equal(results.get('j')?.status, 'needs_js');
+  assert.equal(results.get('k')?.status, 'blocked');
+  assert.equal(done.fallbackQueries, 1);
+  assert.equal(done.fallbackShops, 2);
+  assert.equal(done.siteQueries, 1, 'no first-route query: every shop used its own search');
+  // the page read by the first route is not fetched again; the tracking parameter is dropped
+  assert.equal(calls.filter((u) => u === 'https://h.test/p/old').length, 1);
+  assert.ok(calls.includes('https://h.test/p/new'));
+  assert.ok(!calls.some((u) => u.includes('srsltid')));
+  assert.match(h.detail, /already read in this search/);
+});
+
+test('second route: the 6-request budget holds across both routes', async () => {
+  const { f, calls } = fallbackSite(allHits);
+  const { results } = await fallbackRun(f, ['m']);
+  const m = results.get('m') as ShopResult;
+  assert.equal(m.requestsUsed, 6);
+  assert.equal(calls.filter((u) => u.startsWith('https://m.test/')).length, 6);
+  assert.ok(calls.includes('https://m.test/p/q1'));
+  assert.ok(!calls.includes('https://m.test/p/q2'), 'no seventh request');
+  assert.equal(m.status, 'ok');
+  assert.match(m.detail, /request budget \(6 per shop\) reached/);
+});
+
+test('second route: nothing found either -> no_match that names both routes; no provider -> first-route no_match', async () => {
+  const empty = fallbackSite(() => organic());
+  const { results } = await fallbackRun(empty.f, ['g']);
+  const g = results.get('g') as ShopResult;
+  assert.equal(g.status, 'no_match');
+  assert.equal(g.route, 'both');
+  assert.match(g.detail, /^both routes tried, nothing matching: shop search: .*; serper web search: the web search returned no pages on this domain/);
+
+  const none = fallbackSite(allHits);
+  const r2 = await fallbackRun(none.f, ['g'], []);
+  assert.equal(r2.results.get('g')?.status, 'no_match');
+  assert.equal(r2.results.get('g')?.route, 'shop_search');
+  assert.equal(none.serperQueries.length, 0);
+
+  const broke = fallbackSite(() => new Response('{"message":"Not enough credits"}', { status: 400 }));
+  const r3 = await fallbackRun(broke.f, ['g']);
+  assert.equal(r3.results.get('g')?.status, 'no_match');
+  assert.match(r3.results.get('g')?.detail ?? '', /web search route could not be tried: serper: Serper credits used up/);
+});
+
+test('pages without product data at a shop known to publish it: no_match (not needs_js), and the second route is tried', async () => {
+  // j's own search lists a page without schema.org data. Once a j product page with data has been seen
+  // (remembered in the cache), that page is taken for a non-product page.
+  const { f, serperQueries } = fallbackSite(() => organic(['Oral-B Pro 3 3000', 'https://j.test/p/real']));
+  const routes: Record<string, () => Response> = { 'https://j.test/p/real': () => new Response(product('Oral-B Pro 3 3000 čierna', 60, '8006540759790')) };
+  const f2: FetchLike = async (url, init) => (routes[url] ? routes[url]() : f(url, init));
+  const cache = new MemoryCache();
+  await cache.set('structured_data', 'j', { at: '2026-11-24T00:00:00Z' });
+  const events = await collect(runSearch(Q, {
+    shops: fbShops.filter((s) => s.id === 'j'), cache, scheduler: new HostScheduler({ intervalMs: 0 }),
+    location: DEFAULT_LOCATION, providers: [new SerperProvider('test')], fetch: f2, category: 'all', fallbackDeadlineMs: 50,
+  }));
+  const j = (events.find((e) => e.type === 'shop') as Extract<SearchEvent, { type: 'shop' }>).result;
+  assert.equal(j.status, 'ok');
+  assert.equal(j.route, 'both');
+  assert.match(j.detail, /shop search: fetched 1 page\(s\) without schema\.org Product data; this shop's product pages carry it/);
+  assert.equal(serperQueries.length, 1);
+
+  // The mark is written when a page with data is read, so the next search knows it.
+  const c2 = new MemoryCache();
+  const { f: f3 } = fallbackSite(allHits);
+  await collect(runSearch(Q, {
+    shops: fbShops.filter((s) => s.id === 'g'), cache: c2, scheduler: new HostScheduler({ intervalMs: 0 }),
+    location: DEFAULT_LOCATION, providers: [new SerperProvider('test')], fetch: f3, category: 'all', fallbackDeadlineMs: 50,
+  }));
+  assert.ok(await c2.get('structured_data', 'g'));
+});
+
+test('dedupeOffers: one offer per page and price; different seller, price or GTIN stay apart', () => {
+  // Datart, 2026-11-24: the product page, the same page with ltm_ tracking parameters and its /navod/ manual
+  // page (no GTIN, no seller) gave three copies of one offer.
+  const base = {
+    shopId: 'datart_cz', url: 'https://www.datart.cz/zubni-kartacek-oral-b-io-series-3-ice-blue.html', title: 'Zubní kartáček Oral-B iO Series 3 Ice Blue',
+    brand: 'Oral-B', gtin: '08006540731321', sku: 'BRAIO3ICEBLUE', mpn: null, color: null, price: 1590, currency: 'CZK', availability: 'InStock',
+    itemCondition: 'NewCondition', seller: 'DATART', shipping: [], source: 'Product',
+  };
+  const manual = { ...base, brand: null, gtin: null, sku: null, seller: null, itemCondition: null };
+  const tracked = { ...base, url: `${base.url}?ltm_source=letak&ltm_medium=interni` };
+  const out = dedupeOffers([manual, base, tracked]);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].gtin, '08006540731321', 'the merged offer keeps the GTIN');
+  assert.equal(out[0].seller, 'DATART');
+  assert.equal(dedupeOffers([base, { ...base, seller: 'Other seller' }]).length, 2);
+  assert.equal(dedupeOffers([base, { ...base, price: 1490 }]).length, 2);
+  assert.equal(dedupeOffers([base, { ...base, gtin: '08006540731222' }]).length, 2);
 });
 
 test('provider out of credit: shops get needs_search_key with the reason', async () => {

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { detectBotWall } from '../src/core/botwall.ts';
 import { HostScheduler, ShopSession, USER_AGENT, type FetchLike } from '../src/core/http.ts';
-import { extractLinkCandidates } from '../src/core/links.ts';
+import { extractLinkCandidates, stripTrackingParams } from '../src/core/links.ts';
 import { parseRobots, robotsAllows, robotsFromResponse } from '../src/core/robots.ts';
 import { MemoryCache, linksHtml } from './helpers.ts';
 
@@ -39,6 +39,21 @@ Disallow: /private
     const rec = { mode: 'rules' as const, rules: parseRobots('User-agent: *\nDisallow: /vyhladavanie$a1013-search'), status: 200 };
     // "$" in the middle of a pattern is a literal character, only a trailing "$" anchors
     assert.equal(robotsAllows(rec, 'https://www.planeo.sk/vyhladavanie$a1013-search?query=x'), false);
+  });
+});
+
+describe('tracking parameters', () => {
+  test('search-engine and widget click parameters are removed, real ones kept', () => {
+    // Google results carry ?srsltid=..., which tetadrogerie.sk's robots.txt disallows ("/*srsltid=").
+    const teta = robotsFromResponse(200, 'User-agent: *\nDisallow: /*srsltid=');
+    const hit = 'https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160500-Oral-B-iO-Series-3/?srsltid=AfmBOoq1';
+    assert.equal(robotsAllows(teta, hit), false);
+    assert.equal(stripTrackingParams(hit), 'https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160500-Oral-B-iO-Series-3/');
+    assert.equal(robotsAllows(teta, stripTrackingParams(hit)), true);
+    assert.equal(stripTrackingParams('https://www.pilulka.sk/oral-b-pro-3900?gtmClickEvent=clickBestSoldCategory'), 'https://www.pilulka.sk/oral-b-pro-3900');
+    assert.equal(stripTrackingParams('https://x.test/p?id=5&utm_source=a&gclid=b'), 'https://x.test/p?id=5');
+    assert.equal(stripTrackingParams('https://x.test/p?page=2'), 'https://x.test/p?page=2');
+    assert.equal(stripTrackingParams('https://www.datart.cz/kartacek.html?ltm_source=letak&ltm_medium=interni&ltm_campaign=x'), 'https://www.datart.cz/kartacek.html');
   });
 });
 

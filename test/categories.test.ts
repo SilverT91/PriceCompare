@@ -24,6 +24,12 @@ describe('category guess from the query', () => {
     for (const id of ['nay_sk', 'drmax_sk', 'pilulka_sk', 'dm_sk', 'notino_sk', 'mediamarkt_de', 'amazon_de', 'allegro_sk']) assert.ok(ids.has(id), id);
     for (const id of ['ikea_sk', 'jysk_sk', 'martinus_sk', 'hornbach_sk', 'mountfield_sk', 'sconto_sk', 'obi_sk']) assert.ok(!ids.has(id), id);
   });
+  test('every toothbrush wording reaches both appliance shops and drugstores/pharmacies', () => {
+    for (const q of ['Oral-B iO Series 3', 'OralB Pro Series 1', 'Philips Sonicare 3100', 'elektrická zubná kefka', 'zubní kartáček Oral B', 'Braun Oral-B Vitality Pro']) {
+      const ids = asked(q);
+      for (const id of ['nay_sk', 'andreashop_sk', 'drmax_sk', 'pilulka_sk', 'teta_sk', 'drogerie101_sk', 'dm_sk']) assert.ok(ids.has(id), `${q}: ${id}`);
+    }
+  });
   test('an iPhone goes to electronics shops, not to drugstores, pharmacies or the bookshop', () => {
     const ids = asked('iPhone 16 128GB');
     for (const id of ['nay_sk', 'istores_sk', 'alza_sk', 'datart_cz', 'mironet_cz', 'morele_net', 'andreashop_sk']) assert.ok(ids.has(id), id);

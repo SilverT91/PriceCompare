@@ -42,15 +42,29 @@ export function cleanTitle(title: string, shopName?: string | null): string {
     const esc = shopName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     t = t.replace(new RegExp(`\\s[-–]\\s${esc}.*$`, 'i'), '');
   }
+  // A promotion appended to the name ("+ Cashback 10€ pri nákupe min. za 70€", "+ CASHBACK AŽ 60€") is
+  // not part of the product; its amounts must not count as model numbers.
+  t = t.replace(/\s*\+\s*cashback\b.*$/i, '');
   // "(MYED3SX/A)", "(MYE73)": uppercase codes in brackets are part numbers.
   t = t.replace(/\(\s*[A-Z0-9][A-Z0-9/\-.]{3,}\s*\)/g, ' ');
   return t.trim();
 }
 
-/** Pack/count phrases become one token: "39-dielna" -> "39pc", "2 ks" -> "2pc", "2x" -> "2x". */
+// Pharmacy notation "packages × units": "1×1 ks" (one piece), "1×1 set", "1×2 ks" (two pieces).
+const MULTI_RE = /(^|[^a-z0-9.])(\d+)\s*x\s*(\d+)\s*-?\s*(ks|kus|kusy|kusov|pcs|pc|szt|stk|set|sada|bal|balenie)(?![a-z])/g;
+// "1×75 ml": one package of the amount that follows.
+const ONE_OF_RE = /(^|[^a-z0-9.])1\s*x\s*(?=\d)/g;
+
+/** Pack/count phrases become one token: "39-dielna" -> "39pc", "2 ks" -> "2pc", "2x" -> "2x", "1×2 ks" -> "2pc". */
 function packTokens(folded: string): { text: string; packs: string[] } {
   const packs: string[] = [];
-  let text = folded.replace(PACK_RE, (_m, n: string) => {
+  let text = folded.replace(MULTI_RE, (_m, pre: string, a: string, b: string) => {
+    const n = Number(a) * Number(b);
+    if (n !== 1) packs.push(`${n}pc`);
+    return `${pre} `;
+  });
+  text = text.replace(ONE_OF_RE, (_m, pre: string) => `${pre} `);
+  text = text.replace(PACK_RE, (_m, n: string) => {
     if (n !== '1') packs.push(`${n}pc`);
     return ' ';
   });
@@ -63,7 +77,22 @@ function packTokens(folded: string): { text: string; packs: string[] } {
 }
 
 function foldSimple(s: string): string {
-  return s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  return s.normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/×/g, 'x').toLowerCase();
+}
+
+/**
+ * "Pro 3 3000" written as "Pro 3000": the line digit is left out but the model number that starts
+ * with it follows the same word. Shops do this, and an older "Pro 3000" also exists, so it is a
+ * doubt ("possible"), not a match and not a rejection.
+ */
+function lineDigitOmitted(t: string, q: ParsedQuery, titleTokens: string[]): boolean {
+  if (!/^\d{1,2}$/.test(t)) return false;
+  const i = q.tokens.indexOf(t);
+  const prev = q.tokens[i - 1];
+  const next = q.tokens[i + 1];
+  if (!prev || !next || !/^\d{3,}$/.test(next) || !next.startsWith(t)) return false;
+  const j = titleTokens.indexOf(next);
+  return j > 0 && titleTokens[j - 1] === prev;
 }
 
 export interface ParsedQuery {
@@ -137,6 +166,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   // 1. Query tokens present?
   const missing: string[] = [];
   const missingAlpha: string[] = [];
+  const softMissing: string[] = [];
   const matched: string[] = [];
   const consumed = new Set<number>();
   for (const t of q.tokens) {
@@ -159,6 +189,10 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     }
     if (coverIndices(t, specTokens)) {
       matched.push(t);
+      continue;
+    }
+    if (lineDigitOmitted(t, q, titleTokens)) {
+      softMissing.push(t);
       continue;
     }
     if (hasDigit(t)) {
@@ -266,8 +300,12 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     level = 'different';
     if (missing.length) reasons.push(`title lacks ${missing.map((m) => `"${m}"`).join(', ')}`);
     if (distinguishing.length) reasons.push(`title has ${distinguishing.map((m) => `"${m}"`).join(', ')} that the query lacks`);
-  } else if (missingAlpha.length || unknownExtras.length || specExtras.length) {
+  } else if (softMissing.length || missingAlpha.length || unknownExtras.length || specExtras.length) {
     level = 'possible';
+    for (const t of softMissing) {
+      const next = q.tokens[q.tokens.indexOf(t) + 1];
+      reasons.push(`title says "${q.tokens[q.tokens.indexOf(t) - 1]} ${next}" without "${t}": the same model or an older one`);
+    }
     if (missingAlpha.length) reasons.push(`title lacks ${missingAlpha.map((m) => `"${m}"`).join(', ')}`);
     if (specExtras.length) reasons.push(`variant ${specExtras.join(', ')} not in the query`);
     if (unknownExtras.length) reasons.push(`check extra words: ${unknownExtras.join(', ')}`);
@@ -277,15 +315,22 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
 
   let score: number;
   if (level === 'exact') score = 1;
-  else if (level === 'possible') score = 0.75 - 0.04 * unknownExtras.length - 0.08 * specExtras.length - 0.12 * missingAlpha.length;
+  else if (level === 'possible') score = 0.75 - 0.04 * unknownExtras.length - 0.08 * specExtras.length - 0.12 * missingAlpha.length - 0.15 * softMissing.length;
   else score = 0.35 - 0.05 * distinguishing.length - 0.08 * missing.length;
   score = Math.max(0.01, Math.min(1, score));
 
   const sigTokens = [...new Set([...matched, ...distinguishing, ...specExtras])].sort();
   const signature = sigTokens.join(' ') + (condition !== 'new' ? ` [${condition}]` : '');
 
-  return { level, score, missing: [...missing, ...missingAlpha], distinguishing, specExtras, unknownExtras, condition, conditionWords, colour, signature, codes: titleCodes, reasons };
+  return { level, score, missing: [...missing, ...missingAlpha, ...softMissing], distinguishing, specExtras, unknownExtras, condition, conditionWords, colour, signature, codes: titleCodes, reasons };
 }
+
+// Words of review, comparison, manual and advice pages ("RECENZIA: elektrická kefka Oral-B PRO 3 3000",
+// "Návod pro Zubní kartáček ..."): such pages name the product but sell nothing.
+const ARTICLE_WORDS = new Set([
+  'recenzia', 'recenzie', 'recenze', 'recenzi', 'review', 'reviews', 'navod', 'navody', 'porovnanie', 'porovnani', 'porovnali',
+  'clanok', 'clanek', 'blog', 'poradna', 'skusenosti', 'zkusenosti',
+]);
 
 /** Quick relevance score for a search-result candidate (title + URL slug), used to pick pages to fetch. */
 export function scoreCandidate(query: ParsedQuery, title: string, url: string): { level: MatchResult['level']; score: number } {
@@ -295,6 +340,7 @@ export function scoreCandidate(query: ParsedQuery, title: string, url: string): 
   } catch {
     /* ignore */
   }
+  if ([...tokenize(title), ...tokenize(slug)].some((t) => ARTICLE_WORDS.has(t) && !query.tokens.includes(t))) return { level: 'different', score: 0.05 };
   const fromTitle = title ? matchTitle(query, { title, url }) : null;
   let fromSlug = matchTitle(query, { title: slug, url });
   // Slugs carry ids and sizes without decimal points ("6.1" -> "61"); numeric extras there are noise.

@@ -108,8 +108,38 @@ function writeLinks(spec: Spec) {
   console.log(`wrote ${spec.name}.html (${Math.min(lines.length, 400)} anchors)`);
 }
 
+/**
+ * One product page fetched now under the app's request rules (robots.txt, 3 s per host, no retry,
+ * bot walls reported), for a page that is not in the probe cache:
+ *   node tools/extract_fixtures.ts --fetch <domain> <url> <fixture name>
+ */
+async function fetchOne(domain: string, url: string, name: string) {
+  const { ShopSession } = await import('../src/core/http.ts');
+  const { makeScheduler, openStore } = await import('../src/node/setup.ts');
+  const store = openStore();
+  const session = new ShopSession(domain, { scheduler: makeScheduler(store), cache: store, budget: 2 });
+  const page = await session.get(url, 'fixture');
+  store.close();
+  if (!page.ok) {
+    console.log(`not written: ${url} -> ${page.status}${page.blocked ? ` blocked (${page.blocked})` : ''}${page.robotsDisallowed ? ' disallowed by robots.txt' : ''}${page.error ? ` ${page.error}` : ''}`);
+    return;
+  }
+  const kept = extractJsonLdBlocks(page.text).blocks.filter(relevant).map((b) => trim(b));
+  const day = new Date().toISOString().slice(0, 10);
+  const doc = { source: `trimmed JSON-LD from ${url}, fetched ${day} by tools/extract_fixtures.ts --fetch`, kind: 'product', url: page.finalUrl, blocks: kept };
+  writeFileSync(new URL(`${name}.json`, OUT), JSON.stringify(doc, null, 1) + '\n');
+  console.log(`wrote ${name}.json (${kept.length} blocks)`);
+}
+
 mkdirSync(OUT, { recursive: true });
 mkdirSync(OUT_LINKS, { recursive: true });
+const fetchAt = process.argv.indexOf('--fetch');
+if (fetchAt >= 0) {
+  const [domain, url, name] = process.argv.slice(fetchAt + 1);
+  if (!domain || !url || !name) throw new Error('usage: node tools/extract_fixtures.ts --fetch <domain> <url> <fixture name>');
+  await fetchOne(domain, url, name);
+  process.exit(0);
+}
 PRODUCT_PAGES.forEach((s) => writeJsonLd(s, 'product'));
 SEARCH_PAGES.forEach((s) => writeJsonLd(s, 'search'));
 LINK_PAGES.forEach(writeLinks);

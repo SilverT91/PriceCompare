@@ -1,0 +1,63 @@
+{
+ "source": "trimmed JSON-LD from https://www.nazuby.eu/oral-b-io-series-3-white-magneticka-kefka, fetched 2026-11-24 by tools/extract_fixtures.ts --fetch",
+ "kind": "product",
+ "url": "https://www.nazuby.eu/oral-b-io-series-3-white-magneticka-kefka",
+ "blocks": [
+  {
+   "@context": "http://schema.org/",
+   "@type": "Product",
+   "name": "Oral-B iO Series 3 White magnetická kefka",
+   "gtin0": "",
+   "sku": "6779",
+   "brand": {
+    "@type": "Brand",
+    "name": "Oral-B"
+   },
+   "offers": {
+    "@type": "Offer",
+    "priceCurrency": "EUR",
+    "price": "67.01",
+    "url": "https://www.nazuby.eu",
+    "availability": "http://schema.org/InStock",
+    "shippingDetails": [
+     {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": "3.09",
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     },
+     {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": "0",
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     },
+     {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": "4.49",
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "SK"
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -1,7 +1,7 @@
 // Extraction tests on trimmed JSON-LD taken from real shop pages (see tools/extract_fixtures.ts).
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { extractJsonLdBlocks, extractListCandidates, extractOffers, parsePrice } from '../src/core/jsonld.ts';
+import { extractJsonLdBlocks, extractListCandidates, extractOffers, offerUrl, parsePrice } from '../src/core/jsonld.ts';
 import { fixtureHtml } from './helpers.ts';
 
 const offersOf = (name: string) => {
@@ -165,4 +165,22 @@ test('parsePrice handles common formats', () => {
   assert.equal(parsePrice('133.20'), 133.2);
   assert.equal(parsePrice(849), 849);
   assert.equal(parsePrice(''), null);
+});
+
+test('Nazuby.eu: the offer url is the site root, so the offer links to the page it was read from', () => {
+  // Every Nazuby.eu product page says "url": "https://www.nazuby.eu" in its Offer (seen 2026-11-24).
+  const r = offersOf('nazuby_io3_product');
+  assert.equal(r.offers.length, 1);
+  assert.equal(r.offers[0].url, 'https://www.nazuby.eu/oral-b-io-series-3-white-magneticka-kefka');
+  assert.equal(r.offers[0].price, 67.01);
+});
+
+test('offerUrl keeps a real product URL and replaces a root or non-web one', () => {
+  const page = 'https://shop.test/p/kefka-123';
+  assert.equal(offerUrl('https://shop.test/p/kefka-123?variant=2', page), 'https://shop.test/p/kefka-123?variant=2');
+  assert.equal(offerUrl('/p/other-variant', page), 'https://shop.test/p/other-variant');
+  for (const u of ['https://shop.test', 'https://shop.test/', '/', 'https://shop.test/sk/', 'https://shop.test/index.html', 'mailto:x@shop.test', null]) {
+    assert.equal(offerUrl(u, page), page, String(u));
+  }
+  assert.equal(offerUrl('https://shop.test/', 'https://shop.test/'), 'https://shop.test/', 'a root page keeps its root URL');
 });

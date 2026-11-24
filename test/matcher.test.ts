@@ -167,8 +167,26 @@ describe('found in live runs (2026-11-24)', () => {
   test('another brand and line with the same numbers is different ("Braun Series 3 3000")', () => {
     assert.equal(m('Oral-B Pro 3 3000', 'Braun Series 3 3000 Holiaci strojček | Pilulka.sk').level, 'different');
   });
-  test('the older "Pro 3000" is not the "Pro 3 3000"', () => {
-    assert.equal(m('Oral-B Pro 3 3000', 'Oral B EK Pro 3000 White 1×1 set').level, 'different');
+  test('"Pro 3000" for "Pro 3 3000" is only possible: Dr.Max names the Pro 3 that way, and an older Pro 3000 exists', () => {
+    // Seen 2026-11-24: Dr.Max lists "Oral B Elektrická kefka Pro 3000 Blue 1×1 ks" next to "Pro 3500 Black/White"
+    // and has no title with "Pro 3 3000"; rejecting it left the shop with no candidate at all.
+    for (const t of ['Oral B EK Pro 3000 White 1×1 set', 'Oral B Elektrická kefka Pro 3000 Blue 1×1 ks, elektrická zubná kefka']) {
+      const r = m('Oral-B Pro 3 3000', t);
+      assert.equal(r.level, 'possible', r.reasons.join('; '));
+      assert.match(r.reasons.join('; '), /without "3"/);
+    }
+    // Only the line digit in front of a model number that starts with it; other numbers stay required.
+    assert.equal(m('Oral-B Pro 3 3000', 'Oral B Elktrická kefka Pro 3500 White 1×1 ks').level, 'different');
+    assert.equal(m('Oral-B Pro 3 3000', 'Oral-B Pro 3000 Kids').level, 'different');
+    assert.equal(m('Oral-B Pro 3 3000', 'Oral-B 3000 Pro').level, 'different');
+  });
+  test('Dr.Max pack notation "1×1 ks", "1×1 set", "1×150 ml" is one item; "1×2 ks" is two', () => {
+    assert.equal(m('Oral-B Pro 3 3000', 'Oral-B Elektrická kefka Pro 3 3000 Blue 1×1 ks').level, 'exact');
+    assert.equal(m('Oral-B Pro 3 3000', 'Oral-B Pro 3 3000 Black 1×1 set').level, 'exact');
+    assert.notEqual(m('NIVEA Creme 150 ml', 'NIVEA Creme 1×150 ml, univerzálny krém').level, 'different');
+    const two = m('Oral-B Pro 3 3000', 'Oral-B Pro 3 3000 Black 1×2 ks');
+    assert.equal(two.level, 'different');
+    assert.ok(two.distinguishing.includes('2pc'));
   });
   test('words inside an mpn ("Pro 3 3000 Cross Action bk") do not hide extra title words', () => {
     const r = m('Oral-B Pro 3 3000', 'Szczoteczka Oral-B Pro 3 3000 CrossAction Czarna', { mpn: 'Pro 3 3000 Cross Action bk' });
@@ -185,6 +203,13 @@ describe('found in live runs (2026-11-24)', () => {
     assert.equal(m('Bosch GSR 12V-15', 'Aku skrutkovač Bosch Professional GSR 12V-15 (s batériou)').level, 'different');
     assert.equal(m('Bosch GSR 12V-15', 'Aku šroubovák Bosch Professional GSR 12V-15 (s baterií)').level, 'different');
     assert.equal(m('Bosch GSR 12V-15', 'Wiertarko-wkrętarka Bosch GSR 12V-15 12 V').level, 'exact');
+  });
+  test('an Andreashop cashback promotion in the title is not part of the product', () => {
+    // Seen 2026-11-24 for "Oral-B iO Series 3": the 10 and 70 of the promotion made it "another product".
+    const r = m('Oral-B iO Series 3', 'ORAL-B IO Series 3 Ice Blue  + Cashback 10€ pri nákupe min. za 70€');
+    assert.notEqual(r.level, 'different', r.reasons.join('; '));
+    assert.equal(m('Oral-B iO Series 3', 'ORAL-B IO Series 3 Ice Blue').signature, r.signature);
+    assert.equal(m('Oral-B Pro 3 3000', 'BRAUN ORAL-B PROFESSIONAL CARE 3000 (D20.535) + CASHBACK AŽ 60€').level, 'different', 'the older model stays different');
   });
   test('a title colour wins over a less specific JSON-LD color', () => {
     assert.equal(m('iPhone 16 128GB', 'Smartfon Apple iPhone 16 128GB Teal (MYED3HN/A)', { color: 'Zielony' }).colour, 'teal');
@@ -211,6 +236,17 @@ describe('candidate scoring (search results before fetching)', () => {
   test('slug with "pro" rejects', () => {
     const r = scoreCandidate(pq, 'APPLE IPHONE 16 128GB', 'https://www.mediamarkt.de/de/product/_apple-iphone-16-pro-128-gb-beige-dual-sim-145402270.html');
     assert.equal(r.level, 'different');
+  });
+  test('review, comparison and manual pages are not product candidates', () => {
+    // Seen 2026-11-24: Nazuby.eu's own search listed "RECENZIA: elektrická kefka Oral-B PRO 3 3000" and two such
+    // pages were fetched instead of products; Datart's "/navod/" manual page repeated the product's offer.
+    const pq2 = parseQuery('Oral-B Pro 3 3000');
+    for (const [title, url] of [
+      ['RECENZIA: elektrická kefka Oral-B PRO 3 3000 RECENZIA: elektrická kefka Oral-B PRO 3 3000', 'https://www.nazuby.eu/recenzia-elektricka-kefka-oral-b-pro-3-3000'],
+      ['Návod pro Zubní kartáček Oral-B Pro 3 3000 | DATART', 'https://www.datart.cz/navod/zubni-kartacek-oral-b-pro-3-3000.html'],
+      ['Oral-B Pro 3 3000 - recenzie a skúsenosti', 'https://www.pilulka.sk/oral-b-pro-3-3000/recenzie-skusenosti'],
+    ]) assert.equal(scoreCandidate(pq2, title, url).level, 'different', title);
+    assert.notEqual(scoreCandidate(pq2, 'Oral-B Pro 3 3000 čierna', 'https://www.nazuby.eu/oral-b-pro-3-3000-cierna').level, 'different');
   });
   test('bazar URL ranks below the new item', () => {
     const pq2 = parseQuery('Oral-B Pro 3 3000');

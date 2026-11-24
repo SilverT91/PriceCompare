@@ -49,7 +49,10 @@ export interface Shop {
   in_scope: boolean;
   /** Prices only appear after JavaScript runs: never fetched, manual link only. */
   needs_js?: boolean;
-  /** false = product pages carry no schema.org data (Amazon): never fetched, manual link only. */
+  /**
+   * false = product pages carry no schema.org data (Amazon): never fetched, manual link only.
+   * true = they do, so fetched pages without it were not product pages (no_match, not needs_js).
+   */
   structured_data?: boolean;
   shipping_to_sk?: ShopShipping | null;
   ships_to_sk_source?: string;
@@ -167,7 +170,8 @@ export interface ShopResult {
   section: 'local' | 'online';
   status: ShopStatus;
   detail: string;
-  route: 'shop_search' | 'search_provider' | 'none';
+  /** 'both': the shop's own search found nothing matching, then the web search was tried too. */
+  route: 'shop_search' | 'search_provider' | 'both' | 'none';
   manualUrl: string | null;
   offers: Offer[];
   candidates: Candidate[];
@@ -223,4 +227,6 @@ export const CACHE_TTL = {
   robots: 24 * 3600,
   rates: 24 * 3600,
   blocked: 3600,
+  /** "This shop's product pages carry schema.org Product data", remembered from a page that had it. */
+  structuredData: 30 * 86400,
 } as const;

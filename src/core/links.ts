@@ -6,7 +6,26 @@ import { tokenize } from './text.ts';
 import type { Candidate } from './types.ts';
 
 const NON_PRODUCT_RE =
-  /(?:^|\/)(?:login|prihlasenie|prihlaseni|registracia|kosik|cart|basket|warenkorb|wishlist|obchodne-podmienky|kontakt|cookies?|privacy|ochrana|reklamacie|doprava|search|vyhladavanie|hledani|vyhledavani|wyszukiwarka|filter|napoveda|blog|clanky|predajne|prodejny|account|konto)(?:\/|$|\?|\.)/i;
+  /(?:^|\/)(?:login|prihlasenie|prihlaseni|registracia|kosik|cart|basket|warenkorb|wishlist|obchodne-podmienky|kontakt|cookies?|privacy|ochrana|reklamacie|doprava|search|vyhladavanie|hledani|vyhledavani|wyszukiwarka|filter|napoveda|blog|clanky|predajne|prodejny|account|konto|navod|navody)(?:\/|$|\?|\.)/i;
+
+// Click-tracking parameters added by search engines and shop widgets. They do not change the page,
+// and some robots.txt files disallow URLs that carry them (tetadrogerie.sk: "Disallow: /*srsltid=").
+// Datart's internal leaflet links use ltm_source, ltm_medium, ltm_content, ltm_campaign.
+const TRACKING_PARAM_RE = /^(srsltid|gtmclickevent|utm_[a-z]+|ltm_[a-z]+|gclid|gbraid|wbraid|fbclid|msclkid|gad_source|_gl|sznaiid)$/i;
+
+/** The URL without click-tracking parameters (unparseable URLs are returned unchanged). */
+export function stripTrackingParams(url: string): string {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return url;
+  }
+  const keys = [...u.searchParams.keys()].filter((k) => TRACKING_PARAM_RE.test(k));
+  if (!keys.length) return url;
+  for (const k of keys) u.searchParams.delete(k);
+  return u.href.replace(/\?$/, '');
+}
 
 /** URL path to words: hyphens and slashes are separators in slugs. */
 export function slugWords(path: string): string {
@@ -41,6 +60,7 @@ export function extractLinkCandidates(html: string, pageUrl: string, query: stri
     if (!/^https?:$/.test(u.protocol)) return;
     if (registeredDomain(u.host) !== base) return;
     u.hash = '';
+    u = new URL(stripTrackingParams(u.href));
     if (NON_PRODUCT_RE.test(u.pathname) || (exclude && exclude.test(u.href))) return;
     if (u.pathname === '/' || u.pathname.length < 4) return;
     const label = [a.text(), a.attr('title'), a.attr('aria-label'), a.find('img').attr('alt')]

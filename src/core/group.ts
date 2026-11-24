@@ -70,6 +70,11 @@ export function groupOffers(offers: Offer[]): ProductGroup[] {
   const groups: ProductGroup[] = [];
   for (const members of comps.values()) {
     const best = [...members].sort((a, b) => LEVEL_RANK[a.match.level] - LEVEL_RANK[b.match.level] || b.match.score - a.match.score || a.title.length - b.title.length)[0];
+    // The name shown for the product comes from an offer the user can get: a branch in the city
+    // first, then a shop that delivers to Slovakia; a shop that does not deliver only as a last resort.
+    const reach = (o: Offer) => (o.section === 'local' ? 0 : o.totals.deliversToSk === true ? 1 : reachable(o.totals) ? 2 : 3);
+    const named = [...members].sort((a, b) => (a.match.level === 'different' ? 1 : 0) - (b.match.level === 'different' ? 1 : 0) || reach(a) - reach(b)
+      || LEVEL_RANK[a.match.level] - LEVEL_RANK[b.match.level] || b.match.score - a.match.score || a.title.length - b.title.length)[0];
     const gtins = [...new Set(members.map((m) => m.gtin).filter((g): g is string => Boolean(g)))];
     const sigCounts = new Map<string, number>();
     for (const m of members) sigCounts.set(m.match.signature, (sigCounts.get(m.match.signature) ?? 0) + 1);
@@ -125,7 +130,7 @@ export function groupOffers(offers: Offer[]): ProductGroup[] {
     if (members.some((m) => !m.gtin)) notes.push(gtins.length ? 'some offers grouped by name only (no GTIN)' : 'grouped by name only (no GTIN)');
     groups.push({
       id: hash(signature + '|' + gtins.join(',')),
-      title: best.title,
+      title: named.title,
       level: best.match.level,
       score: best.match.score,
       condition: best.match.condition,

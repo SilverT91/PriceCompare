@@ -30,9 +30,22 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
    - otherwise a web search restricted to the shop's domain (`site:`), through Brave Search or
      Serper.dev, when a key is set;
    - otherwise nothing, and the shop says so.
+   - **Second route:** when the shop's own search ends with nothing matching (no products, no
+     matching candidate, or pages read with no matching offer) and a web search provider is usable,
+     the shop also tries the web search before it is reported as `no_match`. These fallback queries
+     are batched across shops like the first ones (several `site:` domains per query). Both routes
+     share the shop's limit of 6 requests, and a page read by the first route is not read again.
+     Shops that ended `blocked`, `robots_disallowed`, `needs_js` or `not_relevant` do not get it. The
+     shop's detail then says "both routes tried", and its route is shown as `both`.
+   Click-tracking parameters (`srsltid`, `utm_*`, `gclid`, `gtmClickEvent`, Datart's `ltm_*` and
+   similar) are removed from candidate links: they do not change the page, and some robots.txt files
+   disallow URLs that carry them.
 2. **Scores the candidates** against the query and reads at most the best 3 product pages per shop,
    extracting offers from schema.org JSON-LD (`Product`, `ProductGroup` with `hasVariant`, `Offer`,
-   `AggregateOffer`).
+   `AggregateOffer`). Review, comparison and manual pages ("Recenzia: ...", "Návod pro ...") are not
+   taken as product candidates. When an offer's structured-data URL is the site root, the offer links
+   to the page it was read from. One product page repeated under another link (a manual page, a copy
+   with tracking parameters) gives one offer, not several.
 3. **Matches and groups** offers into distinct products: by normalised GTIN, by manufacturer order
    code, otherwise by a signature of the brand/model tokens. Used, refurbished and unpacked items
    are flagged and never grouped with new ones; colour variants of one model sit side by side.
@@ -47,6 +60,8 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
    Unknown shipping is shown as unknown, never as zero; offers with a known total come first.
    The product's headline shows the **cheapest item price** ("+ shipping?" when its shipping is
    unknown) and, separately, the **cheapest known total**.
+   The name shown for a product comes from an offer you can get: a shop with a Košice branch first,
+   then a shop that delivers to Slovakia; a shop that does not deliver only when there is no other.
 5. Splits the comparison into **"Shops with a branch in Košice"** and **"Web shops"**.
 6. Streams each shop's result to the page as soon as that shop is done (Server-Sent Events). The
    page shows the products and the comparison first, then "Not checked automatically: open these
@@ -58,14 +73,17 @@ Every shop ends with one status:
 | status | meaning |
 |---|---|
 | `ok` | at least one offer that matches or possibly matches |
-| `no_match` | the shop was searched; nothing matching the query |
+| `no_match` | the shop was searched (by both routes when the second route applied); nothing matching the query |
 | `blocked` | bot protection answered (Cloudflare, DataDome, ...); the shop is skipped for an hour |
 | `robots_disallowed` | robots.txt disallows the pages that would be needed |
-| `needs_js` | prices only appear after JavaScript runs; not fetched |
+| `needs_js` | either the shop is marked `needs_js: true` in `shops.yaml` and is not fetched, or its pages were fetched and none carried schema.org Product data, so the prices are probably rendered by JavaScript. The second case applies only to shops not known to publish that data: when the shop is marked `structured_data: true`, or one of its pages had Product data in the last 30 days, such pages are taken for non-product pages and the result is `no_match` (and the second route may follow) |
 | `needs_search_key` | the shop's search is disallowed and no web search provider is usable (no key, or its credit is used up; the reason is shown) |
-| `no_route` | no search URL and no key (the reason is shown, e.g. Teta's ASP.NET search form), the shop publishes no structured data (Amazon.de), or the site answers every page with an error (OBI, notebooksbilliger.de) |
+| `no_route` | no search URL and no key (the reason is shown, e.g. Teta's ASP.NET search form; with a key such shops use the web search), the shop publishes no structured data (Amazon.de), or the site answers every page with an error (OBI, notebooksbilliger.de) |
 | `error` | anything else (timeout, unexpected HTTP status, ...) |
 | `not_relevant` | not asked: the shop's categories do not fit the query (no request, not a failure) |
+
+Each shop result also names its route: `shop_search` (the shop's own search page), `search_provider`
+(web search), `both` (own search first, then web search) or `none`.
 
 Shops without an offer that have a search template get a **manual link** (the shop's own search URL
 for your query). There is always a manual link to **Heureka.sk** as well; the app never fetches
@@ -90,8 +108,15 @@ npm run search -- "..." --cat all                     # ask all shops (default a
 npm run search -- "Bosch GSR 12V-15" --shops nay_sk,hornbach_sk
 npm run search -- "..." --providers serper,brave      # provider order for this run ("none" = off)
 npm run search -- "..." --site-search per-shop        # one web query per shop instead of combined
+npm run search -- "..." --domains-per-query 4         # domains in one combined web query (default 6)
+npm run search -- "..." --location kosice             # the city whose branches count as local (only kosice so far)
+npm run search -- "..." --no-cache                    # ignore cached offers, candidates and web search results (they are still written)
+npm run search -- "..." --width 200                   # table width in characters (default 160)
 npm run search -- "..." --json                        # raw results
 ```
+
+`--no-cache` does not bypass robots.txt rules, exchange rates or "blocked" marks, and a search with
+it costs web search queries again.
 
 `npm run typecheck` runs `tsc` (dev dependency) over the code; Node itself only strips types.
 
@@ -121,13 +146,22 @@ To use few queries, the domains of several shops go into one query
 (`Oral-B Pro 3 3000 site:a.sk OR site:b.sk ...`, up to 6 per query), grouped by shop country so the
 country/language parameters fit (Serper `gl`/`hl`: sk/sk, cz/cs, de/de, at/de, pl/pl; Brave
 `country` + `search_lang`, with `country=ALL` for SK and CZ, which Brave's country list lacks).
-One full product search costs about 4-5 queries. Serper's free account refuses more than 10 results
+The second route adds a second batch after the first routes finish: one query per country for the
+shops whose own search found nothing matching (it waits up to 15 seconds for more such shops). With
+nothing cached, one product search now costs about 5 to 6 queries (about 4 for the first route, 1
+or 2 for the second; measured on two toothbrush searches with 39 shops in scope, 2026-11-24). A
+repeat within 6 hours costs none, unless the set of shops that need the second route changes, which
+changes the combined query. The command line reports the cost on its last line, and the `done`
+event's summary carries `siteQueries` (all queries the search needed, cached or not),
+`fallbackQueries` (the second-route part) and `fallbackShops` (shops that tried the second route).
+Serper's free account refuses more than 10 results
 per query ("Query pattern not allowed for free accounts"), so a combined Serper query returns 10
 results for all its domains.
 
 ### Measurement behind the default order (2026-11-24)
 
-Twelve shops take the web-search route (their search page is disallowed by robots.txt or unknown).
+With the 30 shops of that day, twelve took the web-search route (their search page is disallowed by
+robots.txt or unknown).
 For "Oral-B Pro 3 3000", "iPhone 16 128GB" and "Bosch GSR 12V-15", the number of those shops where
 the search returned a product page of the right product, confirmed from the page's own JSON-LD
 (in brackets: shops that ended with a priced offer; Datart lists sold-out items with price 0):
@@ -171,7 +205,8 @@ Add an entry to `data/shops.yaml` (field notes are at the top of the file):
 ```
 
 Then run a search with `--shops example_sk` and check its status. Useful extra fields:
-`needs_js: true` (prices only rendered by JavaScript), `structured_data: false` (no schema.org data),
+`needs_js: true` (prices only rendered by JavaScript), `structured_data: false` (no schema.org data)
+or `structured_data: true` (product pages carry it, so fetched pages without it are not product pages),
 `no_route_reason` and `unreachable: true` (no search URL / site unusable, with the reason shown),
 `ships_to_sk_source`, `pickup_kosice: {available, price, currency, note, source, checked}` for shops
 with a Košice branch, `accept_language`, `link_exclude_regex`. Set `categories` carefully: they decide
@@ -224,12 +259,25 @@ tools/             probe_shops.py (feasibility probe), extract_fixtures.ts, meas
 
 ## Coverage and cost (measured 2026-11-24, no guarantees)
 
-Of 30 in-scope shops, on that day 9 were `blocked` by bot protection (Alza.sk, Alza.cz, Conrad,
-Notino, Sconto, x-kom, Allegro, MediaMarkt.de, MediaMarkt.at; blocking varies between runs),
-2 `needs_js` (Planeo, dm), and 3 had no automatic route (Amazon.de; OBI and notebooksbilliger.de
-answer every page with HTTP 404). With "Auto" categories a search asked 17-23 shops instead of 30.
+`data/shops.yaml` has 39 shops in scope (29 Slovak, 3 Czech, 4 German or Austrian, 3 Polish
+including Allegro.sk) plus 4 grocery chains kept out of scope. Shops with no automatic route
+in every search: Amazon.de (no schema.org data), OBI and notebooksbilliger.de (every page answers
+HTTP 404 to a plain client); dm (mojadm.sk) is marked `needs_js`. Euronics, Teta and MojaLekáreň
+have no usable search URL and are read through the web search.
 
-One fresh search (robots.txt cached, blocked shops inside their one-hour skip):
+Two toothbrush searches on 2026-11-24 evening, Auto categories (32 of 39 shops asked):
+
+| query | ok | no_match | blocked | needs_js | no_route | offers that reach Slovakia |
+|---|---|---|---|---|---|---|
+| Oral-B Pro 3 3000 | 2 | 18 | 9 | 1 | 2 | Nazuby.eu (a "Pro 3000" title, shown as possible) |
+| Oral-B iO Series 3 | 12 | 7 | 9 | 2 | 2 | NAY, Planeo (Košice branches), Andreashop, TPD Euronics, MojaLekáreň, Nazuby.eu, Profimed, Sanitino, Teta |
+
+`blocked` were Alza.sk, Alza.cz, Conrad, Notino, x-kom, Allegro, MediaMarkt.de, MediaMarkt.at and
+Dr.Max; blocking varies between runs. The `needs_js` results besides dm were Pilulka pages without
+Product data (some of its product pages carry it, others do not).
+
+Earlier measurement with 30 shops in scope (Planeo was then marked `needs_js`), one fresh search
+(robots.txt cached, blocked shops inside their one-hour skip, before the second route existed):
 
 | query | before (all 30 shops) | after (Auto categories) |
 |---|---|---|
@@ -243,7 +291,10 @@ When the blocked shops' hour has passed, each blocked shop that is asked costs o
 Delivery and pickup facts in `shops.yaml` (read 2026-11-24 from the shops' own pages, sources in the
 file): NAY (pickup free, delivery from 1.99 €), Mountfield (pickup 1 €, delivery 2.50 €, free from
 80 €), Hornbach (free from 99 €, below unknown; pickup terms not readable), Andreashop (2.99 €),
-iStores (2.98 €, free from 50 €), Pilulka (1.49 €, free from 29 €). Datart.cz does not deliver abroad;
+iStores (2.98 €, free from 50 €), Pilulka (1.49 €, free from 29 €), Datacomp (1.99 €), ABCOM (3.50 €),
+TPD Euronics (2.99 €), MojaLekáreň (0.99 €, free from 40 €), Vaša Lekáreň (0.99 €, free from 36.90 €),
+Nazuby.eu (2.49 €, free from 54.90 €), Holime.eu (2.49 €), Profimed (3.39 €, free from 39 €); the
+complete list, with sources, is in `shops.yaml`. Datart.cz does not deliver abroad;
 Morele.net ships abroad only to companies with a VAT number. Unknown: Dr.Max (blocked), Mironet.cz
 (no mention of Slovakia), MediaMarkt.de/.at (blocked), 101 Drogerie (no delivery page found).
 

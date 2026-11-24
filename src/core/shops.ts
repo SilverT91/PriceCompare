@@ -72,7 +72,7 @@ export function validateShops(doc: unknown): { shops: Shop[]; problems: string[]
       link_exclude_regex: typeof r.link_exclude_regex === 'string' ? r.link_exclude_regex : undefined,
       in_scope: r.in_scope !== false,
       needs_js: r.needs_js === true,
-      structured_data: r.structured_data === false ? false : undefined,
+      structured_data: r.structured_data === false ? false : r.structured_data === true ? true : undefined,
       shipping_to_sk: ship && typeof ship === 'object'
         ? {
           price: typeof ship.price === 'number' ? ship.price : null,

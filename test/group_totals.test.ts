@@ -187,6 +187,20 @@ describe('grouping into distinct products', () => {
     assert.equal(g.length, 1);
     assert.equal(g[0].bestItemEur, 133.2);
   });
+  test('the product name comes from an offer the user can get: branch first, then delivery to SK', () => {
+    // Seen 2026-11-24: "Oral-B iO Series 3" was named "Szczoteczka Oral-B iO Series 3 Pink" (Morele, no SK delivery).
+    const q2 = 'Oral-B iO Series 3';
+    const at = (o: Offer, ships: boolean | 'unknown') => ({ ...o, shipsToSk: ships, totals: computeTotals(o, { name: o.shopName, ships_to_sk: ships, shipping_to_sk: null }, rates) });
+    const morele = at(offer(q2, { title: 'Szczoteczka Oral-B iO Series 3 Pink', price: 277.05, currency: 'PLN', gtin: '08006540731222' }, 'morele'), false);
+    const mironet = at(offer(q2, { title: 'Oral-B iO Series 3 Blush Pink / Elektrický zubní kartáček / magnetický iO', price: 1690, currency: 'CZK', gtin: '08006540731222' }, 'mironet'), 'unknown');
+    const teta = at(offer(q2, { title: 'Oral B elektrická zubná kefka iO Series 3 ružová', price: 69.99, gtin: '08006540731222' }, 'teta'), true);
+    const nay = at(offer(q2, { title: 'Zubná kefka Oral-B iO Series 3 Pink', price: 64.9, gtin: '08006540731222' }, 'nay', 'local'), true);
+    assert.equal(groupOffers([morele])[0].title, morele.title, 'last resort');
+    assert.equal(groupOffers([morele, mironet])[0].title, mironet.title, 'delivery unknown beats "does not deliver"');
+    assert.equal(groupOffers([morele, mironet, teta])[0].title, teta.title);
+    assert.equal(groupOffers([morele, teta, nay])[0].title, nay.title);
+    assert.equal(groupOffers([morele, teta, nay])[0].level, 'exact', 'the level still comes from the best match');
+  });
   test('used and new offers with the same GTIN are not merged', () => {
     const g = groupOffers([
       offer('Oral-B Pro 3 3000', { title: 'Oral-B Pro 3 3000', price: 60, gtin: '08006540759790' }, 'a'),
