@@ -132,7 +132,7 @@ ProductGroup { id, title, level, condition, gtins, signature, shopCount, offerCo
   nearbyModels(query, all ShopResults): candidates and offers rated 'different'
   v
 NearbyList { models: NearbyModel[] (at most 8), total }
-  +-- NearbyModel { query, shops: NearbyShop[], differs, missing, distinguishing, distance, seenPrice }
+  +-- NearbyModel { query, shops: NearbyShop[], differs, missing, distinguishing, distance, seenPrice: SeenPrice { eur, shopName, url, from } | null }
         +-- NearbyShop { shopId, shopName, section, url, title }
 ```
 
@@ -313,7 +313,23 @@ Step by step:
     missing or extra tier or package word two, anything else one each. Order, closest first: the same
     line with another number (distance 1), by number of shops, then a local branch; then the models
     most shops list, then distance, then a local branch, then name. At most 8 (`NEARBY_LIMIT`), with `total`. `seenPrice` is the lowest
-    `totals.itemEur` among the cluster's offers, with the shop name. The page renders the list inside
+    `totals.itemEur` among the cluster's offers, with the shop name and the page URL (`from: 'search'`).
+
+    11b. **Prices for the similar models** (`pipeline.ts`, `priceNearbyModels()`). After the last
+    shop, when no product group is `exact` and the list is not empty, one page is read for each of
+    the first three models (`NEARBY_PRICE_READS`) that have no `seenPrice`. The listing is picked by
+    shop: a branch in the city, then a shop that delivers to Slovakia, then any other; a shop not
+    yet asked for another model is preferred. A shop whose result was `blocked`,
+    `robots_disallowed`, `error`, `needs_js` or `not_relevant`, or whose request budget is spent,
+    is not asked. The read uses the shop's own `ShopSession` from the search (`readPage()`, the same
+    function the search uses: `offers` cache, robots.txt, host gap, budget, bot-wall detection), so
+    the limit of 6 requests per shop covers it. The page's offers are matched against the model's
+    own name; the best `exact` or `possible` offer in new condition with a EUR price gives
+    `seenPrice` (`from: 'list'`). An offer rated `different` gives none, and no second page is
+    read. The read offers are not added to the shop results, so product groups and offer counts
+    stay as they were. When a price was found, one more `products` event carries the list with it;
+    `done.nearbyPrices` counts them. There is no plausibility check on the price: it is shown with
+    a warning that it may not be the same product. The page renders the list inside
     "Which one do you mean?": open when no product matches exactly (introduced by "No shop lists
     exactly what you typed", plus "the products above are possible matches" when there are possible
     ones), collapsed in a `<details>` below the products when an exact match exists.
@@ -547,6 +563,21 @@ with price, GTIN and availability once rendered. Loading the page made about 200
 them images, fonts and third-party scripts, so a renderer should switch those off. dm is the only
 shop it would add today: Pilulka's pages without product data are pages of products that are
 currently unavailable, and a browser shows no product data on them either.
+
+Measured again the same day with `tools/render_probe.py`, which switches off images, fonts,
+stylesheets and every host outside the page's own domain unless a host is named with
+`--allow-host`:
+
+| dm product page | Requests let through | Result |
+|---|---|---|
+| Nothing outside mojadm.sk | 3 (26 to `assets.dm.de` stopped) | Empty page, one JSON-LD block of type `WebSite` |
+| `assets.dm.de` allowed | 71, about 2 MB | 459 characters of text, still no `Product`; 10 requests to four hosts under `services.dmtech.com` stopped |
+
+So a renderer for dm has to let through the assets host and the data hosts on dm's services
+domain, each with its own robots.txt to honour, and it cannot keep 3 seconds between the page's
+own requests (59 of 60 requests to the assets host were closer together). The run with the data
+hosts allowed was not made. A Planeo page without product data in its plain HTML
+(`/iphone-16-blue`) had none in the browser either.
 
 ### Add a field to `data/shops.yaml`
 

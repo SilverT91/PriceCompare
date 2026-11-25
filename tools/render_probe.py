@@ -10,6 +10,13 @@ can be answered with a measurement. It is not imported by the app and the app do
 Run (system Python with `playwright` and its Chromium installed; this tool never downloads a browser):
   python tools/render_probe.py URL [URL ...]
   python tools/render_probe.py --json URL [URL ...]
+  python tools/render_probe.py --allow-host cdn.example.com --allow-host api.example.com URL
+
+A page whose data comes from another host shows nothing until that host is allowed with
+`--allow-host` (exact host names, repeatable, no wildcard): the first run lists the hosts that were
+aborted, with a count each, and a second run can allow the ones that belong to the shop's own
+platform. An allowed host's robots.txt is read before the page load (same 3 s gate) and any request
+to it that robots.txt disallows is aborted (counted as `robots_disallowed`).
 
 For each URL, in this order:
   1. robots.txt of the host is read for the agent token `price-compare`; if the path is disallowed,
@@ -28,8 +35,8 @@ Request rules followed:
   * Honest identity: the browser's own default user agent plus " price-compare/0.1". No stealth:
     no patched flags, plugins, proxy, header tricks, cookie acceptance, clicks, or challenge handling.
   * Small traffic: images, fonts, media and stylesheets are aborted, as is every request to a host
-    outside the page's registered domain (third-party scripts, analytics, ads). Requests to the page's
-    own host that robots.txt disallows are aborted too.
+    outside the page's registered domain unless allowed with --allow-host (third-party scripts,
+    analytics, ads). Requests to the page's own host that robots.txt disallows are aborted too.
 
 What cannot hold inside a browser engine: the 3-second gap applies to page loads. The page's own
 scripts and data calls go out when the page makes them, so the output lists how many requests went to
@@ -154,6 +161,7 @@ def plain_get(url: str) -> dict:
 class Robots:
     def __init__(self, text: str | None, status: int | None) -> None:
         self.mode = "rules"
+        self.status = status
         self.rules: list[tuple[bool, str]] = []
         if status is None or 500 <= status < 600:
             self.mode = "disallow_all_unreachable"
@@ -319,6 +327,30 @@ def summarize_product(node: dict) -> dict:
             "availability": availability, "gtin": gtin}
 
 
+def ld_types(ld_texts: list[str]) -> list[list[str]]:
+    """Per JSON-LD block, the `@type` names of its top-level nodes (and of the nodes in an `@graph`)."""
+    out: list[list[str]] = []
+    for text in ld_texts:
+        try:
+            data = json.loads(text.strip(), strict=False)
+        except ValueError:
+            out.append(["(not valid JSON)"])
+            continue
+        roots = data if isinstance(data, list) else [data]
+        nodes: list = []
+        for root in roots:
+            if isinstance(root, dict) and isinstance(root.get("@graph"), list):
+                nodes.extend(root["@graph"])
+            else:
+                nodes.append(root)
+        names: list[str] = []
+        for node in nodes:
+            if isinstance(node, dict):
+                names.extend(n for n in sorted(type_names(node)) if n not in names)
+        out.append(names or ["(no @type)"])
+    return out
+
+
 def find_product(ld_texts: list[str]) -> dict | None:
     """The first Product node that has a price, else the first Product node."""
     products: list[dict] = []
@@ -376,9 +408,10 @@ READ_JS = """() => ({
 })"""
 
 
-def browser_load(browser, url: str, robots: Robots) -> dict:
-    """Load `url` in headless Chromium. Returns the measured facts (no page content besides JSON-LD)."""
-    page_host = urlsplit(url).netloc.lower()
+def browser_load(browser, url: str, robots: Robots, allowed: dict[str, Robots]) -> dict:
+    """Load `url` in headless Chromium. Returns the measured facts (no page content besides JSON-LD).
+    `allowed` maps each --allow-host host name to its robots.txt rules."""
+    page_host = (urlsplit(url).hostname or "").lower()
     page_domain = registered_domain(page_host)
     res: dict = {"launched": True}
     ctx = None
@@ -394,6 +427,7 @@ def browser_load(browser, url: str, robots: Robots) -> dict:
 
         stats = {"requested": 0, "continued": 0, "aborted": 0}
         aborted_by: dict[str, int] = {}
+        aborted_hosts: dict[str, int] = {}
         host_times: dict[str, list[float]] = {}
         finished: list = []
         t0 = time.monotonic()
@@ -404,15 +438,19 @@ def browser_load(browser, url: str, robots: Robots) -> dict:
 
         def handle(route, request):
             stats["requested"] += 1
-            parts = urlsplit(request.url)
-            host = parts.netloc.lower()
+            host = (urlsplit(request.url).hostname or "").lower()
             if request.resource_type in ABORT_TYPES:
                 bump(request.resource_type)
                 return route.abort()
-            if registered_domain(host) != page_domain:
+            if host in allowed:
+                if not allowed[host].allowed(request.url):
+                    bump("robots_disallowed")
+                    return route.abort()
+            elif registered_domain(host) != page_domain:
                 bump("third_party")
+                aborted_hosts[host] = aborted_hosts.get(host, 0) + 1  # host name only, no path or query
                 return route.abort()
-            if host == page_host and not robots.allowed(request.url):
+            elif host == page_host and not robots.allowed(request.url):
                 bump("robots_disallowed")
                 return route.abort()
             stats["continued"] += 1
@@ -442,6 +480,7 @@ def browser_load(browser, url: str, robots: Robots) -> dict:
                 res["seconds_waited"] = round(time.monotonic() - t_loaded, 1)
             read = page.evaluate(READ_JS)
             res["ld_blocks"] = len(read["ld"])
+            res["ld_types"] = ld_types(read["ld"])
             res["body_text_chars"] = read["text_chars"]
             res["product"] = find_product(read["ld"])
         res["seconds_total"] = round(time.monotonic() - t0, 2)
@@ -455,8 +494,12 @@ def browser_load(browser, url: str, robots: Robots) -> dict:
             except Exception:
                 pass
         res["requests"] = {"made": stats["continued"], "aborted": stats["aborted"], "total_seen": stats["requested"],
-                           "aborted_by": aborted_by, "bytes_received": total_bytes, "finished_counted": counted}
+                           "aborted_by": aborted_by,
+                           "aborted_third_party_hosts": dict(sorted(aborted_hosts.items(), key=lambda kv: -kv[1])),
+                           "bytes_received": total_bytes, "finished_counted": counted}
         res["hosts"] = summarize_hosts(host_times)
+        for h in res["hosts"]:
+            h["allowed_by_option"] = h["host"] in allowed
     finally:
         if ctx is not None:
             ctx.close()
@@ -480,7 +523,7 @@ def summarize_hosts(host_times: dict[str, list[float]]) -> list[dict]:
 # ----------------------------------------------------------------------------------------------
 
 
-def probe_url(browser, url: str) -> dict:
+def probe_url(browser, url: str, allow_hosts: list[str]) -> dict:
     out: dict = {"url": url}
     robots = robots_for(url)
     out["robots"] = "allowed" if robots.allowed(url) else "disallowed"
@@ -490,8 +533,10 @@ def probe_url(browser, url: str) -> dict:
         return out
 
     plain = plain_get(url)
-    plain_product = find_product(ld_texts_from_html(plain.get("text", ""))) if plain.get("ok") else None
+    plain_ld = ld_texts_from_html(plain.get("text", "")) if plain.get("ok") else []
+    plain_product = find_product(plain_ld)
     out["plain"] = {"status": plain.get("status"), "bytes": plain.get("bytes"), "error": plain.get("error"),
+                    "ld_blocks": len(plain_ld), "ld_types": ld_types(plain_ld),
                     "redirect_offsite": plain.get("redirect_offsite"), "final_url": plain.get("url"),
                     "blocked": plain.get("status") in BLOCK_STATUSES, "product": plain_product}
     if plain.get("status") in (403, 429):
@@ -499,7 +544,15 @@ def probe_url(browser, url: str) -> dict:
         out["browser_adds_product_data"] = None
         return out
 
-    b = browser_load(browser, url, robots)
+    # robots.txt of every allowed host is read before the page load (3 s gate per host, as for the page host)
+    allowed: dict[str, Robots] = {}
+    out["allowed_hosts"] = []
+    for host in allow_hosts:
+        rb = robots_for(f"https://{host}/")
+        allowed[host] = rb
+        out["allowed_hosts"].append({"host": host, "robots_mode": rb.mode, "robots_http_status": rb.status,
+                                     "rules_for_agent": len(rb.rules)})
+    b = browser_load(browser, url, robots, allowed)
     if b.get("http_status") in BLOCK_STATUSES:
         b["blocked"] = True
     elif not b.get("product") and (b.get("body_text_chars") or 0) < 300 and b.get("http_status"):
@@ -536,6 +589,7 @@ def print_report(r: dict) -> None:
     print(f"  plain GET: status={p['status']} bytes={p['bytes']} blocked={p['blocked']}"
           + (f" error={p['error']}" if p.get("error") else "")
           + (f" redirected off-site to {p['redirect_offsite']}" if p.get("redirect_offsite") else ""))
+    print(f"    plain HTML JSON-LD blocks: {p['ld_blocks']} types {p['ld_types']}")
     print(f"    plain HTML JSON-LD Product: {fmt_product(p['product'])}")
     b = r["browser"]
     if b.get("skipped"):
@@ -549,10 +603,17 @@ def print_report(r: dict) -> None:
     q = b.get("requests", {})
     print(f"    requests: made={q.get('made')} aborted={q.get('aborted')} (by reason {q.get('aborted_by')}) "
           f"bytes received={q.get('bytes_received')} (for {q.get('finished_counted')} finished requests)")
+    for a in r.get("allowed_hosts", []):
+        print(f"      allowed host {a['host']}: robots.txt mode={a['robots_mode']} (HTTP {a['robots_http_status']}, "
+              f"{a['rules_for_agent']} rules for this agent)")
     for h in b.get("hosts", []):
-        print(f"      host {h['host']}: {h['requests']} requests, smallest gap {h['min_gap_s']} s, "
-              f"{h['gaps_under_3s']} gaps under 3 s")
-    print(f"    JSON-LD blocks in DOM: {b.get('ld_blocks')}  body text chars: {b.get('body_text_chars')}  "
+        print(f"      host {h['host']}{' (allowed by option)' if h.get('allowed_by_option') else ''}: "
+              f"{h['requests']} requests, smallest gap {h['min_gap_s']} s, {h['gaps_under_3s']} gaps under 3 s")
+    hosts = q.get("aborted_third_party_hosts") or {}
+    if hosts:
+        print("      aborted third-party hosts: " + ", ".join(f"{h} x{n}" for h, n in hosts.items()))
+    print(f"    JSON-LD blocks in DOM: {b.get('ld_blocks')} types {b.get('ld_types')}  "
+          f"body text chars: {b.get('body_text_chars')}  "
           f"time: {b.get('seconds_total')} s")
     if b.get("product_appeared"):
         print(f"    Product appeared after {b.get('seconds_until_product')} s")
@@ -574,7 +635,17 @@ def main() -> int:
                                              "next to one plain GET (measurement tool, not part of the app).")
     ap.add_argument("urls", nargs="+", metavar="URL")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
+    ap.add_argument("--allow-host", action="append", default=[], metavar="HOST",
+                    help="let requests to this exact host name through although it is outside the page's "
+                         "registered domain (repeatable; its robots.txt is read first and obeyed)")
     args = ap.parse_args()
+    allow_hosts: list[str] = []
+    for h in args.allow_host:
+        h = h.strip().lower()
+        if not re.fullmatch(r"[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?", h) or "." not in h:
+            ap.error(f"--allow-host takes one exact host name such as cdn.example.com, got {h!r}")
+        if h not in allow_hosts:
+            allow_hosts.append(h)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
 
@@ -601,7 +672,7 @@ def main() -> int:
                     results.append({"url": url, "error": "only http and https URLs"})
                     continue
                 try:
-                    results.append(probe_url(browser, url))
+                    results.append(probe_url(browser, url, allow_hosts))
                 except Exception as exc:
                     first = str(exc).splitlines()[0] if str(exc) else ""
                     results.append({"url": url, "error": f"{type(exc).__name__}: {clean_message(first)}"})

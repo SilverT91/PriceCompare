@@ -15,7 +15,8 @@ import {
 import { buildSearchUrl, heurekaUrl, sectionFor, type Location } from './shops.ts';
 import { computeTotals, type Rates } from './totals.ts';
 import {
-  CACHE_TTL, type Cache, type Candidate, type NearbyList, type Offer, type ProductGroup, type RawOffer, type Shop, type ShopResult, type ShopStatus,
+  CACHE_TTL, type Cache, type Candidate, type NearbyList, type NearbyShop, type Offer, type ProductGroup, type RawOffer, type SeenPrice, type Shop,
+  type ShopResult, type ShopStatus,
 } from './types.ts';
 
 export const MAX_PRODUCT_PAGES = 3;
@@ -66,10 +67,12 @@ export interface SearchSummary {
   groups: number;
   /** Similar models the shops list (all of them, before the cut to the list shown). */
   nearby: number;
+  /** Similar models that got a price from a page read after the search for that (priceNearbyModels). */
+  nearbyPrices: number;
   /** New web search API calls made by this search (cache hits not counted). */
   providerCalls: ProviderCall[];
   shopsAsked: number;
-  /** HTTP requests to shops (robots.txt and redirects included; cache hits not counted). */
+  /** HTTP requests to shops (robots.txt and redirects included, price reads for similar models too; cache hits not counted). */
   shopRequests: number;
   /** Web search queries this search needed, whether answered from the cache or by the API. */
   siteQueries: number;
@@ -132,6 +135,8 @@ export async function* runSearch(query: string, opts: SearchOptions): AsyncGener
   };
 
   const results: ShopResult[] = [];
+  // Each shop's session and read pages, kept for the price reads of similar models after the search.
+  const contexts = new Map<string, ShopCtx>();
   let remaining = shops.length + 1;
   void ratesP.then((r) => {
     remaining--;
@@ -149,7 +154,7 @@ export async function* runSearch(query: string, opts: SearchOptions): AsyncGener
         },
       }
       : null;
-    searchShop(shop, pq, opts, batcher, slot, ratesP.then((r) => r.rates))
+    searchShop(shop, pq, opts, batcher, slot, ratesP.then((r) => r.rates), contexts)
       .finally(() => {
         if (fallback && !fallbackDecided) fallback.decline();
       })
@@ -174,20 +179,98 @@ export async function* runSearch(query: string, opts: SearchOptions): AsyncGener
   const statusCounts: Partial<Record<ShopStatus, number>> = {};
   for (const r of [...notRelevant, ...results]) statusCounts[r.status] = (statusCounts[r.status] ?? 0) + 1;
   const allOffers = results.flatMap((r) => r.offers);
+  const groups = groupOffers(allOffers);
+  const nearby = nearbyModels(pq, results);
+  // No exact match: a price for the first similar models, then the list once more with it.
+  const priced = !groups.some((g) => g.level === 'exact') && nearby.models.length
+    ? await priceNearbyModels(nearby, results, contexts)
+    : { list: nearby, prices: 0, requests: 0 };
+  if (priced.prices) yield { type: 'products', groups, nearby: priced.list };
   yield {
     type: 'done',
     summary: {
-      query, ms: Date.now() - t0, statusCounts, offers: allOffers.length, groups: groupOffers(allOffers).length,
-      nearby: nearbyModels(pq, results).total,
+      query, ms: Date.now() - t0, statusCounts, offers: allOffers.length, groups: groups.length,
+      nearby: nearby.total,
+      nearbyPrices: priced.prices,
       providerCalls: chain?.calls ?? [],
       shopsAsked: shops.length,
-      shopRequests: results.reduce((a, r) => a + r.requestsUsed, 0),
+      shopRequests: results.reduce((a, r) => a + r.requestsUsed, 0) + priced.requests,
       siteQueries: (batcher?.queriesNeeded ?? 0) + (fallback?.queriesNeeded ?? 0),
       fallbackQueries: fallback?.queriesNeeded ?? 0,
       fallbackShops,
       categories: choice,
     },
   };
+}
+
+/** How many models of the similar-models list get a price read after the search. */
+export const NEARBY_PRICE_READS = 3;
+/** A shop with one of these results is not asked again in the same search. */
+const NO_PRICE_READ: ShopStatus[] = ['blocked', 'robots_disallowed', 'error', 'needs_js', 'not_relevant'];
+const LEVEL_RANK = { exact: 0, possible: 1, different: 2 } as const;
+
+/**
+ * Prices for the similar-models list, when no product matches exactly. For each of the first
+ * NEARBY_PRICE_READS models without a seen price, one listing is read: a shop with a branch in the
+ * city first, then one that delivers to Slovakia, then any other, preferring a shop not asked yet
+ * for another model. A shop is never asked when its result was blocked, robots-disallowed, an error
+ * or needs_js, and never past its request budget (checked again when the read starts, since a shop
+ * asked twice reads in sequence). A page that gives no usable price is not followed by another one.
+ * The read offers stay out of the shop results: they would add products to "Which one do you mean?"
+ * and change the offer counts. Returns the list with the prices, how many were found and the requests made.
+ */
+async function priceNearbyModels(
+  list: NearbyList, results: ShopResult[], contexts: Map<string, ShopCtx>,
+): Promise<{ list: NearbyList; prices: number; requests: number }> {
+  const status = new Map(results.map((r) => [r.shopId, r.status]));
+  const reach = (s: NearbyShop) => (s.section === 'local' ? 0 : contexts.get(s.shopId)?.shop.ships_to_sk === true ? 1 : 2);
+  const usable = (s: NearbyShop) => {
+    const ctx = contexts.get(s.shopId);
+    const st = status.get(s.shopId);
+    return Boolean(ctx && st && !NO_PRICE_READ.includes(st) && ctx.session.remaining() > 0 && !ctx.read.has(pageKey(s.url)));
+  };
+  const asked = new Set<string>();
+  const jobs: { index: number; name: string; ctx: ShopCtx; url: string }[] = [];
+  const todo = list.models.map((m, index) => ({ m, index })).filter(({ m }) => !m.seenPrice).slice(0, NEARBY_PRICE_READS);
+  for (const { m, index } of todo) {
+    const candidates = [...m.shops].sort((a, b) => reach(a) - reach(b)).filter(usable);
+    // A shop not asked yet for another model first; otherwise one already asked, if its budget allows at the time of the read.
+    const pick = candidates.find((s) => !asked.has(s.shopId)) ?? candidates[0];
+    if (!pick) continue;
+    asked.add(pick.shopId);
+    jobs.push({ index, name: m.query, ctx: contexts.get(pick.shopId) as ShopCtx, url: pick.url });
+  }
+  const shopsAsked = new Set(jobs.map((j) => j.ctx));
+  const usedBefore = [...shopsAsked].reduce((a, ctx) => a + ctx.session.used, 0);
+  // Reads for one shop run one after another through its session; different shops run side by side.
+  const queue = new Map<ShopCtx, Promise<unknown>>();
+  const prices = await Promise.all(jobs.map((j) => {
+    const run = (queue.get(j.ctx) ?? Promise.resolve()).then(() => readModelPrice(j.ctx, j.name, j.url)).catch(() => null);
+    queue.set(j.ctx, run);
+    return run;
+  }));
+  const requests = [...shopsAsked].reduce((a, ctx) => a + ctx.session.used, 0) - usedBefore;
+  const models = list.models.map((m, i) => {
+    const k = jobs.findIndex((j) => j.index === i);
+    return k >= 0 && prices[k] ? { ...m, seenPrice: prices[k] } : m;
+  });
+  return { list: { ...list, models }, prices: prices.filter(Boolean).length, requests };
+}
+
+/**
+ * The price of a similar model from one of its pages: the page's offers as usual, matched against
+ * the model's own name. The best match (exact before possible, then the score), the lowest item
+ * price among equals. An offer the name rates "different", a used one or one without a EUR price gives none.
+ */
+async function readModelPrice(ctx: ShopCtx, name: string, url: string): Promise<SeenPrice | null> {
+  const page = await readPage(ctx, url);
+  if (page.kind !== 'offers') return null;
+  const fits = (await toOffers(ctx, page.offers, parseQuery(name)))
+    .filter((o) => o.match.level !== 'different' && o.match.condition === 'new' && o.totals.itemEur !== null)
+    .sort((a, b) => LEVEL_RANK[a.match.level] - LEVEL_RANK[b.match.level] || b.match.score - a.match.score
+      || (a.totals.itemEur as number) - (b.totals.itemEur as number));
+  const best = fits[0];
+  return best ? { eur: best.totals.itemEur as number, shopName: ctx.shop.name, url: best.url, from: 'list' } : null;
 }
 
 function rankCandidates(pq: ParsedQuery, cands: Candidate[]): Candidate[] {
@@ -263,9 +346,70 @@ export function dedupeOffers(raw: RawOffer[]): RawOffer[] {
   return out;
 }
 
+/** What reading one product page gave. */
+type PageRead =
+  | { kind: 'offers'; offers: RawOffer[]; productNodes: number }
+  | { kind: 'failed'; note: string }
+  | { kind: 'robots_disallowed' }
+  | { kind: 'blocked'; vendor: string }
+  /** requested: the budget ran out during the read (a robots.txt or redirect hop was asked first). */
+  | { kind: 'budget'; requested: boolean };
+
+/**
+ * One product page, from the `offers` cache or through the shop's session (robots.txt on every hop,
+ * the host gap, the request budget, bot-wall detection). The page is remembered as read; a bot wall
+ * marks the shop blocked for an hour; what was extracted, or a 404/410, is cached by URL.
+ */
+async function readPage(ctx: ShopCtx, url: string): Promise<PageRead> {
+  const { shop, opts, session } = ctx;
+  const hit = await opts.cache.get<CachedPage>('offers', url);
+  if (hit && (hit.status === 404 || hit.status === 410)) {
+    ctx.read.add(pageKey(url));
+    return { kind: 'failed', note: `${url}: HTTP ${hit.status} (cached)` };
+  }
+  if (hit) {
+    ctx.read.add(pageKey(url));
+    if (hit.productNodes) await rememberStructuredData(ctx);
+    // Entries cached before offerUrl existed may still hold a site-root URL.
+    return { kind: 'offers', offers: hit.offers.map((o) => ({ ...o, url: offerUrl(o.url, hit.finalUrl) })), productNodes: hit.productNodes };
+  }
+  if (session.remaining() <= 0) return { kind: 'budget', requested: false };
+  const page = await session.get(url, 'product');
+  if (page.robotsDisallowed) return { kind: 'robots_disallowed' };
+  ctx.read.add(pageKey(url));
+  ctx.read.add(pageKey(page.finalUrl));
+  if (page.blocked) {
+    await ctx.markBlocked(page.blocked);
+    return { kind: 'blocked', vendor: page.blocked };
+  }
+  if (page.budgetExhausted) return { kind: 'budget', requested: true };
+  if (!page.ok) {
+    // A page that is gone (404/410) is remembered like any extraction, so it is not asked again for 6 h.
+    if (page.status === 404 || page.status === 410) {
+      await opts.cache.set('offers', url, { offers: [], productNodes: 0, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
+    }
+    return { kind: 'failed', note: `${url}: ${page.error ?? `HTTP ${page.status}`}` };
+  }
+  const ex = extractOffers(page.text, page.finalUrl, shop.id);
+  if (ex.productNodes) await rememberStructuredData(ctx);
+  await opts.cache.set('offers', url, { offers: ex.offers, productNodes: ex.productNodes, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
+  return { kind: 'offers', offers: ex.offers, productNodes: ex.productNodes };
+}
+
+/** Offers with a price, one per page and price, matched against the query and with their totals. */
+async function toOffers(ctx: ShopCtx, raw: RawOffer[], pq: ParsedQuery): Promise<Offer[]> {
+  const { shop, opts, section } = ctx;
+  const rates = await ctx.ratesP;
+  return dedupeOffers(raw.filter((x) => x.price > 0)).map((r) => ({
+    ...r, shopName: shop.name, section, shipsToSk: shop.ships_to_sk, branchKnown: shop[opts.location.branchField],
+    match: matchTitle(pq, { title: r.title, brand: r.brand, sku: r.sku, mpn: r.mpn, color: r.color, itemCondition: r.itemCondition, url: r.url, shopName: shop.name }),
+    totals: computeTotals(r, shop, rates, opts.location.country, { local: section === 'local' }),
+  }));
+}
+
 /** Steps 2 and 3 for one route: fetch the best candidate pages, extract offers, match them. */
 async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidates: Candidate[], notes: string[]): Promise<RouteOutcome> {
-  const { shop, pq, opts, session, section } = ctx;
+  const { shop, pq, opts } = ctx;
   const ranked = rankCandidates(pq, candidates);
   const shownCandidates = ranked.slice(0, 10);
   const none = (status: ShopStatus, detail: string): RouteOutcome => ({ status, detail, offers: [], candidates: shownCandidates });
@@ -291,76 +435,38 @@ async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidat
       alreadyRead++;
       continue;
     }
-    const hit = await opts.cache.get<CachedPage>('offers', c.url);
-    if (hit && (hit.status === 404 || hit.status === 410)) {
-      tried++;
-      ctx.read.add(pageKey(c.url));
-      notes.push(`${c.url}: HTTP ${hit.status} (cached)`);
-      continue;
-    }
-    if (hit) {
-      tried++;
-      ctx.read.add(pageKey(c.url));
-      // Entries cached before offerUrl existed may still hold a site-root URL.
-      raw.push(...hit.offers.map((o) => ({ ...o, url: offerUrl(o.url, hit.finalUrl) })));
-      pagesFetched++;
-      if (!hit.productNodes) pagesWithoutData++;
-      else await rememberStructuredData(ctx);
-      continue;
-    }
-    if (session.remaining() <= 0) {
-      budgetHit = true;
-      break;
-    }
-    const page = await session.get(c.url, 'product');
-    if (page.robotsDisallowed) {
+    const page = await readPage(ctx, c.url);
+    if (page.kind === 'robots_disallowed') {
       // Nothing was requested for it, so it does not take one of the page slots.
       robotsBlockedPages++;
       continue;
     }
-    tried++;
-    ctx.read.add(pageKey(c.url));
-    ctx.read.add(pageKey(page.finalUrl));
-    if (page.blocked) {
-      await ctx.markBlocked(page.blocked);
-      if (!raw.length) return none('blocked', `bot protection (${page.blocked}) on a product page; skipped for an hour`);
-      notes.push(`bot protection on ${c.url}`);
-      break;
-    }
-    if (page.budgetExhausted) {
+    if (page.kind === 'budget') {
+      if (page.requested) tried++;
       budgetHit = true;
       break;
     }
-    if (!page.ok) {
-      notes.push(`${c.url}: ${page.error ?? `HTTP ${page.status}`}`);
-      // A page that is gone (404/410) is remembered like any extraction, so it is not asked again for 6 h.
-      if (page.status === 404 || page.status === 410) {
-        await opts.cache.set('offers', c.url, { offers: [], productNodes: 0, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
-      }
+    tried++;
+    if (page.kind === 'blocked') {
+      if (!raw.length) return none('blocked', `bot protection (${page.vendor}) on a product page; skipped for an hour`);
+      notes.push(`bot protection on ${c.url}`);
+      break;
+    }
+    if (page.kind === 'failed') {
+      notes.push(page.note);
       continue;
     }
     pagesFetched++;
-    const ex = extractOffers(page.text, page.finalUrl, shop.id);
-    if (!ex.productNodes) pagesWithoutData++;
-    else await rememberStructuredData(ctx);
-    raw.push(...ex.offers);
-    await opts.cache.set('offers', c.url, { offers: ex.offers, productNodes: ex.productNodes, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
+    if (!page.productNodes) pagesWithoutData++;
+    raw.push(...page.offers);
   }
   if (budgetHit) notes.push(`request budget (${MAX_REQUESTS_PER_SHOP} per shop) reached`);
   if (alreadyRead) notes.push(`${alreadyRead} page(s) already read in this search (same page under another link) not read again`);
 
   // ---- 3. match + totals ---------------------------------------------------------------------
-  const rates = await ctx.ratesP;
-  const offers: Offer[] = [];
   const unpriced = raw.filter((r) => !(r.price > 0)).length;
   if (unpriced) notes.push(`${unpriced} offer(s) listed with price 0 (sold out?) ignored`);
-  for (const r of dedupeOffers(raw.filter((x) => x.price > 0))) {
-    const match = matchTitle(pq, { title: r.title, brand: r.brand, sku: r.sku, mpn: r.mpn, color: r.color, itemCondition: r.itemCondition, url: r.url, shopName: shop.name });
-    offers.push({
-      ...r, shopName: shop.name, section, shipsToSk: shop.ships_to_sk, branchKnown: shop[opts.location.branchField],
-      match, totals: computeTotals(r, shop, rates, opts.location.country, { local: section === 'local' }),
-    });
-  }
+  const offers = await toOffers(ctx, raw, pq);
   const matching = offers.filter((o) => o.match.level !== 'different');
   const out = (status: ShopStatus, detail: string): RouteOutcome => ({ status, detail, offers, candidates: shownCandidates });
   if (matching.length) {
@@ -383,6 +489,7 @@ async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidat
 
 async function searchShop(
   shop: Shop, pq: ParsedQuery, opts: SearchOptions, batcher: SiteSearchBatcher | null, fallback: FallbackSlot | null, ratesP: Promise<Rates | null>,
+  contexts: Map<string, ShopCtx>,
 ): Promise<ShopResult> {
   const t0 = Date.now();
   const query = pq.raw;
@@ -406,6 +513,7 @@ async function searchShop(
     await opts.cache.set('blocked', shop.id, { at: new Date().toISOString(), vendor }, CACHE_TTL.blocked);
   };
   const ctx: ShopCtx = { shop, pq, opts, session, section, ratesP, markBlocked, read: new Set() };
+  contexts.set(shop.id, ctx);
   const tail = (notes: string[]) => (notes.length ? ` (${notes.join('; ')})` : '');
 
   if (shop.needs_js) return finish('needs_js', 'prices on this shop only appear after JavaScript runs; not fetched (open the manual link)');

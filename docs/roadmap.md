@@ -18,10 +18,15 @@ What the fourth round did (a short one, the same day):
 - **Product names in "Which one do you mean?"** no longer carry the shop's suffix, an appended
   cashback promotion, a doubled title or a leading specification list. Bundle contents after "+"
   stay. The offer rows keep the shop's own title.
+- **A price for the closest similar models.** When no product matches exactly, one shop page is
+  read for each of the first three models in the list, and the price is shown with the shop, a
+  link and a warning that it may not be the same product. No price filter (see
+  [decisions.md](decisions.md)). For "Oral-B Pro 3 3000": Pro 3 3500 at 74.99 € and Pro 3 3900 at
+  69.99 € (both Planeo, Košice), iO Series 3 at 64.90 € (NAY, Košice).
 - **Browser engine: decided, not in the app for now** (see [decisions.md](decisions.md)). A
-  measurement tool, `tools/render_probe.py`, is written for the day the question comes back. It has
-  not loaded a page yet: Playwright is installed in Python on the owner's machine, its Chromium is
-  not downloaded.
+  measurement tool, `tools/render_probe.py`, is written for the day the question comes back. Its
+  first measurement, on dm's product page, supports the decision: the page needs several of dm's
+  other hosts and more than 71 requests before a price could be read.
 
 What the third round did:
 
@@ -87,12 +92,11 @@ worked from the cache).
 In this order.
 
 1. **Test with the exact model the first user was looking for**, once known.
-2. **A price in the similar-models list.** Consider reading one page of the closest model (one shop
-   request, no search quota) so the list shows a price before the user spends a new search on it.
-3. **Work through "Code issues found in review"** below; none blocks use.
-4. **Measure with `tools/render_probe.py`** once Chromium for Playwright is downloaded
-   (`python -m playwright install chromium`, the owner's step): dm's product page and any shop
-   that reads as `needs_js`. This only informs the decision; it adds nothing to the app. If a
+2. **Work through "Code issues found in review"** below; none blocks use.
+3. **Browser engine: nothing to do now.** `tools/render_probe.py` measured dm's product page
+   (numbers in [architecture.md](architecture.md), section "Add a new route for reading a shop"):
+   it needs dm's assets host and data hosts let through, more than 71 requests per page.
+   Use the tool on any other shop that reads as `needs_js` before reopening the decision. If a
    browser engine is ever built:
    - Make it optional: the app runs without it, and `needs_js` shops keep their manual link.
    - Same request rules: robots.txt, 3 seconds between page loads, a plain honest identity, no
@@ -152,7 +156,11 @@ In this order.
   - Titles that are a specification list without bullets fail the name check and are left out.
   - Only the 10 best candidates per shop are kept, so a neighbour further down a shop's results is
     not seen.
-  - The list shows no price unless a page of that model happened to be read.
+  - Only the first three models get a price, each from one page. The price is the item price,
+    without delivery, and an out-of-stock offer gives a price like any other.
+  - In the live check one price came from a page read for it (one shop request) and two from
+    pages already in the cache. A shop asked twice in one search has been seen in tests only.
+  - The history of searches does not record how many prices were read.
 - **Product names** in "Which one do you mean?" are tidied, but only a promotion written as
   "+ cashback ..." is removed. Other promotion wording ("+ darček", "zdarma", "akcia") stays in the
   name.

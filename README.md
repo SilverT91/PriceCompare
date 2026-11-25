@@ -58,10 +58,16 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
      models most shops list) with a model name, how it differs from the query
      (`has "3500", lacks "3000"`), the shops that list it, and a "Compare this model" button that
      starts a new search for that name. Only models of the same brand and line count; accessories,
-     review and manual pages, used items and the query's own model in a bundle do not. Their prices
-     are not read for this list; when one of their pages was read anyway, its price is shown as
-     "seen at X € at Shop", a hint from one shop, not a comparison. The list costs no extra shop
-     requests and no extra web search queries (`src/core/nearby.ts`).
+     review and manual pages, used items and the query's own model in a bundle do not. The same
+     model written two ways ("Pro 3500" and "Pro 3 3500") is one entry. The list itself costs no
+     shop requests and no web search queries (`src/core/nearby.ts`).
+   - **A price for the closest similar models.** When no product matches exactly, the app reads one
+     shop page for each of the first three models in that list (a shop with a branch in the city
+     first) and shows the price with the shop, a link to the page and a warning sign: the price
+     comes from one page and may not be the same product, so check it. It is a hint, not a
+     comparison, and there is no price filter: a low price is shown as it is. This costs at most
+     three shop requests per search, inside the limit of 6 requests per shop, and no web search
+     queries.
 4. **Totals** per offer, converted to EUR with ECB reference rates (Frankfurter API):
    - delivery to Slovakia: from the product's JSON-LD `shippingDetails` when it applies to SK, else
      from `shipping_to_sk` in `shops.yaml` (cheapest standard delivery and free-delivery threshold,

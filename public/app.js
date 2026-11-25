@@ -250,8 +250,17 @@ function nearbyItem(m) {
       el('span', { class: 'nname' }, m.query),
       el('span', { class: 'nmeta' }, m.differs),
       el('span', { class: 'nshops' }, 'Listed by ', ...shops),
-      m.seenPrice ? el('span', { class: 'nmeta' }, `seen at ${eur(m.seenPrice.eur)} at ${m.seenPrice.shopName} (one shop's price, not a comparison)`) : null),
+      m.seenPrice ? seenPriceLine(m.seenPrice) : null),
     el('button', { type: 'button', onclick: () => compareModel(m.query) }, 'Compare this model'));
+}
+
+// A price of a similar model, from one shop page (read by the search, or afterwards for the list):
+// shown with its shop, a link to the page and a warning, never as a comparison.
+const SEEN_PRICE_WARNING = 'Price of this similar model, read from one shop page. It may not be the same product: check it.';
+function seenPriceLine(p) {
+  return el('span', { class: 'nprice' },
+    el('strong', {}, eur(p.eur)), ' at ', link(p.url, `${p.shopName} ↗`), ' ',
+    el('span', { class: 'nwarn', title: SEEN_PRICE_WARNING }, el('span', { 'aria-hidden': 'true' }, '⚠ '), SEEN_PRICE_WARNING));
 }
 
 function compareModel(q) {

@@ -241,8 +241,20 @@ export interface NearbyModel {
   distinguishing: string[];
   /** Steps from the query (nearbyDistance(): a number swapped 1, a tier or package word 2, else 1); smaller = closer. */
   distance: number;
-  /** The lowest item price seen on one of its pages that was read (EUR), or null. A hint, not a comparison. */
-  seenPrice: { eur: number; shopName: string } | null;
+  /** An item price (EUR) read on one of its pages, or null. A hint, not a comparison: it may not be the same product. */
+  seenPrice: SeenPrice | null;
+}
+
+export interface SeenPrice {
+  eur: number;
+  shopName: string;
+  /** The page the price was read from. */
+  url: string;
+  /**
+   * 'search': the lowest price on a page the search read anyway (it turned out to be this model);
+   * 'list': one page read after the search only to give this model of the list a price.
+   */
+  from: 'search' | 'list';
 }
 
 export interface NearbyList {

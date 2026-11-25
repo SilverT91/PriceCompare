@@ -81,6 +81,8 @@ ol.nearby .ninfo { flex: 1 1 260px; min-width: 0; }
 ol.nearby .nname { display: block; font-weight: 600; }
 ol.nearby .nmeta, ol.nearby .nshops { display: block; font-size: 13px; }
 ol.nearby .nmeta { color: var(--muted); }
+ol.nearby .nprice { display: block; font-size: 13px; margin-top: 2px; overflow-wrap: anywhere; }
+ol.nearby .nwarn { display: block; color: var(--muted); }
 ol.nearby button { flex: none; padding: 6px 10px; font-size: 14px; }
 .headline { font-size: 16px; font-weight: 600; margin: 4px 0; }
 

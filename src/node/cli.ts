@@ -121,11 +121,11 @@ if (nearby.models.length) {
   console.log(`\n== Similar models the shops list (${nearby.models.length}${nearby.total > nearby.models.length ? ` of ${nearby.total}` : ''}) ==`);
   if (noMatch) console.log('  No shop lists exactly what you typed.');
   else if (noExact) console.log('  No shop lists exactly what you typed; the products above are possible matches.');
-  console.log('  Listed by the shops; their prices were not read. Search for one to compare it.');
+  console.log('  Listed by the shops. A price is read from one shop page and may not be the same product: check it. Search for a model to compare it.');
   nearby.models.forEach((m, i) => {
     console.log(`  ${String(i + 1).padStart(2)}. ${m.query}   (${m.differs})`);
     console.log(`      listed by ${m.shops.map((s) => s.shopName + (s.section === 'local' ? ` (${location.name} branch)` : '')).join(', ')}`);
-    if (m.seenPrice) console.log(`      seen at ${eur(m.seenPrice.eur)} at ${m.seenPrice.shopName} (one shop's price, not a comparison)`);
+    if (m.seenPrice) console.log(`      ⚠ ${eur(m.seenPrice.eur)} at ${m.seenPrice.shopName} (check it): ${m.seenPrice.url}`);
   });
   console.log(`  e.g. npm run search -- "${nearby.models[0].query}"`);
 }
@@ -194,6 +194,7 @@ if (skipped.length) console.log(`Not asked (categories do not fit): ${skipped.ma
 if (summary) {
   const calls = summary.providerCalls.length;
   const second = summary.fallbackQueries ? `; ${summary.fallbackQueries} of them for ${summary.fallbackShops} shop(s) whose own search found nothing matching` : '';
-  console.log(`\nCost: ${summary.shopsAsked} shops asked, ${summary.shopRequests} shop requests, ${summary.siteQueries} web search quer${summary.siteQueries === 1 ? 'y' : 'ies'} (${calls} new API call${calls === 1 ? '' : 's'}, the rest from the cache${second})`);
+  const prices = summary.nearbyPrices ? ` (${summary.nearbyPrices} price${summary.nearbyPrices === 1 ? '' : 's'} of similar models read among them)` : '';
+  console.log(`\nCost: ${summary.shopsAsked} shops asked, ${summary.shopRequests} shop requests${prices}, ${summary.siteQueries} web search quer${summary.siteQueries === 1 ? 'y' : 'ies'} (${calls} new API call${calls === 1 ? '' : 's'}, the rest from the cache${second})`);
 }
 store.close();

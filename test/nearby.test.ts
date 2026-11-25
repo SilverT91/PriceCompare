@@ -345,7 +345,7 @@ describe('seen price', () => {
     const { models } = nearbyModels(pq, r);
     assert.equal(models.length, 1);
     assert.equal(models[0].shops.length, 6);
-    assert.deepEqual(models[0].seenPrice, { eur: 61, shopName: 'Shop M' });
+    assert.deepEqual(models[0].seenPrice, { eur: 61, shopName: 'Shop M', url: 'https://m.test/p/b', from: 'search' });
     assert.equal(models[0].shops.find((s) => s.shopId === 'm')?.url, 'https://m.test/p/a', 'one entry for the shop');
   });
 });

@@ -255,8 +255,9 @@ test('products event: similar models from the pages that turned out to be anothe
   assert.equal(model.query, 'Oral-B Pro 3 3500');
   assert.deepEqual(model.shops.map((s) => s.shopId).sort(), ['h', 'm']);
   assert.equal(model.differs, 'has "3500", lacks "3000"');
-  assert.deepEqual(model.seenPrice, { eur: 64.9, shopName: 'Shop H' });
+  assert.deepEqual(model.seenPrice, { eur: 64.9, shopName: 'Shop H', url: 'https://h.test/p/old', from: 'search' });
   assert.equal(done.nearby, 1);
+  assert.equal(done.nearbyPrices, 0, 'G has the exact model: no price reads');
   assert.equal(calls.length, before, 'no request after the search');
 });
 
@@ -340,4 +341,144 @@ test('provider out of credit: shops get needs_search_key with the reason', async
   const r = (events.find((e) => e.type === 'shop') as Extract<SearchEvent, { type: 'shop' }>).result;
   assert.equal(r.status, 'needs_search_key');
   assert.match(r.detail, /credits used up/);
+});
+
+// ---- prices for the similar-models list -------------------------------------------------------------
+
+const { shops: priceShops } = validateShops({
+  shops: [
+    // K and N have a branch in the city, so they come first when a listing is picked.
+    { id: 'k', name: 'Shop K', domain: 'k.test', country: 'SK', currency: 'EUR', has_kosice_branch: true, search_url_template: 'https://k.test/s?q={query}' },
+    { id: 'n', name: 'Shop N', domain: 'n.test', country: 'SK', currency: 'EUR', has_kosice_branch: true, search_url_template: 'https://n.test/s?q={query}' },
+    { id: 'p', name: 'Shop P', domain: 'p.test', country: 'SK', currency: 'EUR', ships_to_sk: true, search_url_template: 'https://p.test/s?q={query}' },
+    { id: 'q', name: 'Shop Q', domain: 'q.test', country: 'SK', currency: 'EUR', search_url_template: 'https://q.test/s?q={query}' },
+    { id: 'a2', name: 'Shop A2', domain: 'a2.test', country: 'SK', currency: 'EUR', search_url_template: 'https://a2.test/s?q={query}' },
+    { id: 'r', name: 'Shop R', domain: 'r.test', country: 'SK', currency: 'EUR', search_url_template: 'https://r.test/s?q={query}' },
+  ],
+});
+
+function priceSite() {
+  const calls: string[] = [];
+  const routes: Record<string, () => Response> = {
+    'https://api.frankfurter.dev/v2/providers/ecb/rates?base=EUR&quotes=CZK': () => new Response('[]'),
+    // K: the product page that matches the query is behind bot protection -> blocked; it also lists the 3500.
+    'https://k.test/robots.txt': robotsOk,
+    [`https://k.test/s?q=${QS}`]: () => new Response(list(['Oral-B Pro 3 3000 Black', 'https://k.test/p/1'], ['Oral-B Pro 3 3500 Black', 'https://k.test/p/3500'])),
+    'https://k.test/p/1': () => new Response('<title>Just a moment...</title>', { status: 403 }),
+    'https://k.test/p/3500': () => new Response(product('Oral-B Pro 3 3500 Black', 60, '8006540762001')),
+    // N: robots.txt redirects (2 requests), the search, three pages of possible matches: 6 of 6 used. It also lists the 3600.
+    'https://n.test/robots.txt': () => new Response('', { status: 301, headers: { location: 'https://n.test/robots2.txt' } }),
+    'https://n.test/robots2.txt': robotsOk,
+    [`https://n.test/s?q=${QS}`]: () => new Response(list(
+      ['Oral-B Pro 3 3000 Cross Action A', 'https://n.test/p/a'], ['Oral-B Pro 3 3000 Cross Action B', 'https://n.test/p/b'],
+      ['Oral-B Pro 3 3000 Cross Action C', 'https://n.test/p/c'], ['Oral-B Pro 3 3600 Black', 'https://n.test/p/3600'])),
+    'https://n.test/p/a': () => new Response(product('Oral-B Pro 3 3000 Cross Action A', 58, '8006540763001')),
+    'https://n.test/p/b': () => new Response(product('Oral-B Pro 3 3000 Cross Action B', 58, '8006540763002')),
+    'https://n.test/p/c': () => new Response(product('Oral-B Pro 3 3000 Cross Action C', 58, '8006540763003')),
+    'https://n.test/p/3600': () => new Response(product('Oral-B Pro 3 3600 Black', 70, '8006540763004')),
+    // P: lists the 3500 and the 3600, nothing matching.
+    'https://p.test/robots.txt': robotsOk,
+    [`https://p.test/s?q=${QS}`]: () => new Response(list(['Oral-B Pro 3 3500 White', 'https://p.test/p/3500'], ['Oral-B Pro 3 3600 White', 'https://p.test/p/3600'])),
+    'https://p.test/p/3500': () => new Response(product('Oral-B Pro 3 3500 White', 66.5, '8006540762002')),
+    'https://p.test/p/3600': () => new Response(product('Oral-B Pro 3 3600 White', 71, '8006540763005')),
+    // Q: the 3500 listing's page turns out to be another model; Q also lists a 3700.
+    'https://q.test/robots.txt': robotsOk,
+    [`https://q.test/s?q=${QS}`]: () => new Response(list(['Oral-B Pro 3 3500 Black', 'https://q.test/p/x'], ['Oral-B Pro 3 3700 Black', 'https://q.test/p/y'])),
+    'https://q.test/p/x': () => new Response(product('Oral-B Pro 3 3900 White', 70, '8006540764001')),
+    'https://q.test/p/y': () => new Response(product('Oral-B Pro 3 3700 Black', 69, '8006540764002')),
+    // A2: the exact model, and a 3500 listing.
+    'https://a2.test/robots.txt': robotsOk,
+    [`https://a2.test/s?q=${QS}`]: () => new Response(list(['Oral-B Pro 3 3000 Black', 'https://a2.test/p/1'], ['Oral-B Pro 3 3500 Black', 'https://a2.test/p/3500'])),
+    'https://a2.test/p/1': () => new Response(product('Oral-B Pro 3 3000 Black', 59.9, '8006540759790')),
+    'https://a2.test/p/3500': () => new Response(product('Oral-B Pro 3 3500 Black', 64, '8006540765001')),
+    // R: robots.txt redirects (2 requests), the search, two pages of possible matches: 5 of 6 used. It alone lists the 3500 and the 3600.
+    'https://r.test/robots.txt': () => new Response('', { status: 301, headers: { location: 'https://r.test/robots2.txt' } }),
+    'https://r.test/robots2.txt': robotsOk,
+    [`https://r.test/s?q=${QS}`]: () => new Response(list(
+      ['Oral-B Pro 3 3000 Cross Action A', 'https://r.test/p/a'], ['Oral-B Pro 3 3000 Cross Action B', 'https://r.test/p/b'],
+      ['Oral-B Pro 3 3500 Black', 'https://r.test/p/3500'], ['Oral-B Pro 3 3600 Black', 'https://r.test/p/3600'])),
+    'https://r.test/p/a': () => new Response(product('Oral-B Pro 3 3000 Cross Action A', 58, '8006540766001')),
+    'https://r.test/p/b': () => new Response(product('Oral-B Pro 3 3000 Cross Action B', 58, '8006540766002')),
+    'https://r.test/p/3500': () => new Response(product('Oral-B Pro 3 3500 Black', 63, '8006540766003')),
+    'https://r.test/p/3600': () => new Response(product('Oral-B Pro 3 3600 Black', 68, '8006540766004')),
+  };
+  // "> url" when a request starts, "< url" when its answer is back; P's 3500 page answers slowly.
+  const log: string[] = [];
+  const f: FetchLike = async (url) => {
+    calls.push(url);
+    log.push(`> ${url}`);
+    if (url === 'https://p.test/p/3500') await new Promise((r) => setTimeout(r, 30));
+    log.push(`< ${url}`);
+    const r = routes[url];
+    return r ? r() : new Response('nf', { status: 404 });
+  };
+  return { f, calls, log };
+}
+
+async function priceRun(ids: string[]) {
+  const { f, calls, log } = priceSite();
+  const events = await collect(runSearch(Q, {
+    shops: priceShops.filter((s) => ids.includes(s.id)), cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }),
+    location: DEFAULT_LOCATION, providers: [], fetch: f, category: 'all',
+  }));
+  const results = new Map(events.filter((e): e is Extract<SearchEvent, { type: 'shop' }> => e.type === 'shop').map((e) => [e.result.shopId, e.result]));
+  const products = events.filter((e): e is Extract<SearchEvent, { type: 'products' }> => e.type === 'products');
+  const done = (events.at(-1) as Extract<SearchEvent, { type: 'done' }>).summary;
+  const model = (name: string) => products.at(-1)?.nearby.models.find((m) => m.query === name);
+  return { calls, log, events, results, products, done, model };
+}
+
+test('similar-model prices: one page read for a model, after the shops, with its URL; blocked and spent shops not asked; a shop asked twice reads in sequence', async () => {
+  const { calls, log, events, results, products, done, model } = await priceRun(['k', 'n', 'p']);
+  assert.equal(results.get('k')?.status, 'blocked');
+  assert.equal(results.get('n')?.requestsUsed, 6);
+  // The list came first without the price, then once more with it, before "done".
+  const last = products.at(-1) as Extract<SearchEvent, { type: 'products' }>;
+  const shopEvents = events.map((e, i) => (e.type === 'shop' ? i : -1)).filter((i) => i >= 0);
+  assert.ok(events.indexOf(last) > Math.max(...shopEvents) && events.at(-1)?.type === 'done');
+  assert.equal(products.at(-2)?.nearby.models.find((m) => m.query === 'Oral-B Pro 3 3500')?.seenPrice, null);
+  // The 3500: K has the branch but was blocked, so P was asked.
+  assert.deepEqual(model('Oral-B Pro 3 3500')?.seenPrice, { eur: 66.5, shopName: 'Shop P', url: 'https://p.test/p/3500', from: 'list' });
+  assert.ok(!calls.includes('https://k.test/p/3500'), 'a blocked shop is not asked');
+  // The 3600: N has the branch but no request left, so P is asked again, after its first read is done.
+  assert.deepEqual(model('Oral-B Pro 3 3600')?.seenPrice, { eur: 71, shopName: 'Shop P', url: 'https://p.test/p/3600', from: 'list' });
+  assert.ok(!calls.includes('https://n.test/p/3600'), 'a shop out of budget is not asked');
+  assert.equal(calls.filter((u) => u.startsWith('https://n.test/')).length, 6);
+  assert.equal(calls.filter((u) => u === 'https://p.test/p/3500').length, 1);
+  assert.equal(calls.filter((u) => u === 'https://p.test/p/3600').length, 1);
+  assert.ok(log.indexOf('< https://p.test/p/3500') < log.indexOf('> https://p.test/p/3600'), 'the second read starts after the first one is back');
+  // The read offers stay out of the results: no new product, the same offer count.
+  assert.equal(results.get('p')?.offers.length, 0);
+  assert.deepEqual(last.groups.map((g) => g.id), products.at(-2)?.groups.map((g) => g.id));
+  assert.equal(done.offers, 3);
+  assert.equal(done.nearbyPrices, 2);
+  assert.equal(done.shopRequests, [...results.values()].reduce((a, r) => a + r.requestsUsed, 0) + 2, 'the price reads are counted');
+});
+
+test('similar-model prices: a page whose offer is another model gives no price and no second page; the shop is asked again for the next model', async () => {
+  const { calls, done, model } = await priceRun(['q']);
+  assert.equal(calls.filter((u) => u === 'https://q.test/p/x').length, 1);
+  assert.equal(model('Oral-B Pro 3 3500')?.seenPrice, null);
+  assert.deepEqual(model('Oral-B Pro 3 3700')?.seenPrice, { eur: 69, shopName: 'Shop Q', url: 'https://q.test/p/y', from: 'list' });
+  assert.equal(calls.filter((u) => u === 'https://q.test/p/y').length, 1);
+  assert.equal(done.nearbyPrices, 1);
+  assert.equal(done.shopRequests, 4, 'robots.txt, the search and one page for each model');
+});
+
+test('similar-model prices: a shop with one request left gives the second model no price, without going past the budget', async () => {
+  const { calls, results, done, model } = await priceRun(['r']);
+  assert.equal(results.get('r')?.requestsUsed, 5);
+  assert.deepEqual(model('Oral-B Pro 3 3500')?.seenPrice, { eur: 63, shopName: 'Shop R', url: 'https://r.test/p/3500', from: 'list' });
+  assert.equal(model('Oral-B Pro 3 3600')?.seenPrice, null);
+  assert.ok(!calls.includes('https://r.test/p/3600'));
+  assert.equal(calls.filter((u) => u.startsWith('https://r.test/')).length, 6, 'six requests, no more');
+  assert.equal(done.shopRequests, 6);
+  assert.equal(done.nearbyPrices, 1);
+});
+
+test('similar-model prices: nothing is read when a product matches exactly', async () => {
+  const { calls, done, model } = await priceRun(['a2']);
+  assert.equal(model('Oral-B Pro 3 3500')?.seenPrice, null, 'the model is listed, without a price');
+  assert.ok(!calls.includes('https://a2.test/p/3500'));
+  assert.equal(done.nearbyPrices, 0);
 });

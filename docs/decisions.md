@@ -102,11 +102,24 @@ When no shop lists exactly what was typed, the app offers neighbouring models of
 line. They are taken from the candidates and pages the matcher rated as another product, so the
 list costs no extra shop requests and no extra web queries. Consequences that are accepted:
 
-- The list has no prices, except a "seen at" price when a page of that model happened to be read.
-  Comparing a model is a new search, started by the user with one click.
+- The list is not a comparison. Comparing a model is a new search, started by the user with one
+  click.
 - Order: the same line with another number first, then the models most shops list. How many shops
   list a model says more about what is on the shelves than fine differences in the name.
 - A name is only offered when searching for it would find its own listing again.
+
+Amended the same day: the first three models in the list get a price from one shop page each (at
+most three shop requests per search, no web search queries), so the user can judge a model before
+spending a new search on it.
+
+## A price hint carries a warning, not a filter (2026-11-25)
+
+A price shown next to a similar model comes from one page and from a looser match than the main
+comparison, so it can belong to another product. Two ways to handle that were weighed: assume the
+price should be close to the others and drop outliers, or show it with a warning. The owner chose
+the warning. A filter would hide a real sale or an older model sold off, which are the cases a
+user most wants to see. Every such price is shown with a warning sign, the shop and a link to the
+page it was read from.
 
 ## Partner programmes are not pursued while the app is local (2026-11-25)
 
@@ -127,6 +140,13 @@ What is prepared: the design of the route (see [architecture.md](architecture.md
 for reading a shop") and a measurement tool, `tools/render_probe.py`, that shows for any page what a
 browser engine would add over a plain request. A shop that looks unreadable can be measured with it
 before this decision is reopened.
+
+Measured with the tool the same day, on one dm product page: with every host outside mojadm.sk
+switched off the page stays empty (3 requests). With dm's assets host allowed it renders some text
+but still no product data, after 71 requests and about 2 MB; the product data would need three
+more hosts on dm's own services domain, which were not tried. So for dm a renderer means more than
+71 requests to several hosts for one price, nearly all of them less than 3 seconds apart. That
+supports the decision.
 
 ## Only ask shops in the query's category (2026-11-24)
 

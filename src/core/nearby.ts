@@ -397,7 +397,7 @@ export function nearbyModels(pq: ParsedQuery, results: ShopResult[], limit = NEA
     const priced = c.sources.filter((s) => s.priceEur !== null).sort((a, b) => (a.priceEur as number) - (b.priceEur as number))[0];
     return {
       query, shops, differs: differsText(missing, distinguishing), missing, distinguishing, distance: nearbyDistance(missing, distinguishing),
-      seenPrice: priced ? { eur: priced.priceEur as number, shopName: priced.shop.shopName } : null,
+      seenPrice: priced ? { eur: priced.priceEur as number, shopName: priced.shop.shopName, url: priced.shop.url, from: 'search' } : null,
       local: shops.some((s) => s.section === 'local'),
     };
   });
