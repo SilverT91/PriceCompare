@@ -1,5 +1,6 @@
 // Shop model: validation of the parsed data/shops.yaml, search URLs, manual links, locations.
 
+import type { ShopTextFields } from './i18n.ts';
 import type { Shop, TriState } from './types.ts';
 
 export interface Location {
@@ -34,6 +35,39 @@ export function heurekaUrl(query: string): string {
 }
 
 const tri = (v: unknown): TriState => (v === true ? true : v === false ? false : 'unknown');
+
+/**
+ * Translations of the shown free-text notes of shops.yaml in one language (data/shops.<lang>.yaml):
+ * `shops: { <shop id>: { no_route_reason: ..., shipping_to_sk: { method: ... } } }`. Only those
+ * fields are taken; a shop id that is not in `shops`, or a field the shop has no English text for,
+ * is reported as a problem and left out (it would never be shown).
+ */
+export function validateShopTexts(doc: unknown, shops: Shop[]): { texts: Record<string, ShopTextFields>; problems: string[] } {
+  const problems: string[] = [];
+  const texts: Record<string, ShopTextFields> = {};
+  const list = (doc as { shops?: unknown })?.shops;
+  if (!list || typeof list !== 'object' || Array.isArray(list)) return { texts, problems: ['no "shops" map'] };
+  const byId = new Map(shops.map((s) => [s.id, s]));
+  const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+  for (const [id, raw] of Object.entries(list as Record<string, unknown>)) {
+    const shop = byId.get(id);
+    if (!shop) {
+      problems.push(`${id}: no shop with this id in shops.yaml`);
+      continue;
+    }
+    const r = (raw ?? {}) as Record<string, unknown>;
+    for (const k of Object.keys(r)) if (k !== 'no_route_reason' && k !== 'shipping_to_sk') problems.push(`${id}: field ${k} is not translated (only no_route_reason and shipping_to_sk.method)`);
+    const out: ShopTextFields = {};
+    const reason = str(r.no_route_reason);
+    if (reason && shop.no_route_reason) out.no_route_reason = reason;
+    else if (reason) problems.push(`${id}: no_route_reason has no English text in shops.yaml`);
+    const method = str((r.shipping_to_sk as Record<string, unknown> | undefined)?.method);
+    if (method && shop.shipping_to_sk?.method) out.shipping_to_sk = { method };
+    else if (method) problems.push(`${id}: shipping_to_sk.method has no English text in shops.yaml`);
+    if (Object.keys(out).length) texts[id] = out;
+  }
+  return { texts, problems };
+}
 
 export function validateShops(doc: unknown): { shops: Shop[]; problems: string[] } {
   const problems: string[] = [];

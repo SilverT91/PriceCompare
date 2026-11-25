@@ -342,6 +342,20 @@ describe('capitals in a name', () => {
   });
 });
 
+describe('PC components', () => {
+  test('the same SSD under other spellings is no similar model; the other capacities are', () => {
+    // titles of a live run for "Samsung 990 Pro 2TB" (2026-11-25), the 1 TB and 4 TB in the same shops' style
+    const ssd = parseQuery('Samsung 990 Pro 2TB');
+    const r = [
+      shop('h', [['Samsung SSD 990 PRO NVMe, M.2 SSD 2 TB', 'https://h.test/p/1'], ['Samsung SSD 990 PRO NVMe, M.2 SSD 1 TB', 'https://h.test/p/2']]),
+      shop('m', [['Samsung 990 PRO NVMe M.2 SSD, 2 TB', 'https://m.test/p/1'], ['Samsung 990 PRO NVMe M.2 SSD, 4 TB', 'https://m.test/p/2']]),
+      shop('datart_cz', [['SSD Samsung 990 PRO 1TB (MZ-V9P1T0BW)', 'https://www.datart.cz/ssd-samsung-990-pro-1tb.html']]),
+    ];
+    const { models } = nearbyModels(ssd, r);
+    assert.deepEqual(models.map((x) => [x.query, x.shops.length, x.distance]), [['Samsung 990 Pro 1 TB', 2, 1], ['Samsung 990 Pro 4 TB', 1, 1]]);
+  });
+});
+
 describe('seen price', () => {
   test('the lowest item price of a read page of the model, with its shop; unread listings have none', () => {
     // hand-written shops in the pipeline test's form: pages that were read and turned out to be the 3500

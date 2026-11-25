@@ -39,6 +39,12 @@ a { color: var(--accent); }
 .top, main, footer { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
 .top { padding-top: 20px; }
 h1 { font-size: 22px; margin: 0 0 12px; letter-spacing: -0.01em; }
+.brand { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+.brand h1 { margin: 0; }
+.lang-switch { display: flex; gap: 4px; align-items: baseline; color: var(--muted); font-size: 14px; flex: none; }
+.lang-switch button.link { text-decoration: none; padding: 2px 4px; border-radius: 4px; color: var(--accent); }
+.lang-switch button.link[aria-pressed="true"] { color: var(--text); font-weight: 700; cursor: default; }
+.lang-switch button.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 h2 { font-size: 18px; margin: 24px 0 8px; }
 h3 { font-size: 15px; margin: 16px 0 8px; }
 .muted { color: var(--muted); }
@@ -129,3 +135,18 @@ ul.shops li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2p
 ul.shops li:first-child { border-top: 0; }
 ul.shops .detail { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
 footer { padding: 32px 16px; }
+footer p { margin: 8px 0 0; }
+
+/* Web search credit: one line per provider, a thin bar under it. */
+.usage { border-top: 1px solid var(--line); padding-top: 12px; margin-bottom: 16px; max-width: 520px; }
+.usage h2 { font-size: 13px; font-weight: 600; margin: 0 0 6px; color: var(--muted); }
+.usage ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.usage li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: baseline; }
+.usage .uname { font-weight: 600; color: var(--text); }
+.usage .ucount { text-align: right; font-variant-numeric: tabular-nums; }
+.usage .ubar { grid-column: 1 / -1; display: block; height: 4px; border-radius: 2px; background: var(--chip); overflow: hidden; }
+.usage .ubar > span { display: block; height: 100%; background: var(--accent); }
+.usage li.usage-warn .ubar > span { background: var(--warn); }
+.usage li.usage-full .ubar > span { background: var(--bad); }
+.usage li.usage-warn .ucount { color: var(--warn); }
+.usage li.usage-full .ucount { color: var(--bad); }

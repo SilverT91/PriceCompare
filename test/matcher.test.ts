@@ -346,6 +346,115 @@ describe('a model number glued to its line word, and a pack of two (the sentence
   });
 });
 
+describe('PC components (titles from a live run, 2026-11-25)', () => {
+  const lvl = (q: string, t: string) => m(q, t).level;
+
+  test('Samsung 990 Pro 2TB: interface and part-type words and "2 TB" written apart are the same SSD; other capacities are not', () => {
+    const q = 'Samsung 990 Pro 2TB';
+    for (const t of ['Samsung SSD 990 PRO NVMe, M.2 SSD 2 TB', 'Samsung 990 PRO NVMe M.2 SSD, 2 TB', 'SSD Samsung 990 PRO 2TB (MZ-V9P2T0BW)',
+      'SAMSUNG 990 PRO 2TB / SSD / M.2 NVMe PCI-E 4.0 / TLC / R:7450 MBps / W:6900 MBps']) {
+      assert.equal(lvl(q, t), 'exact', t);
+    }
+    for (const t of ['Samsung 990 PRO 1TB', 'Samsung 990 PRO 4TB']) assert.equal(lvl(q, t), 'different', t);
+  });
+
+  test('rule 1: neutral specifications are ignored (interface and its version, clock, transfer rate, bus width, port counts)', () => {
+    assert.equal(lvl('Samsung 990 Pro 2TB', 'Samsung 990 PRO 2TB PCIe 4.0 x4 NVMe 7450 MB/s 256-bit'), 'exact');
+    assert.equal(lvl('ryzen 7 9800x3d', 'AMD RYZEN 7 9800X3D @ 4.7GHz'), 'exact');
+    const pny = m('rtx 5070 ti', 'PNY GeForce RTX 5070 Ti OC / Grafická karta / 16 GB GDDR7 / 256-bit / 1x HDMI + 3x DP / 750W (1...');
+    assert.equal(pny.level, 'possible', 'was different: "3x DP" was read as a pack of three');
+    assert.deepEqual(pny.distinguishing, []);
+    assert.equal(lvl('rtx 5070 ti', 'ASUS ProArt GeForce RTX 5070 Ti OC / Grafická karta / 16 GB GDDR7 / 256-bit / 1x HDMI + 2x DP + ...'), 'possible');
+  });
+
+  test('rule 1: a variant the query does not mention is "possible"; one it mentions must agree', () => {
+    const fury = m('kingston fury 32gb ddr5', 'Kingston Fury Beast 32GB DDR5 6000MHz CL30');
+    assert.equal(fury.level, 'possible');
+    assert.deepEqual(fury.specExtras, ['6000mhz', 'cl30']);
+    assert.equal(lvl('kingston fury 32gb ddr5 6000', 'Kingston Fury Beast 32GB DDR5 5600MHz'), 'different', 'another memory speed');
+    assert.equal(lvl('kingston fury 32gb ddr5 6000', 'Kingston Fury Beast 64GB DDR5 6000MHz'), 'different', 'another capacity');
+    assert.equal(lvl('kingston fury 32gb ddr5 6000', 'Kingston Fury Beast 32GB DDR4 6000MHz'), 'different', 'another memory type');
+    assert.equal(lvl('notebook lenovo ideapad slim 5 16', 'Lenovo IdeaPad Slim 5 14" WUXGA'), 'different', 'another screen size');
+  });
+
+  test('rule 2: a bare number meets the same number with a frequency unit; not "3000 mAh"', () => {
+    const q = 'kingston fury 32gb ddr5 6000';
+    for (const t of ['Pamäťový modul Kingston FURY Beast Black EXPO 32GB DDR5 6000MHz CL36', 'Kingston Fury Beast Black RGB 32GB (1x 32GB) DDR5 6000MHz',
+      'KINGSTON DIMM DDR5 32GB 6000MT/s CL30 Non-ECC FURY Beast RGB EXPO, Bílá', 'Kingston Fury Beast Black EXPO, 32 GB, 6000 MHz, DDR5']) {
+      const r = m(q, t);
+      assert.equal(r.level, 'possible', t);
+      assert.deepEqual([r.missing, r.distinguishing], [[], []], t);
+    }
+    // hand-written guard: a toothbrush battery is not the model number
+    const brush = m('Oral-B Pro 3 3000', 'Oral-B Pro 3 Black akumulátor 3000 mAh');
+    assert.equal(brush.level, 'different');
+    assert.deepEqual(brush.missing, ['3000']);
+  });
+
+  test('rule 3: part-type words are category words; "Edition" and "EMEA" are generic; "for Business" and "Performance" stay words to check', () => {
+    assert.equal(lvl('ryzen 7 9800x3d', 'Procesor AMD Ryzen 7 9800X3D (100-100001084WOF)'), 'exact');
+    assert.equal(lvl('ryzen 7 9800x3d', 'AMD Ryzen 7 9800X3D, TRAY balenie - iba na integráciu'), 'possible', 'the tray version is only possible');
+    const q = 'logitech mx master 3s';
+    assert.equal(lvl(q, 'Logitech MX Master 3S, bluetooth Edition, graphite'), 'exact');
+    assert.equal(lvl(q, 'Bezdrôtová myš Logitech MX Master 3S, bledošedá'), 'exact');
+    assert.deepEqual(m(q, 'Logitech MX Master 3S for Business Performance, EMEA').unknownExtras, ['business', 'performance']);
+    assert.equal(lvl(q, 'Logitech MX Master 3S Performance černá / bezdrátová myš / Bluetooth'), 'possible');
+  });
+
+  test('rule 4: a missing query word with another word in its place is another product; with nothing in its place a doubt', () => {
+    const q = 'logitech mx master 3s';
+    for (const t of ['Myš Logitech MX Anywhere 3S (910-006930) sivá', 'Myš Logitech MX Anywhere 3S (910-006929) grafitová farba']) {
+      const r = m(q, t);
+      assert.equal(r.level, 'different', t);
+      assert.deepEqual(r.missing, ['master']);
+      assert.match(r.reasons.join('; '), /title has "anywhere" where the query has "master"/);
+    }
+    // hand-written: nothing where "master" would be
+    assert.equal(lvl(q, 'Logitech MX 3S'), 'possible');
+  });
+
+  test('rule 5: a short number that starts a configuration code is "possible", with the code named; "16e", "9N" and "3000" are no such code', () => {
+    const q = 'notebook lenovo ideapad slim 5 16';
+    for (const t of ['Notebook Lenovo IdeaPad Slim 5 16ARP10 sivý', 'Lenovo IdeaPad Slim 5 16IMH10 - Notebook Lenovo IdeaPad Slim 5 16IMH10',
+      'Lenovo IdeaPad Slim 5 16AKP10, 83HY009TCK, Luna Grey', 'Lenovo IdeaPad Slim 5 16AKP10 modrá / Notebook / 16" WUXGA / AMD Ryzen AI 5 330 / 16GB / 512GB ...']) {
+      assert.equal(lvl(q, t), 'possible', t);
+    }
+    assert.match(m(q, 'Notebook Lenovo IdeaPad Slim 5 16ARP10 sivý').reasons.join('; '), /"16" found only as the start of "16arp10"/);
+    // The processor in this spec list ("Ultra 5 135H") reads as a tier word and a model number: still different.
+    assert.equal(lvl(q, 'LENOVO NTB IdeaPad Slim 5 16IMH10 - Ultra 5 135H,16" WUXGA OLED,16GB,512SSD,Inte...'), 'different');
+    assert.equal(lvl('iPhone 16 128GB', 'Mobilný telefón Apple iPhone 16e 128 GB čierny'), 'different');
+    assert.equal(lvl('Oral-B iO Series 9', 'Oral-B iO Series 9N Black'), 'different');
+    assert.equal(lvl('Oral-B iO9', 'Oral-B iO Series 9N'), 'different');
+    assert.equal(lvl('Samsung Galaxy S24', 'Samsung Galaxy A55 s nabíjačkou, záruka 24 mesiacov'), 'different');
+  });
+
+  test('rule 6: graphics cards of the class with specifications after the name are possible; a whole computer is different', () => {
+    const q = 'rtx 5070 ti';
+    for (const t of ['Gigabyte GeForce RTX 5070 Ti GAMING OC 16G', 'Grafická karta Asus ProArt GeForce RTX 5070 TI 16GB OC (90YV0NR0-M0NA00) sivá',
+      'Gigabyte GeForce RTX 5070 Ti WINDFORCE OC SFF 16G', 'MSI VGA NVIDIA GeForce RTX 5070 Ti 16G VENTUS 3X OC, RTX 5070 Ti, 16GB GDDR7, 3x...']) {
+      assert.equal(lvl(q, t), 'possible', t);
+    }
+    // "VENTUS 3X": a count inside the name is a word to check, not a pack; "3x..." cut off by the shop says nothing
+    const msi = m(q, 'MSI VGA NVIDIA GeForce RTX 5070 Ti 16G VENTUS 3X OC, RTX 5070 Ti, 16GB GDDR7, 3x...');
+    assert.ok(msi.unknownExtras.includes('3x'));
+    assert.deepEqual(msi.distinguishing, []);
+    // A computer names other components' model numbers, which the query lacks.
+    const pc = m('ryzen 7 9800x3d', 'LYNX ULTIMATE Ryzen 7 9800X3D 64GB 2TB SSD NVMe RTX 5080 16G W11 Home');
+    assert.equal(pc.level, 'different');
+    assert.ok(pc.distinguishing.includes('5080'));
+    // hand-written: the same computer with the card the query asks for
+    assert.ok(m(q, 'LYNX ULTIMATE Ryzen 7 9800X3D 32GB 1TB SSD NVMe RTX 5070 Ti 16G W11 Home').distinguishing.includes('9800x3d'));
+    assert.equal(lvl(q, 'Operačný systém: Windows 11 Home 64-bit • Procesor: Intel Core i7 14700F až 5.4 ...'), 'different');
+  });
+
+  test('packs written as counts still count: at the start, at the end, before an amount, before a package word', () => {
+    assert.equal(lvl('Oral-B Pro 3 3000', '2x Oral-B Pro 3 3000'), 'different');
+    assert.equal(lvl('Oral-B Pro 3 3000', 'Oral-B Pro 3 3000 2x'), 'different');
+    assert.equal(lvl('Bosch GSR 12V-15', 'Bosch GSR 12V-15 2x 2.0Ah'), 'different');
+    assert.equal(lvl('Bosch GSR 12V-15', 'Bosch GSR 12V-15 Professional 2x akumulátor'), 'different');
+  });
+});
+
 describe('a pasted product link (the first user, 2026-11-25)', () => {
   const name = (s: string) => linkInput(s)?.query;
 
@@ -438,5 +547,17 @@ describe('candidate scoring (search results before fetching)', () => {
     const a = scoreCandidate(pq2, 'Oral-B Pro 3 3000', 'https://www.nay.sk/zubna-kefka-oral-b-pro-3-3000');
     const b = scoreCandidate(pq2, 'Oral-B Pro 3 3000', 'https://www.nay.sk/bazar/zubna-kefka-oral-b-pro-3-3000');
     assert.ok(a.score > b.score);
+  });
+});
+
+describe('robot vacuum titles (live search of 2026-11-25, from a pasted link)', () => {
+  const q = 'Roborock Qrevo Edge 2 Pro';
+  test('the part type in front of or behind the name is neutral in Slovak and Czech', () => {
+    assert.equal(m(q, 'Robotický vysávač Roborock Qrevo Edge 2 Pro biely').level, 'exact');
+    assert.equal(m(q, 'Roborock Qrevo Edge 2 Pro, robotický vysávač s mopom, biely').level, 'exact');
+    assert.equal(m(q, 'Robotický vysavač Roborock Qrevo Edge 2 Pro bílý').level, 'exact');
+  });
+  test('another model of the line stays a different product', () => {
+    assert.equal(m(q, 'Robotický vysávač s mopom 2v1 Roborock Qrevo Curv 2 Pro | Planeo').level, 'different');
   });
 });

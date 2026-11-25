@@ -2,10 +2,23 @@
 
 Where the project stands and what comes next. Update this file when a round of work finishes.
 
-## State on 2026-11-25 (after the fifth round)
+## State on 2026-11-25 (after the sixth round)
 
 The app works end to end: web page, command line, unit tests passing. The database has 39 non-food
 shops in scope.
+
+What the sixth round did (the same day):
+
+- **Computer parts.** Six searches typed loosely (an SSD, a processor, a graphics card, a mouse,
+  memory, a laptop) showed that specifications in titles were read as model numbers. The matcher
+  now treats them as specifications; the same six searches, without a search key, went from 13
+  shop results to 26. Category hints for computer parts keep such searches away from drugstores
+  and DIY stores.
+- **The page speaks Slovak** as well as English, with a switch; sentences from the search, shop
+  notes and match reasons included.
+- **Credit bars** in the page footer show how much of each web search allowance is used.
+- **ASBIS SK** is listed for its manual link (no product data on its pages); two other computer
+  shops could not be reached from this client.
 
 What the fifth round did (the same day):
 
@@ -82,6 +95,12 @@ What the test searches give (the first four measured on 2026-11-24, the last two
 | Oral-B PRO 3 3500 (reached through "Compare this model") | Thin as well: Planeo in Košice 74.99 € (out of stock), Nazuby.eu 68.22 € (70.71 € delivered, possible match), TPD an ex-display piece at 49.99 € |
 | Iral b io9 doublepack (the first user's sentence, searched as "Oral-B io9 doublepack") | Useful: NAY in Košice 297.90 € with free pickup, MojaLekáreň 299.96 € delivered (possible match), Profimed 450.90 € (out of stock). Datart.cz and Morele.net list it but do not deliver to Slovakia. Without a search key: the NAY offer only |
 | https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm (a link the first user pasted, searched as "Roborock Qrevo Edge 2 Pro") | Useful: 7 shops with offers. TPD Euronics and Andreashop 699 € (701.99 € delivered), Datacomp 709.89 €, NAY in Košice 709.90 € (in store only), ABCOM Košice 917 € (out of stock). Datart.cz and Morele.net list it but do not deliver to Slovakia. Alza itself is blocked and gets a manual link |
+| Samsung 990 Pro 2TB (no search key) | Useful: NAY and Datacomp 474.90 € (with heatsink, possible), Mironet.cz 481.17 €, ABCOM Košice 515 € |
+| ryzen 7 9800x3d (no search key) | Useful: Datacomp 379.90 € and Mironet.cz 422.71 € (tray versions, possible), NAY 453.90 € |
+| rtx 5070 ti (no search key) | A choice of five specific cards, 1,594 € to 1,869 €, each at one shop |
+| logitech mx master 3s (no search key) | Useful: 6 shops, from 77.25 € (Mironet.cz); NAY 79.90 € |
+| kingston fury 32gb ddr5 6000 (no search key) | Partial: 4 shops, from 737.64 €; a 64 GB kit of two 32 GB modules is offered as possible |
+| notebook lenovo ideapad slim 5 16 (no search key) | A choice of two models at 5 shops, from 839 € (NAY) |
 
 What the second round did (2026-11-24):
 
@@ -108,10 +127,10 @@ not be read without a browser, 2 have no automatic route, 7 had nothing matching
 (wrong category).
 
 A product search costs about 5 to 7 web queries with nothing cached (3 to 4 before the second
-route). Search quota used so far: Brave 85 requests (of about 1,000 per month), Serper 45 (of 2,500
+route). Search quota used so far: Brave 94 requests (of about 1,000 per month), Serper 45 (of 2,500
 in total), Tavily 27 (of 1,000 per month). The third round used 7 Brave requests, for one live
 search; the fourth none (it worked from the cache); the fifth 8 for the first user's sentence,
-then 13 Brave and 27 Tavily for the measurement of Tavily. The search from a pasted link used 5 more Brave requests.
+then 13 Brave and 27 Tavily for the measurement of Tavily. The search from a pasted link used 5 more Brave requests. Repeating it after the cross-language change used 9 more, because foreign shops' queries got new cache keys.
 
 ## Next round
 
@@ -192,6 +211,18 @@ In this order.
   and four or more digits ("s9000") is read as an id and dropped.
 - **Category words the matcher does not know** leave a correct offer as "possible" ("Robotický
   vysávač Roborock Qrevo Edge 2 Pro biely").
+- **A kit counted by its modules.** "64GB (2x32GB)" is offered as a possible match for "32gb".
+- **Laptops with a long specification list** in the title ("... 16IMH10 - Ultra 5 135H,16" ...")
+  stay rejected: the processor's name reads as a model number.
+- **Power in watts** is treated as a variant, so a graphics card title that states a recommended
+  power supply is "possible", not exact.
+- **Variant labels** show the matcher's folded words ("biela, robot"), not the shop's wording.
+- **Slovak wording** was written by a model and read once; a native speaker should read the
+  glossary in `public/i18n.js`, `src/core/i18n.ts` and `data/shops.sk.yaml`.
+- **Credit bars:** Brave's own figure covers 30 days and every use of the key, the app's count a
+  calendar month and this app only, so the bar can jump when the source changes. Tavily documents
+  a usage endpoint but not whether calling it is free, so it is not used.
+- **Category word** "robot" (Polish "Robot sprzątający") still leaves an offer as "possible".
 - **Similar models:**
   - Accessories whose link text runs words together ("Roborock Vacuum Cleaner
     AccessoryRoborockRotating Mop Cloth...") appear as models with very long names.

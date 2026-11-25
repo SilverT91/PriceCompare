@@ -4,6 +4,7 @@
 import { chooseCategories, shopIsRelevant, type CategoryChoice } from './categories.ts';
 import { correctQuery } from './correct.ts';
 import { groupOffers } from './group.ts';
+import { categoryLabel, categoryName, localizeShop, t, techNote, type Lang, type ShopTexts } from './i18n.ts';
 import { HostScheduler, MAX_REQUESTS_PER_SHOP, ShopSession, type FetchLike } from './http.ts';
 import { extractListCandidates, extractOffers, offerUrl } from './jsonld.ts';
 import { extractLinkCandidates, pageKey, stripTrackingParams } from './links.ts';
@@ -39,6 +40,13 @@ export interface SearchOptions {
   fallbackDeadlineMs?: number;
   /** Search the query exactly as typed: no brand correction (correct.ts). */
   asTyped?: boolean;
+  /**
+   * Language of the sentences in the events (shop details, notes, messages); default English.
+   * Status codes and other identifiers do not change, and nothing written to the cache depends on it.
+   */
+  lang?: Lang;
+  /** Translated free-text notes of the shops (data/shops.sk.yaml); a missing one falls back to English. */
+  shopTexts?: ShopTexts;
 }
 
 /** One shop's single chance to join the second-route (fallback) web search batch. */
@@ -133,13 +141,16 @@ export function searchTexts(query: string, homeCountry: string): { core: string;
   return { core, sentFor, retryFor };
 }
 
-export async function* runSearch(typed: string, opts: SearchOptions): AsyncGenerator<SearchEvent> {
+export async function* runSearch(typed: string, options: SearchOptions): AsyncGenerator<SearchEvent> {
   const t0 = Date.now();
+  const lang = options.lang ?? 'en';
+  // The shops with their shown notes in the search's language (only texts change, never facts).
+  const opts: SearchOptions = { ...options, lang, shops: options.shops.map((s) => localizeShop(s, lang, options.shopTexts)) };
   // A pasted product link gives the name in its path (matcher.ts, linkInput); the link is never
   // fetched and nothing else of it is sent anywhere. A link without a name starts no search.
   const link = linkInput(typed);
   if (link && !link.query) {
-    yield { type: 'rejected', typed, message: "This link does not contain the product's name, so nothing was searched. Type or paste the product's name instead." };
+    yield { type: 'rejected', typed, message: t(lang, 'rejectedLink') };
     return;
   }
   // Otherwise a brand typed with one wrong letter is searched as the brand (correct.ts), unless asked
@@ -162,7 +173,7 @@ export async function* runSearch(typed: string, opts: SearchOptions): AsyncGener
   };
   const notRelevant: ShopResult[] = skipped.map((s) => ({
     shopId: s.id, shopName: s.name, domain: s.domain, section: sectionFor(s, opts.location), status: 'not_relevant',
-    detail: `not asked: its categories (${s.categories.join(', ')}) do not fit ${choice.label}`, route: 'none',
+    detail: t(lang, 'notRelevant', { cats: s.categories.map((c) => categoryName(lang, c)).join(', '), label: categoryLabel(lang, choice, opts.category) }), route: 'none',
     manualUrl: s.search_url_template ? buildSearchUrl(s.search_url_template, texts.sentFor(s.country)) : null,
     offers: [], candidates: [], requestsUsed: 0, fromCache: true, ms: 0,
   }));
@@ -215,7 +226,7 @@ export async function* runSearch(typed: string, opts: SearchOptions): AsyncGener
       })
       .catch((e): ShopResult => ({
         shopId: shop.id, shopName: shop.name, domain: shop.domain, section: sectionFor(shop, opts.location), status: 'error',
-        detail: `internal error: ${e instanceof Error ? e.message : String(e)}`, route: 'none',
+        detail: t(lang, 'internalError', { msg: e instanceof Error ? e.message : String(e) }), route: 'none',
         manualUrl: shop.search_url_template ? buildSearchUrl(shop.search_url_template, sent) : null,
         offers: [], candidates: [], requestsUsed: 0, fromCache: false, ms: 0,
       }))
@@ -223,7 +234,7 @@ export async function* runSearch(typed: string, opts: SearchOptions): AsyncGener
         results.push(r);
         remaining--;
         push({ type: 'shop', result: r });
-        push({ type: 'products', groups: groupOffers(results.flatMap((x) => x.offers)), nearby: nearbyModels(pq, results) });
+        push({ type: 'products', groups: groupOffers(results.flatMap((x) => x.offers), lang), nearby: nearbyModels(pq, results) });
       });
   }
   while (remaining > 0 || queue.length) {
@@ -234,7 +245,7 @@ export async function* runSearch(typed: string, opts: SearchOptions): AsyncGener
   const statusCounts: Partial<Record<ShopStatus, number>> = {};
   for (const r of [...notRelevant, ...results]) statusCounts[r.status] = (statusCounts[r.status] ?? 0) + 1;
   const allOffers = results.flatMap((r) => r.offers);
-  const groups = groupOffers(allOffers);
+  const groups = groupOffers(allOffers, lang);
   const nearby = nearbyModels(pq, results);
   // No exact match: a price for the first similar models, then the list once more with it.
   const priced = !groups.some((g) => g.level === 'exact') && nearby.models.length
@@ -417,10 +428,11 @@ type PageRead =
  */
 async function readPage(ctx: ShopCtx, url: string): Promise<PageRead> {
   const { shop, opts, session } = ctx;
+  const lang = opts.lang ?? 'en';
   const hit = await opts.cache.get<CachedPage>('offers', url);
   if (hit && (hit.status === 404 || hit.status === 410)) {
     ctx.read.add(pageKey(url));
-    return { kind: 'failed', note: `${url}: HTTP ${hit.status} (cached)` };
+    return { kind: 'failed', note: t(lang, 'pageFailedCached', { url, status: hit.status }) };
   }
   if (hit) {
     ctx.read.add(pageKey(url));
@@ -443,7 +455,7 @@ async function readPage(ctx: ShopCtx, url: string): Promise<PageRead> {
     if (page.status === 404 || page.status === 410) {
       await opts.cache.set('offers', url, { offers: [], productNodes: 0, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
     }
-    return { kind: 'failed', note: `${url}: ${page.error ?? `HTTP ${page.status}`}` };
+    return { kind: 'failed', note: `${url}: ${page.error ? techNote(lang, page.error) : `HTTP ${page.status}`}` };
   }
   const ex = extractOffers(page.text, page.finalUrl, shop.id);
   if (ex.productNodes) await rememberStructuredData(ctx);
@@ -458,22 +470,23 @@ async function toOffers(ctx: ShopCtx, raw: RawOffer[], pq: ParsedQuery): Promise
   return dedupeOffers(raw.filter((x) => x.price > 0)).map((r) => ({
     ...r, shopName: shop.name, section, shipsToSk: shop.ships_to_sk, branchKnown: shop[opts.location.branchField],
     match: matchTitle(pq, { title: r.title, brand: r.brand, sku: r.sku, mpn: r.mpn, color: r.color, itemCondition: r.itemCondition, url: r.url, shopName: shop.name }),
-    totals: computeTotals(r, shop, rates, opts.location.country, { local: section === 'local' }),
+    totals: computeTotals(r, shop, rates, opts.location.country, { local: section === 'local', lang: opts.lang }),
   }));
 }
 
 /** Steps 2 and 3 for one route: fetch the best candidate pages, extract offers, match them. */
 async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidates: Candidate[], notes: string[]): Promise<RouteOutcome> {
   const { shop, pq, opts } = ctx;
+  const lang = opts.lang ?? 'en';
   const ranked = rankCandidates(pq, candidates);
   const shownCandidates = ranked.slice(0, 10);
   const none = (status: ShopStatus, detail: string): RouteOutcome => ({ status, detail, offers: [], candidates: shownCandidates });
   if (!candidates.length) {
-    return none('no_match', route === 'search_provider' ? 'the web search returned no pages on this domain' : 'the shop search returned no products');
+    return none('no_match', route === 'search_provider' ? t(lang, 'noWebPages') : t(lang, 'noShopProducts'));
   }
   const matchingCands = ranked.filter((c) => c.level !== 'different');
   if (!matchingCands.length) {
-    return none('no_match', `${candidates.length} result(s), none matching the query (best: "${(ranked[0]?.title || ranked[0]?.url || '').slice(0, 80)}")`);
+    return none('no_match', t(lang, 'noneMatching', { n: candidates.length, best: (ranked[0]?.title || ranked[0]?.url || '').slice(0, 80) }));
   }
 
   // ---- 2. product pages ----------------------------------------------------------------------
@@ -503,8 +516,8 @@ async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidat
     }
     tried++;
     if (page.kind === 'blocked') {
-      if (!raw.length) return none('blocked', `bot protection (${page.vendor}) on a product page; skipped for an hour`);
-      notes.push(`bot protection on ${c.url}`);
+      if (!raw.length) return none('blocked', t(lang, 'blockedProductPage', { vendor: page.vendor }));
+      notes.push(t(lang, 'blockedOnUrl', { url: c.url }));
       break;
     }
     if (page.kind === 'failed') {
@@ -515,31 +528,31 @@ async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidat
     if (!page.productNodes) pagesWithoutData++;
     raw.push(...page.offers);
   }
-  if (budgetHit) notes.push(`request budget (${MAX_REQUESTS_PER_SHOP} per shop) reached`);
-  if (alreadyRead) notes.push(`${alreadyRead} page(s) already read in this search (same page under another link) not read again`);
+  if (budgetHit) notes.push(t(lang, 'budgetReached', { max: MAX_REQUESTS_PER_SHOP }));
+  if (alreadyRead) notes.push(t(lang, 'alreadyReadPages', { n: alreadyRead }));
 
   // ---- 3. match + totals ---------------------------------------------------------------------
   const unpriced = raw.filter((r) => !(r.price > 0)).length;
-  if (unpriced) notes.push(`${unpriced} offer(s) listed with price 0 (sold out?) ignored`);
+  if (unpriced) notes.push(t(lang, 'zeroPriced', { n: unpriced }));
   const offers = await toOffers(ctx, raw, pq);
   const matching = offers.filter((o) => o.match.level !== 'different');
   const out = (status: ShopStatus, detail: string): RouteOutcome => ({ status, detail, offers, candidates: shownCandidates });
   if (matching.length) {
     const ex = matching.filter((o) => o.match.level === 'exact').length;
-    return out('ok', `${matching.length} matching offer(s): ${ex} exact, ${matching.length - ex} possible`);
+    return out('ok', t(lang, 'okOffers', { n: matching.length, exact: ex, possible: matching.length - ex }));
   }
   if (pagesFetched && pagesWithoutData === pagesFetched) {
     // A shop whose product pages are known to carry the data: these pages were something else
     // (articles, category pages), so nothing matching was found; that is no_match, not needs_js.
     if (shop.structured_data === true || (await opts.cache.get('structured_data', shop.id))) {
-      return out('no_match', `fetched ${pagesFetched} page(s) without schema.org Product data; this shop's product pages carry it, so these were probably not product pages`);
+      return out('no_match', t(lang, 'pagesNotProduct', { n: pagesFetched }));
     }
-    return out('needs_js', `fetched ${pagesFetched} page(s) without schema.org Product data; prices are probably rendered by JavaScript`);
+    return out('needs_js', t(lang, 'pagesNeedJs', { n: pagesFetched }));
   }
-  if (robotsBlockedPages && !pagesFetched) return out('robots_disallowed', 'robots.txt disallows the candidate product pages');
-  if (!pagesFetched && !tried && alreadyRead) return out('no_match', 'the matching pages were already read in this search');
-  if (!pagesFetched) return out('error', 'no product page could be read');
-  return out('no_match', `${offers.length} offer(s) on ${pagesFetched} page(s), none matching the query`);
+  if (robotsBlockedPages && !pagesFetched) return out('robots_disallowed', t(lang, 'robotsCandidates'));
+  if (!pagesFetched && !tried && alreadyRead) return out('no_match', t(lang, 'alreadyReadMatching'));
+  if (!pagesFetched) return out('error', t(lang, 'noPageRead'));
+  return out('no_match', t(lang, 'offersNoneMatching', { offers: offers.length, pages: pagesFetched }));
 }
 
 async function searchShop(
@@ -547,6 +560,7 @@ async function searchShop(
   contexts: Map<string, ShopCtx>, texts: { sent: string; retry: string | null },
 ): Promise<ShopResult> {
   const t0 = Date.now();
+  const lang = opts.lang ?? 'en';
   // What the shop's search, the web query and the manual link get (searchTexts); the matcher uses pq, the full query.
   const sent = texts.sent;
   const section = sectionFor(shop, opts.location);
@@ -572,11 +586,11 @@ async function searchShop(
   contexts.set(shop.id, ctx);
   const tail = (notes: string[]) => (notes.length ? ` (${notes.join('; ')})` : '');
 
-  if (shop.needs_js) return finish('needs_js', 'prices on this shop only appear after JavaScript runs; not fetched (open the manual link)');
-  if (shop.structured_data === false) return finish('no_route', 'product pages carry no schema.org data; not fetched (open the manual link)');
-  if (shop.unreachable) return finish('no_route', `not asked: ${shop.no_route_reason ?? 'the site answers a plain client with errors'}`);
+  if (shop.needs_js) return finish('needs_js', t(lang, 'needsJs'));
+  if (shop.structured_data === false) return finish('no_route', t(lang, 'noSchema'));
+  if (shop.unreachable) return finish('no_route', t(lang, 'notAsked', { reason: shop.no_route_reason ?? t(lang, 'defaultUnreachable') }));
   const blocked = await opts.cache.get<{ at: string; vendor: string }>('blocked', shop.id);
-  if (blocked) return finish('blocked', `bot protection (${blocked.vendor}) at ${blocked.at}; skipped for an hour`);
+  if (blocked) return finish('blocked', t(lang, 'blockedCached', { vendor: blocked.vendor, at: blocked.at }));
 
   // ---- 1. candidates -------------------------------------------------------------------------
   // Keyed by the text sent: candidates are stored unscored, and scored against the full query after the cache.
@@ -585,7 +599,7 @@ async function searchShop(
   let route: ShopResult['route'] = cached?.route ?? 'none';
   let candidates: Candidate[] = cached?.candidates ?? [];
   const notes: string[] = [];
-  if (sent !== pq.raw) notes.push(`searched as "${sent}": the query without its category, colour and generic words, for a shop in another country`);
+  if (sent !== pq.raw) notes.push(t(lang, 'searchedAs', { sent }));
 
   if (!cached) {
     let searchAllowed = false;
@@ -593,11 +607,11 @@ async function searchShop(
       const perm = await session.allowed(manualUrl);
       if (perm.blocked) {
         await markBlocked(perm.blocked);
-        return finish('blocked', `bot protection (${perm.blocked}) on robots.txt; skipped for an hour`);
+        return finish('blocked', t(lang, 'blockedRobots', { vendor: perm.blocked }));
       }
-      if (perm.budgetExhausted) return finish('error', 'request budget exhausted while reading robots.txt');
+      if (perm.budgetExhausted) return finish('error', t(lang, 'budgetRobots'));
       searchAllowed = perm.allowed;
-      if (!perm.allowed) notes.push(`robots.txt disallows the shop's search page${perm.note ? ` (${perm.note})` : ''}`);
+      if (!perm.allowed) notes.push(t(lang, 'robotsSearch', { note: perm.note ? techNote(lang, perm.note) : undefined }));
     }
     if (manualUrl && searchAllowed) {
       decline();
@@ -605,36 +619,36 @@ async function searchShop(
       const page = await session.get(manualUrl, 'search');
       if (page.blocked) {
         await markBlocked(page.blocked);
-        return finish('blocked', `bot protection (${page.blocked}) on the search page; skipped for an hour`, { route });
+        return finish('blocked', t(lang, 'blockedSearch', { vendor: page.blocked }), { route });
       }
-      if (page.robotsDisallowed) return finish('robots_disallowed', `search redirected to ${page.robotsDisallowed}, which robots.txt disallows`, { route });
-      if (page.offsiteRedirect) return finish('error', `search redirected off-site to ${page.offsiteRedirect}`, { route });
+      if (page.robotsDisallowed) return finish('robots_disallowed', t(lang, 'searchRedirectRobots', { url: page.robotsDisallowed }), { route });
+      if (page.offsiteRedirect) return finish('error', t(lang, 'searchOffsite', { url: page.offsiteRedirect }), { route });
       if (!page.ok) {
-        const why = page.error ?? `HTTP ${page.status}`;
-        const hint = page.status === 404 && shop.search_template_basis === 'guess' ? ' (the search URL template is a guess and may be wrong)' : '';
-        return finish('error', `search page failed: ${why}${hint}`, { route });
+        const why = page.error ? techNote(lang, page.error) : `HTTP ${page.status}`;
+        const guess = page.status === 404 && shop.search_template_basis === 'guess';
+        return finish('error', t(lang, 'searchFailed', { why, guess }), { route });
       }
       const fromList = extractListCandidates(page.text, page.finalUrl);
       candidates = fromList.length ? fromList : extractLinkCandidates(page.text, page.finalUrl, sent, shop.link_exclude_regex);
-      if (!fromList.length) notes.push('no JSON-LD ItemList on the search page; candidates from links');
+      if (!fromList.length) notes.push(t(lang, 'noItemList'));
     } else if (batcher) {
       route = 'search_provider';
       declined = true;
       const r = await batcher.find(shop.domain, shop.country);
       const why = notes.length ? `${notes.join('; ')}; ` : '';
-      if (r.unavailable) return finish('needs_search_key', `${why}no usable web search provider: ${r.unavailable}`, { route });
-      if (r.error) return finish('error', `web search failed: ${r.error}`, { route });
+      if (r.unavailable) return finish('needs_search_key', t(lang, 'noProvider', { why, reason: techNote(lang, r.unavailable) }), { route });
+      if (r.error) return finish('error', t(lang, 'webFailed', { error: techNote(lang, r.error) }), { route });
       candidates = providerCandidates(r.hits);
-      notes.push(`found via ${r.provider} web search`);
+      notes.push(t(lang, 'foundVia', { provider: String(r.provider) }));
     } else if (manualUrl) {
-      return finish('needs_search_key', `${notes.join('; ')}; set SERPER_API_KEY or BRAVE_API_KEY to find product pages through a web search`);
+      return finish('needs_search_key', t(lang, 'setKey', { notes: notes.join('; ') }));
     } else {
-      return finish('no_route', `${shop.no_route_reason ?? 'no search URL known for this shop'}; a web search key (BRAVE_API_KEY or SERPER_API_KEY) would let the app search it`);
+      return finish('no_route', t(lang, 'noRoute', { reason: shop.no_route_reason ?? t(lang, 'defaultNoSearchUrl') }));
     }
     await opts.cache.set('candidates', candKey, { route, candidates } satisfies CachedCandidates, CACHE_TTL.candidates);
   } else {
     decline();
-    notes.push('candidates from cache');
+    notes.push(t(lang, 'candidatesFromCache'));
   }
 
   // ---- 1b. the shop's own search returned no products: once more with the core query -------------
@@ -644,30 +658,30 @@ async function searchShop(
   // an empty first answer from the cache; the retry has its own cache entry.
   const shorter = route === 'shop_search' && !candidates.length && shop.search_url_template ? texts.retry : null;
   if (shorter && shop.search_url_template) {
-    const said = `the shop search returned no products for "${sent}"; repeated as "${shorter}" (without category, colour, generic and package words)`;
+    const said = t(lang, 'retrySaid', { sent, shorter });
     const retryKey = `${candKey}|retry|${normQuery(shorter)}`;
     const hit = await opts.cache.get<CachedCandidates>('candidates', retryKey);
     if (hit) {
       candidates = hit.candidates;
-      notes.push(`${said}: ${candidates.length} result(s) (from cache)`);
+      notes.push(`${said}: ${t(lang, 'results', { n: candidates.length })}${t(lang, 'fromCacheSuffix')}`);
     } else if (session.remaining() <= 0) {
-      notes.push(`${said} was not possible: the request budget (${MAX_REQUESTS_PER_SHOP} per shop) is used up`);
+      notes.push(t(lang, 'retryNotPossible', { said, max: MAX_REQUESTS_PER_SHOP }));
     } else {
       const page = await session.get(buildSearchUrl(shop.search_url_template, shorter), 'search');
       if (page.blocked) {
         await markBlocked(page.blocked);
-        return finish('blocked', `${said}: bot protection (${page.blocked}) on the search page; skipped for an hour`, { route });
+        return finish('blocked', `${said}: ${t(lang, 'blockedSearch', { vendor: page.blocked })}`, { route });
       }
-      const failed = page.robotsDisallowed ? `redirected to ${page.robotsDisallowed}, which robots.txt disallows`
-        : page.offsiteRedirect ? `redirected off-site to ${page.offsiteRedirect}`
-        : page.budgetExhausted ? `the request budget (${MAX_REQUESTS_PER_SHOP} per shop) is used up`
-        : !page.ok ? (page.error ?? `HTTP ${page.status}`) : null;
-      if (failed) notes.push(`${said}: failed (${failed})`);
+      const failed = page.robotsDisallowed ? t(lang, 'redirectRobots', { url: page.robotsDisallowed })
+        : page.offsiteRedirect ? t(lang, 'redirectOffsite', { url: page.offsiteRedirect })
+        : page.budgetExhausted ? t(lang, 'budgetUsedUp', { max: MAX_REQUESTS_PER_SHOP })
+        : !page.ok ? (page.error ? techNote(lang, page.error) : `HTTP ${page.status}`) : null;
+      if (failed) notes.push(t(lang, 'retryFailed', { said, failed }));
       else {
         const fromList = extractListCandidates(page.text, page.finalUrl);
         candidates = fromList.length ? fromList : extractLinkCandidates(page.text, page.finalUrl, shorter, shop.link_exclude_regex);
         await opts.cache.set('candidates', retryKey, { route, candidates } satisfies CachedCandidates, CACHE_TTL.candidates);
-        notes.push(`${said}: ${candidates.length} result(s)`);
+        notes.push(`${said}: ${t(lang, 'results', { n: candidates.length })}`);
       }
     }
   }
@@ -680,13 +694,13 @@ async function searchShop(
   // ---- 4. second route: the shop's own search found nothing matching -> try the web search --------
   // Not for blocked, robots-disallowed, needs_js or failed outcomes: only a plain "nothing matching".
   if (first.status !== 'no_match' || route !== 'shop_search' || !fallback) return result(first, route, `${first.detail}${tail(notes)}`);
-  const firstText = `shop search: ${first.detail}${tail(notes)}`;
+  const firstText = t(lang, 'shopSearchPrefix', { detail: `${first.detail}${tail(notes)}` });
   if (session.remaining() <= 0) {
-    return result(first, route, `${firstText}; the web search route was not tried: the request budget (${MAX_REQUESTS_PER_SHOP} per shop) is used up`);
+    return result(first, route, t(lang, 'webNotTried', { first: firstText, max: MAX_REQUESTS_PER_SHOP }));
   }
   const r = await fallback.find(shop.domain, shop.country);
   if (r.unavailable || r.error) {
-    return result(first, route, `${firstText}; the web search route could not be tried: ${r.unavailable ?? r.error}`);
+    return result(first, route, t(lang, 'webCouldNotTry', { first: firstText, reason: techNote(lang, (r.unavailable ?? r.error) as string) }));
   }
   const notes2: string[] = [];
   const second = await readCandidates(ctx, 'search_provider', providerCandidates(r.hits), notes2);
@@ -695,11 +709,11 @@ async function searchShop(
     offers: [...first.offers, ...second.offers],
     candidates: [...second.candidates.slice(0, 6), ...first.candidates].slice(0, 10),
   };
-  const webText = `${r.provider} web search: ${second.detail}${tail(notes2)}`;
+  const webText = t(lang, 'webSearchPrefix', { provider: String(r.provider), detail: `${second.detail}${tail(notes2)}` });
   if (second.status === 'ok') {
-    return result(merged, 'both', `${second.detail}, found by the web search after the shop search found nothing matching (both routes tried; ${firstText}; ${webText})`);
+    return result(merged, 'both', t(lang, 'foundBySecond', { detail: second.detail, first: firstText, web: webText }));
   }
   // A product page behind bot protection is reported as blocked; otherwise the shop stays no_match.
   const status: ShopStatus = second.status === 'blocked' ? 'blocked' : 'no_match';
-  return result({ ...merged, status }, 'both', `both routes tried, nothing matching: ${firstText}; ${webText}`);
+  return result({ ...merged, status }, 'both', t(lang, 'bothNothing', { first: firstText, web: webText }));
 }

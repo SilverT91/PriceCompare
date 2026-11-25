@@ -186,6 +186,32 @@ the country searched from receive the query without them, when the rest still na
 The words are not translated: a missing word costs less than a wrong one. The match is judged
 against everything the user typed, so the colour asked for still decides.
 
+## Two languages, by code and not by sentence (2026-11-25)
+
+The page speaks English and Slovak. What the search reports travels as codes and facts (status,
+reason code with its words, amounts, dates), and each language writes its own sentence from
+them. English stays the language of the stored and tested strings. Product titles and shop names
+are never translated. Free-text notes about shops keep their English original in
+`data/shops.yaml`, the file with the sources; the Slovak versions sit next to it in
+`data/shops.sk.yaml`, and a test checks that both carry the same numbers, dates and addresses.
+
+## The credit bars count what the app used (2026-11-25)
+
+The page shows how much of each web search allowance is used, so a user sees it before it runs
+out. The number is the app's own count of the calls it made, because that needs no request and
+works for every provider. Where a provider states the remaining allowance in its ordinary
+answers (Brave), that figure is shown instead. No request is made only to ask for a balance; a
+provider's usage endpoint would be used only if its documentation says the call is free.
+
+## Specifications are attributes, not identity (2026-11-25)
+
+Titles of computer parts carry specifications that the matcher first read as model numbers, so
+correct offers were rejected. A number with a unit, an interface name or a port list is now a
+specification. One that changes what the buyer gets (capacity, memory speed, latency, screen size)
+makes a match "possible" when the query does not state it; the others are ignored. A whole
+computer that contains the part stays a different product, because it names other parts' model
+numbers.
+
 ## Only ask shops in the query's category (2026-11-24)
 
 A toothbrush query does not go to a furniture shop. Categories are guessed from the query with a

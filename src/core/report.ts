@@ -1,24 +1,26 @@
 // Small presentation helpers shared by the command line (and mirrored in public/app.js).
 
+import { t, type Lang, type MessageKey } from './i18n.ts';
 import type { ShopResult, ShopStatus } from './types.ts';
 
-const PHRASES: [ShopStatus, (n: number) => string][] = [
-  ['ok', (n) => `${n} found`],
-  ['no_match', (n) => `${n} no match`],
-  ['blocked', (n) => `${n} blocked`],
-  ['needs_js', (n) => `${n} need${n === 1 ? 's' : ''} a browser`],
-  ['needs_search_key', (n) => `${n} need${n === 1 ? 's' : ''} a search key`],
-  ['robots_disallowed', (n) => `${n} disallowed by robots.txt`],
-  ['no_route', (n) => `${n} no automatic route`],
-  ['error', (n) => `${n} error${n === 1 ? '' : 's'}`],
-  ['not_relevant', (n) => `${n} not asked (not relevant)`],
+const PHRASES: [ShopStatus, MessageKey][] = [
+  ['ok', 'sumOk'],
+  ['no_match', 'sumNoMatch'],
+  ['blocked', 'sumBlocked'],
+  ['needs_js', 'sumNeedsJs'],
+  ['needs_search_key', 'sumNeedsKey'],
+  ['robots_disallowed', 'sumRobots'],
+  ['no_route', 'sumNoRoute'],
+  ['error', 'sumError'],
+  ['not_relevant', 'sumNotRelevant'],
 ];
 
 /** "6 found, 10 no match, 9 blocked, 2 need a browser, ..., 7 not asked (not relevant)" */
-export function statusSummary(results: Pick<ShopResult, 'status'>[]): string {
+export function statusSummary(results: Pick<ShopResult, 'status'>[], lang: Lang = 'en'): string {
   const counts = new Map<ShopStatus, number>();
   for (const r of results) counts.set(r.status, (counts.get(r.status) ?? 0) + 1);
-  return PHRASES.filter(([s]) => counts.get(s)).map(([s, f]) => f(counts.get(s) as number)).join(', ');
+  const say = (key: MessageKey, n: number) => (t as (l: Lang, k: MessageKey, p: { n: number }) => string)(lang, key, { n });
+  return PHRASES.filter(([s]) => counts.get(s)).map(([s, k]) => say(k, counts.get(s) as number)).join(', ');
 }
 
 const UNCHECKED: ShopStatus[] = ['blocked', 'needs_js', 'needs_search_key', 'robots_disallowed', 'no_route', 'error'];

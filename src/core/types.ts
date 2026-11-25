@@ -125,8 +125,31 @@ export interface MatchResult {
   signature: string;
   /** Manufacturer order codes found in the title (e.g. "060186810f"); they link offers like a GTIN. */
   codes: string[];
+  /** Why the level is not "exact", in English (reasonText('en', ...) of reasonCodes, same order). */
   reasons: string[];
+  /** The same reasons as codes with their words, so they can be written in another language (i18n.ts, reasonText). */
+  reasonCodes: MatchReason[];
 }
+
+/** One reason of a match level, as data. The words are query or title tokens, never translated. */
+export type MatchReason =
+  /** A short query number found only as the start of a configuration code ("16" in "16arp10"). */
+  | { code: 'codeStart'; params: { token: string; title: string } }
+  /** A query word met by a title word one letter away. */
+  | { code: 'nearSpelling'; params: { token: string; title: string } }
+  /** The offer is not new; `words` are the title words that said so. */
+  | { code: 'condition'; params: { condition: Condition; words: string[] } }
+  /** An unknown title word stands where the query has a word ("anywhere" for "master"). */
+  | { code: 'insteadOf'; params: { instead: string; token: string } }
+  | { code: 'titleLacks'; params: { words: string[] } }
+  | { code: 'titleHas'; params: { words: string[] } }
+  /** The title names the line and number without the query's middle number ("pro 3000" without "3"). */
+  | { code: 'sameOrOlder'; params: { before: string; after: string; token: string } }
+  /** Specification variants (memory, capacity, size) the query does not name. */
+  | { code: 'variantNotInQuery'; params: { words: string[] } }
+  | { code: 'extraWords'; params: { words: string[] } };
+
+export type MatchReasonCode = MatchReason['code'];
 
 export interface Totals {
   itemEur: number | null;
@@ -184,7 +207,10 @@ export interface ShopResult {
 
 export interface ProductVariant {
   key: string;
+  /** Colour (or "colour not stated"), the extra title words and the GTIN, in the search's language. */
   label: string;
+  /** The title words that tell this variant apart (matcher's unknown extras), at most 3; part of the label. */
+  words: string[];
   gtin: string | null;
   colour: string | null;
   offers: Offer[];
@@ -212,7 +238,10 @@ export interface ProductGroup {
   bestItemShop: string | null;
   /** Whether that cheapest item's total is known (false = "+ shipping?"). */
   bestItemTotalKnown: boolean;
+  /** Notes in the search's language, built from noteFacts (group.ts, groupNotes). */
   notes: string[];
+  /** What the notes state, so a page can write them in another language. */
+  noteFacts: { noDelivery: number; gtins: number; mixed: boolean; noGtin: boolean };
   variants: ProductVariant[];
 }
 

@@ -8,6 +8,7 @@
 
 import type { FetchLike } from '../http.ts';
 import { CACHE_TTL, type Cache } from '../types.ts';
+import { rememberQuota, type ProviderQuota } from '../usage.ts';
 
 export interface SearchHit {
   url: string;
@@ -59,7 +60,8 @@ export interface SearchProvider {
   readonly resultsPerQuery: number;
   /** Minimum gap between two calls (provider rate limit). */
   readonly minIntervalMs: number;
-  search(s: SiteSearch, locale: Locale, fetchImpl?: FetchLike): Promise<{ hits: SearchHit[]; credits: number }>;
+  /** quota: the monthly figures the provider reported with the answer, when it gives them (Brave). */
+  search(s: SiteSearch, locale: Locale, fetchImpl?: FetchLike): Promise<{ hits: SearchHit[]; credits: number; quota?: ProviderQuota | null }>;
   /** How long an exhaustion mark lasts (Brave and Tavily credit renews monthly, Serper's free credit is one-time). */
   exhaustedTtlSeconds(kind: 'quota' | 'auth'): number;
 }
@@ -167,6 +169,7 @@ export class ProviderChain {
       try {
         const r = await p.search(s, locale, this.fetchImpl);
         await this.cache.set('provider', cacheKey(p, locale, q), r.hits, CACHE_TTL.providerResults);
+        if (r.quota) await rememberQuota(this.cache, p.id, r.quota);
         this.record({ provider: p.id, query: q, locale, results: r.hits.length, credits: r.credits, ok: true });
         return { hits: r.hits, provider: p.id };
       } catch (e) {

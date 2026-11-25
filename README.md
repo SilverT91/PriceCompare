@@ -15,6 +15,19 @@ and products; it links to one of them for every search.
 
 Status: first working version (2026-11). Coverage is partial on purpose; see "Coverage" below.
 
+## Language
+
+The page is in English and Slovak. The "SK | EN" switch in the header changes it; without a choice
+the page follows the browser (Slovak for a Slovak or Czech browser, English otherwise) and
+remembers what you picked. In Slovak the texts that come with a search are Slovak too: shop
+statuses, delivery and pickup notes, the notes under "Match". Shop names and product titles are
+shown as the shops write them. The command line takes `--lang sk` for its sentences; its table
+headings stay English.
+
+The Slovak wording lives in three places: `public/i18n.js` (what the page writes),
+`src/core/i18n.ts` (sentences built by the search) and `data/shops.sk.yaml` (delivery notes of the
+shops). A correction in one of them needs no other change.
+
 ## What it does
 
 0. **Reads the query the way people type it.**
@@ -28,6 +41,14 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
    - The words for a pack of two mean the same thing: duo, duopack, duo pack, doublepack, double
      pack, twin pack, Doppelpack, dvojbalenie. "Súprava ... Duo Pack" and "Duo, 2 ks" are that
      same pack. A pack of two is still a different product from the single item.
+   - **Specifications are not model numbers.** Computer parts are sold with their specifications
+     in the title. A number with a unit ("4.7GHz", "6000MHz", "750W", "256-bit"), an interface
+     ("NVMe", "M.2", "PCIe 4.0") or a port list is read as a specification: "Samsung 990 PRO NVMe,
+     M.2 SSD 2 TB" is the "Samsung 990 Pro 2TB". A specification that changes what you get
+     (capacity, memory speed, latency "CL36", screen size) makes the match "possible" when you did
+     not type it. "6000" finds "6000MHz", and "16" finds the model code "16IMH10" as a possible
+     match. A word that stands in for one you typed ("MX Anywhere 3S" for "mx master 3s") means
+     another product.
    - **A pasted product link works as a query.** Paste the address of a product page
      (`https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm`) and the app searches for the
      name in it: `Searched for "Roborock Qrevo Edge 2 Pro" (from the link you pasted)`. The linked
@@ -202,6 +223,7 @@ Command line options:
 ```
 npm run search -- "iPhone 16 128GB" --pick 2          # compare product #2 of the list
 npm run search -- "Iral b io9" --as-typed             # do not correct a brand typo
+npm run search -- "..." --lang sk                     # the sentences in Slovak
 npm run search -- "https://shop.example/product-name-p12345.html"   # a pasted product link
 npm run search -- "..." --cat all                     # ask all shops (default auto; or electronics, tools, health, home, books)
 npm run search -- "Bosch GSR 12V-15" --shops nay_sk,hornbach_sk
@@ -303,6 +325,22 @@ without a card, but filter by domain through their own parameter, so each needs 
 adapter; Tavily has one now, Exa has none. Google's Custom Search JSON API is closed to new customers and
 Bing's Web Search API was retired in 2025. The app only uses documented APIs, so it does not read
 a search engine's result pages itself.
+
+### How much of the allowance is used
+
+The page footer shows one line and a thin bar per provider that has a key: "27 / 1,000 this
+month". The bar turns to the warning colour at 80 % and to the error colour at 100 % or when the
+provider reported that its credit is used up. The command line prints the same numbers after its
+cost line.
+
+- The numbers are what this app used, from its own log of calls: Brave and Tavily since the first
+  day of the month, Serper over all time. Use of the same key elsewhere is not in them.
+- Brave's answers state what is left of its allowance; when such an answer has been received the
+  bar shows Brave's own figure, marked "as reported by the provider" (its window is 30 days, not a
+  calendar month).
+- The limits behind the bars are the free allowances of the table above. When a provider changes
+  its offer, or you pay for more, set `BRAVE_MONTHLY_LIMIT`, `SERPER_TOTAL_LIMIT` or
+  `TAVILY_MONTHLY_LIMIT` in `.env`.
 
 ### Setting a key
 
@@ -427,6 +465,8 @@ src/core/          portable core: only fetch, URL, AbortSignal, TextDecoder (+ c
   gtin.ts            GTIN normalisation (UPC-A / EAN-13 / GTIN-14 / ISBN -> one 14-digit form)
   text.ts, vocab.ts  tokenizer and word lists (sk/cs/de/pl/en)
   correct.ts         a brand typed with one wrong letter is searched as the brand
+  i18n.ts            every sentence the search builds, in English and Slovak
+  usage.ts           web search credit used against each provider's allowance
   matcher.ts         query vs title: exact / possible / different, condition, colour, signature
   group.ts           distinct products and their variants
   nearby.ts          similar models the shops list (from what a search collected, no requests)
@@ -447,10 +487,11 @@ tools/             probe_shops.py (feasibility probe), extract_fixtures.ts, meas
 
 ## Coverage and cost (measured 2026-11-24, no guarantees)
 
-`data/shops.yaml` has 39 shops in scope (29 Slovak, 3 Czech, 4 German or Austrian, 3 Polish
+`data/shops.yaml` has 40 shops in scope (30 Slovak, 3 Czech, 4 German or Austrian, 3 Polish
 including Allegro.sk) plus 4 grocery chains kept out of scope. Shops with no automatic route
-in every search: Amazon.de (no schema.org data), OBI and notebooksbilliger.de (every page answers
-HTTP 404 to a plain client); dm (mojadm.sk) is marked `needs_js`. Euronics, Teta and MojaLekáreň
+in every search: Amazon.de and ASBIS SK (no schema.org data on product pages; ASBIS, a
+distributor's shop, is listed for its manual link in computer searches), OBI and
+notebooksbilliger.de (every page answers HTTP 404 to a plain client); dm (mojadm.sk) is marked `needs_js`. Euronics, Teta and MojaLekáreň
 have no usable search URL and are read through the web search.
 
 Two toothbrush searches on 2026-11-24 evening, Auto categories (32 of 39 shops asked):

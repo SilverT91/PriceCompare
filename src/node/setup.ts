@@ -8,8 +8,10 @@ import { BraveProvider } from '../core/search/brave.ts';
 import type { SearchProvider } from '../core/search/provider.ts';
 import { SerperProvider } from '../core/search/serper.ts';
 import { TavilyProvider } from '../core/search/tavily.ts';
-import { validateShops } from '../core/shops.ts';
+import { LANGS, type ShopTexts } from '../core/i18n.ts';
+import { validateShops, validateShopTexts } from '../core/shops.ts';
 import type { Shop } from '../core/types.ts';
+import { limitsFromEnv, providerUsage, type ProviderUsage } from '../core/usage.ts';
 import { Store } from './db.ts';
 
 export const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -23,6 +25,22 @@ export function loadShops(path = `${ROOT}data/shops.yaml`): Shop[] {
   const { shops, problems } = validateShops(parse(readFileSync(path, 'utf8')));
   for (const p of problems) console.warn(`shops.yaml: ${p}`);
   return shops;
+}
+
+/**
+ * Translations of the shops' shown notes, one file per language next to shops.yaml
+ * (data/shops.sk.yaml). A missing file or entry means the English note is shown.
+ */
+export function loadShopTexts(shops: Shop[], dir = `${ROOT}data/`): ShopTexts {
+  const out: ShopTexts = {};
+  for (const lang of LANGS.filter((l) => l !== 'en')) {
+    const path = `${dir}shops.${lang}.yaml`;
+    if (!existsSync(path)) continue;
+    const { texts, problems } = validateShopTexts(parse(readFileSync(path, 'utf8')), shops);
+    for (const p of problems) console.warn(`shops.${lang}.yaml: ${p}`);
+    out[lang] = texts;
+  }
+  return out;
 }
 
 /** Default provider order; chosen from the measurement in the README ("Web search providers"). */
@@ -52,6 +70,22 @@ export function providersFromEnv(order?: string): SearchProvider[] {
     }
   }
   return out;
+}
+
+const KEY_ENV: Record<string, string> = { brave: 'BRAVE_API_KEY', serper: 'SERPER_API_KEY', tavily: 'TAVILY_API_KEY' };
+
+/**
+ * Credit usage of each web search provider whose key is set (GET /api/usage). Only the provider ids
+ * leave this function, never a key. Limits from BRAVE_MONTHLY_LIMIT, SERPER_TOTAL_LIMIT and
+ * TAVILY_MONTHLY_LIMIT, else the defaults in core/usage.ts.
+ */
+export function makeUsage(store: Store, env: Record<string, string | undefined> = process.env): () => Promise<ProviderUsage[]> {
+  return () => providerUsage({
+    ids: Object.keys(KEY_ENV).filter((id) => env[KEY_ENV[id]]?.trim()),
+    limits: limitsFromEnv(env),
+    cache: store,
+    appCredits: (id, since) => store.creditsUsed(id, since),
+  });
 }
 
 export function openStore(opts: { noCache?: boolean } = {}): Store {

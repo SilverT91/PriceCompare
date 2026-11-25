@@ -5,8 +5,11 @@
 // not SK or CZ (those use ALL); `search_lang` includes sk, cs, de, pl. site: and OR go inside q.
 // Free plan: about 1 request per second; HTTP 429 when faster. With a spend limit, HTTP 402 once the
 // monthly credit is used up (until the next month).
+// Every answer carries X-RateLimit-* headers with the monthly limit and what remains (usage.ts,
+// parseBraveRateLimit); they are passed on with the results, no extra request is made.
 
 import type { FetchLike } from '../http.ts';
+import { parseBraveRateLimit, type ProviderQuota } from '../usage.ts';
 import { ProviderUnavailableError, searchText, untilNextMonth, type Locale, type SearchHit, type SearchProvider, type SiteSearch } from './provider.ts';
 
 export const BRAVE_URL = 'https://api.search.brave.com/res/v1/web/search';
@@ -39,7 +42,7 @@ export class BraveProvider implements SearchProvider {
     return u.href;
   }
 
-  async search(s: SiteSearch, locale: Locale, fetchImpl: FetchLike = fetch): Promise<{ hits: SearchHit[]; credits: number }> {
+  async search(s: SiteSearch, locale: Locale, fetchImpl: FetchLike = fetch): Promise<{ hits: SearchHit[]; credits: number; quota: ProviderQuota | null }> {
     const res = await fetchImpl(this.buildUrl(searchText(s), locale), {
       headers: { 'X-Subscription-Token': this.key, Accept: 'application/json' },
       signal: AbortSignal.timeout(15_000),
@@ -56,7 +59,7 @@ export class BraveProvider implements SearchProvider {
     const hits = (json.web?.results ?? [])
       .filter((r) => typeof r.url === 'string')
       .map((r) => ({ url: r.url as string, title: stripTags(r.title ?? ''), snippet: stripTags(r.description ?? '') }));
-    return { hits, credits: 1 };
+    return { hits, credits: 1, quota: parseBraveRateLimit(res.headers) };
   }
 }
 

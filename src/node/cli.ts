@@ -6,6 +6,8 @@
 //   options: --cat auto|all|electronics|tools|health|home|books   (default auto: guessed from the query)
 //            --location kosice  --shops nay_sk,hornbach_sk  --providers brave,serper | serper,brave | none
 //            --site-search combined|per-shop  --domains-per-query 6  --no-cache  --json
+//            --lang en|sk   (language of the shop details, notes and summary lines; the section titles
+//                            and table headings of this output stay English)
 //            --as-typed   (no brand correction: "Iral b ..." is searched as typed, not as "Oral-B ...";
 //                          no effect on a pasted product link, whose name is always taken from the link)
 //   A product link instead of a name works too: npm run search -- "https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm"
@@ -13,12 +15,13 @@
 import { parseArgs } from 'node:util';
 import { CATEGORY_GROUPS } from '../core/categories.ts';
 import { displayGtin } from '../core/gtin.ts';
+import { parseLang, reasonText } from '../core/i18n.ts';
 import { runSearch, type SearchEvent } from '../core/pipeline.ts';
 import { notCheckedList, statusSummary } from '../core/report.ts';
 import { locationById } from '../core/shops.ts';
 import { headlineText, reachable, sortOffers } from '../core/totals.ts';
 import type { NearbyList, Offer, ProductGroup, ShopResult, ShopStatus } from '../core/types.ts';
-import { loadEnv, loadShops, makeScheduler, openStore, providersFromEnv } from './setup.ts';
+import { loadEnv, loadShops, loadShopTexts, makeScheduler, makeUsage, openStore, providersFromEnv } from './setup.ts';
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -34,6 +37,7 @@ const { values, positionals } = parseArgs({
     json: { type: 'boolean', default: false },
     'as-typed': { type: 'boolean', default: false },
     width: { type: 'string', default: '160' },
+    lang: { type: 'string', default: 'en' },
   },
 });
 
@@ -46,6 +50,8 @@ if (!query) {
 loadEnv();
 const store = openStore({ noCache: values['no-cache'] });
 let shops = loadShops();
+const shopTexts = loadShopTexts(shops);
+const lang = parseLang(values.lang);
 if (values.shops) {
   const ids = new Set(values.shops.split(','));
   shops = shops.filter((s) => ids.has(s.id));
@@ -75,6 +81,7 @@ for await (const ev of runSearch(query, {
   domainsPerQuery: Number(values['domains-per-query']) || 6,
   onProviderCall: (c) => store.recordProviderCall(c),
   asTyped: values['as-typed'],
+  lang, shopTexts,
 })) {
   if (ev.type === 'start') {
     heureka = ev.heurekaUrl;
@@ -123,7 +130,7 @@ else {
     ['#', 'fit', 'condition', 'shops', 'offers', 'price', 'product', 'why'],
     groups.slice(0, 25).map((g, i) => {
       const best = g.variants.flatMap((v) => v.offers).sort((a, b) => b.match.score - a.match.score)[0];
-      return [String(i + 1), levelLabel[g.level], g.condition, String(g.shopCount), String(g.offerCount), headlineText(g), g.title, best?.match.reasons.join('; ') ?? ''];
+      return [String(i + 1), levelLabel[g.level], g.condition, String(g.shopCount), String(g.offerCount), headlineText(g, lang), g.title, (best ? best.match.reasonCodes.map((r) => reasonText(lang, r)).join('; ') : '')];
     }),
     [3, 15, 12, 5, 6, 70, 55, 50],
   ));
@@ -154,7 +161,7 @@ if (!chosen) {
 } else {
   const idx = groups.indexOf(chosen) + 1;
   console.log(`\n== Comparison for #${idx}: ${chosen.title} (${levelLabel[chosen.level]}${chosen.condition !== 'new' ? `, ${chosen.condition}` : ''}) ==`);
-  console.log(headlineText(chosen));
+  console.log(headlineText(chosen, lang));
   if (chosen.gtins.length) console.log(`GTIN: ${chosen.gtins.map(displayGtin).join(', ')}   ${chosen.notes.join('; ')}`);
   else console.log(chosen.notes.join('; '));
   console.log(`Variants: ${chosen.variants.map((v) => `${v.label.replace(/,? ?GTIN \d+$/, '')} ${v.bestItemEur === null ? '(no SK delivery)' : `${eur(v.bestItemEur)}${v.bestItemTotalKnown ? '' : '+ship?'}`}`).join(' | ')}`);
@@ -181,7 +188,7 @@ if (!chosen) {
           local ? (t.pickupTotalEur === null ? 'unknown' : eur(t.pickupTotalEur)) : !reachable(t) ? 'not ranked' : t.totalEur === null ? 'unknown' : eur(t.totalEur),
           ...(local ? [t.totalEur === null ? 'unknown' : eur(t.totalEur)] : []),
           (o.availability ?? '?').replace(/^(InStock|OutOfStock|PreOrder|SoldOut|BackOrder|InStoreOnly).*$/, '$1') + (o.shipsToSk === 'unknown' && !local ? ', SK delivery?' : ''),
-          o.match.level === 'exact' ? 'exact' : `${o.match.level}: ${o.match.reasons.join('; ')}`,
+          o.match.level === 'exact' ? 'exact' : `${o.match.level}: ${o.match.reasonCodes.map((r) => reasonText(lang, r)).join('; ')}`,
           o.url,
         ];
       }),
@@ -196,7 +203,7 @@ console.log(`\n== Not checked automatically: open these yourself (${todo.length}
 console.log(`  Heureka.sk (never fetched by this app): ${heureka}`);
 for (const t of todo) console.log(`  ${t.shopName.padEnd(24)} ${t.status.padEnd(17)} ${t.url}`);
 
-console.log(`\n== Shops: ${statusSummary(shopResults)} ==`);
+console.log(`\n== Shops: ${statusSummary(shopResults, lang)} ==`);
 const order: Record<ShopStatus, number> = { ok: 0, no_match: 1, needs_search_key: 2, robots_disallowed: 3, blocked: 4, needs_js: 5, no_route: 6, error: 7, not_relevant: 8 };
 const asked = shopResults.filter((r) => r.status !== 'not_relevant');
 console.log(table(
@@ -212,5 +219,9 @@ if (summary) {
   const second = summary.fallbackQueries ? `; ${summary.fallbackQueries} of them for ${summary.fallbackShops} shop(s) whose own search found nothing matching` : '';
   const prices = summary.nearbyPrices ? ` (${summary.nearbyPrices} price${summary.nearbyPrices === 1 ? '' : 's'} of similar models read among them)` : '';
   console.log(`\nCost: ${summary.shopsAsked} shops asked, ${summary.shopRequests} shop requests${prices}, ${summary.siteQueries} web search quer${summary.siteQueries === 1 ? 'y' : 'ies'} (${calls} new API call${calls === 1 ? '' : 's'}, the rest from the cache${second})`);
+}
+const credit = await makeUsage(store)();
+if (credit.length) {
+  console.log(`Web search credit: ${credit.map((u) => `${u.provider} ${u.used}/${u.limit} ${u.period === 'total' ? 'in total' : 'this month'}${u.source === 'provider' ? ' (as reported by the provider)' : ''}${u.exhausted ? ' (used up)' : ''}`).join(', ')}`);
 }
 store.close();

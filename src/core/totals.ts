@@ -2,6 +2,7 @@
 // Unknown shipping stays unknown: it is never counted as zero. A shop that does not deliver to
 // Slovakia keeps its offers visible but outside the ranking.
 
+import { eur as eurText, t, type Lang } from './i18n.ts';
 import type { Offer, RawOffer, Shop, Totals } from './types.ts';
 
 /** ECB reference rates: 1 EUR = rates[CUR] units of CUR. */
@@ -24,7 +25,9 @@ export const round2 = (n: number): number => Math.round(n * 100) / 100;
 
 type ShopFacts = Pick<Shop, 'name'> & Partial<Pick<Shop, 'shipping_to_sk' | 'ships_to_sk' | 'pickup_kosice'>>;
 
-export function computeTotals(offer: RawOffer, shop: ShopFacts, rates: Rates | null, country = 'SK', opts: { local?: boolean } = {}): Totals {
+/** opts.lang: the language of the notes (default English); the numbers do not depend on it. */
+export function computeTotals(offer: RawOffer, shop: ShopFacts, rates: Rates | null, country = 'SK', opts: { local?: boolean; lang?: Lang } = {}): Totals {
+  const lang = opts.lang ?? 'en';
   const item = toEur(offer.price, offer.currency, rates);
   const deliversToSk = shop.ships_to_sk ?? 'unknown';
   let shippingEur: number | null = null;
@@ -33,7 +36,7 @@ export function computeTotals(offer: RawOffer, shop: ShopFacts, rates: Rates | n
 
   if (deliversToSk === false) {
     source = 'no_delivery';
-    note = 'does not deliver to Slovakia';
+    note = t(lang, 'noDelivery');
   } else {
     const forCountry = offer.shipping.filter((s) => s.countries.includes(country) && s.rate !== null);
     if (forCountry.length) {
@@ -47,7 +50,7 @@ export function computeTotals(offer: RawOffer, shop: ShopFacts, rates: Rates | n
       if (best !== null) {
         shippingEur = best;
         source = 'jsonld';
-        note = forCountry.length > 1 ? `cheapest of ${forCountry.length} delivery options to ${country} in the product data` : `product data: delivery to ${country}`;
+        note = forCountry.length > 1 ? t(lang, 'cheapestOf', { n: forCountry.length, country }) : t(lang, 'productDataDelivery', { country });
       }
     }
     if (source === 'unknown') {
@@ -59,17 +62,17 @@ export function computeTotals(offer: RawOffer, shop: ShopFacts, rates: Rates | n
       if (sh && freeByThreshold) {
         shippingEur = 0;
         source = 'shop_data';
-        note = `free from ${sh.free_from} ${sh.currency || 'EUR'} (shop's delivery page${sh.checked ? `, checked ${sh.checked}` : ''})`;
+        note = t(lang, 'freeFrom', { amount: sh.free_from as number, currency: sh.currency || 'EUR', checked: sh.checked });
       } else if (sh && sh.price !== null && sh.price !== undefined) {
         shippingEur = toEur(sh.price, sh.currency || 'EUR', rates).eur;
         source = shippingEur === null ? 'unknown' : 'shop_data';
-        note = `${sh.method ?? 'standard delivery'} (shop's delivery page${sh.checked ? `, checked ${sh.checked}` : ''})`;
+        note = t(lang, 'shopMethod', { method: sh.method, checked: sh.checked });
       } else if (sh && sh.free_from !== null && sh.free_from !== undefined) {
-        note = `free only from ${sh.free_from} ${sh.currency || 'EUR'}; price below that unknown`;
+        note = t(lang, 'freeOnlyFrom', { amount: sh.free_from, currency: sh.currency || 'EUR' });
       } else if (other.length) {
-        note = `product data gives shipping only for ${other.join(', ')}, not ${country}`;
+        note = t(lang, 'shippingOnlyFor', { other: other.join(', '), country });
       } else {
-        note = 'shipping to SK unknown';
+        note = t(lang, 'shippingUnknown');
       }
     }
   }
@@ -80,11 +83,11 @@ export function computeTotals(offer: RawOffer, shop: ShopFacts, rates: Rates | n
     const p = shop.pickup_kosice;
     if (p && p.available === true && p.price !== null && p.price !== undefined) {
       pickupEur = toEur(p.price, p.currency || 'EUR', rates).eur;
-      pickupNote = pickupEur === 0 ? 'pickup in the branch: free' : `pickup in the branch: ${p.price} ${p.currency || 'EUR'}`;
+      pickupNote = pickupEur === 0 ? t(lang, 'pickupFree') : t(lang, 'pickupPrice', { amount: p.price, currency: p.currency || 'EUR' });
     } else if (p && p.available === false) {
-      pickupNote = 'no pickup in the branch';
+      pickupNote = t(lang, 'noPickup');
     } else {
-      pickupNote = 'pickup terms unknown';
+      pickupNote = t(lang, 'pickupUnknown');
     }
   }
 
@@ -157,14 +160,14 @@ export function headline(offers: Pick<Offer, 'totals' | 'shopName'>[]): Headline
 }
 
 /** "from 797.85 € + shipping? · cheapest known total 849.00 € (NAY, pickup)" */
-export function headlineText(h: Headline): string {
-  const eur = (n: number) => `${n.toFixed(2)} €`;
-  if (h.bestItemEur === null) return 'no price that reaches Slovakia';
-  const parts = [`from ${eur(h.bestItemEur)}${h.bestItemTotalKnown ? '' : ' + shipping?'}`];
+export function headlineText(h: Headline, lang: Lang = 'en'): string {
+  const eur = (n: number) => eurText(lang, n);
+  if (h.bestItemEur === null) return t(lang, 'noPriceReachesSk');
+  const parts = [t(lang, 'fromPrice', { price: eur(h.bestItemEur), shippingUnknown: !h.bestItemTotalKnown })];
   if (h.bestTotalEur !== null && !(h.bestItemTotalKnown && h.bestTotalEur === h.bestItemEur)) {
-    parts.push(`cheapest known total ${eur(h.bestTotalEur)} (${h.bestTotalShop}${h.bestTotalKind === 'pickup' ? ', pickup' : ''})`);
+    parts.push(t(lang, 'cheapestKnownTotal', { price: eur(h.bestTotalEur), shop: h.bestTotalShop, pickup: h.bestTotalKind === 'pickup' }));
   } else if (h.bestTotalEur === null) {
-    parts.push('no known total');
+    parts.push(t(lang, 'noKnownTotal'));
   }
   return parts.join(' · ');
 }

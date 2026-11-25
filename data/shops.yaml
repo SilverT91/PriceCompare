@@ -990,6 +990,32 @@ shops:
       Marketplace (many sellers, so one product has many offers). Slovak site launched 2024-02-29;
       Mall.sk/Mall.cz/CZC.cz storefronts have moved onto Allegro. 403 on plain HTTP.
 
+  # ---------------- Distributor shop for PC components (manual link only) ----------------
+  - id: asbis_sk
+    name: ASBIS SK
+    country: SK
+    domain: online.asbis.sk
+    kind: webshop
+    categories: [electronics]
+    currency: EUR
+    has_kosice_branch: unknown
+    ships_to_sk: unknown
+    search_url_template: "https://online.asbis.sk/default.asp?cls=stoitems&fulltext={query}"
+    search_template_basis: form
+    structured_data: false
+    shipping_to_sk: null
+    in_scope: true
+    notes: >
+      Kept for the manual search link only; the app does not fetch this shop. Checked 2026-11-25: the
+      search page is allowed by robots.txt and lists product links, but the one product page read
+      (https://online.asbis.sk/samsung-ssd-990-pro-series-2tb-m-2-pcie-r7450mb-s-w6900mb-s_d709086.html)
+      carries no schema.org Product data, so prices cannot be compared automatically. The shop is a
+      distributor's shop with customer registration (homepage login form, "Registrácia odberateľa");
+      its delivery page https://online.asbis.sk/preprava-a-osobny-odber_d626717.html (read 2026-11-25)
+      states fees without VAT: free for a daily order above 100 EUR without VAT, otherwise 5 EUR without
+      VAT. Košice branch, pickup, delivery to Slovakia and whether private persons can order were not
+      read and stay unknown.
+
 # Considered and NOT included (verified gone or merged on 2026-11-24).
 excluded:
   - {name: Datart.sk, reason: "Became NAY on 2024-09-01; datart.sk redirects to nay.sk."}
@@ -1003,3 +1029,5 @@ excluded:
   - {name: Bauhaus.sk, reason: "Exists but dropped to keep the list at ~35; add later if DIY coverage is thin."}
   - {name: Expert.sk, reason: "Could not confirm on 2026-11-24 that the shop is still trading; left out until verified."}
   - {name: Electroworld.cz, reason: "Product pages redirect to datart.cz (checked 2026-11-24), which does not deliver abroad."}
+  - {name: eDigital (edigital.sk), reason: "Not added on 2026-11-25: robots.txt could not be read because the TLS handshake failed from this client (server alert 'internal error', on both edigital.sk and www.edigital.sk); nothing else was fetched. Delivery to Slovakia and everything else about the shop is unknown."}
+  - {name: ProGamingShop (progamingshop.sk), reason: "Not added on 2026-11-25: robots.txt could not be read because the TLS certificate served for www.progamingshop.sk names a different host, and progamingshop.sk also failed; nothing else was fetched. Delivery to Slovakia and everything else about the shop is unknown."}

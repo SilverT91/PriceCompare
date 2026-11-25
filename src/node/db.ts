@@ -88,6 +88,17 @@ export class Store implements Cache, HostClock {
       .run(new Date().toISOString(), c.provider, c.query, c.locale.country, c.locale.lang, c.results, c.credits, c.ok ? 1 : 0, c.error ?? null);
   }
 
+  /**
+   * Credits of the successful calls of one provider since an ISO time (null = all time). A failed call
+   * is logged with ok = 0 and 0 credits and is not counted. `at` is an ISO time in UTC, so it compares as text.
+   */
+  creditsUsed(provider: string, sinceIso: string | null): number {
+    const row = this.db
+      .prepare('SELECT COALESCE(SUM(credits), 0) AS used FROM provider_calls WHERE provider = ? AND ok = 1 AND (? IS NULL OR at >= ?)')
+      .get(provider, sinceIso, sinceIso) as { used: number };
+    return Number(row.used);
+  }
+
   providerUsage(): { provider: string; calls: number; credits: number }[] {
     return this.db.prepare('SELECT provider, COUNT(*) AS calls, SUM(credits) AS credits FROM provider_calls GROUP BY provider').all() as never;
   }

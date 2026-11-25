@@ -8,13 +8,21 @@
 </head>
 <body>
   <header class="top">
-    <h1>PriceCompare</h1>
+    <div class="brand">
+      <h1>PriceCompare</h1>
+      <div class="lang-switch" role="group" aria-label="Language" data-i18n-aria-label="langSwitch">
+        <button type="button" class="link" data-lang="sk" lang="sk" aria-pressed="false">SK</button>
+        <span aria-hidden="true">|</span>
+        <button type="button" class="link" data-lang="en" lang="en" aria-pressed="true">EN</button>
+      </div>
+    </div>
     <form id="search" autocomplete="off">
-      <input id="q" name="q" type="search" placeholder="Product name or a link to it, e.g. Oral-B Pro 3 3000" required maxlength="600" aria-label="Product">
+      <input id="q" name="q" type="search" placeholder="Product name or a link to it, e.g. Oral-B Pro 3 3000" required maxlength="600" aria-label="Product"
+        data-i18n-placeholder="qPlaceholder" data-i18n-aria-label="qLabel">
       <div class="opts">
-        <label>Near <select id="location" name="location"></select></label>
-        <label>Shops <select id="cat" name="cat"></select></label>
-        <button type="submit">Compare</button>
+        <label><span data-i18n="near">Near</span> <select id="location" name="location"></select></label>
+        <label><span data-i18n="shopsLabel">Shops</span> <select id="cat" name="cat"></select></label>
+        <button type="submit" data-i18n="compare">Compare</button>
       </div>
     </form>
     <p id="corrected" class="corrected" hidden></p>
@@ -24,18 +32,18 @@
 
   <main>
     <section id="products" hidden>
-      <h2>Which one do you mean?</h2>
+      <h2 data-i18n="whichOne">Which one do you mean?</h2>
       <ol id="product-list" class="products"></ol>
       <p id="nearby-intro" class="nearby-intro" hidden></p>
       <details id="nearby" hidden>
-        <summary id="nearby-summary">Similar models the shops list</summary>
+        <summary id="nearby-summary" data-i18n="nearbyTitle">Similar models the shops list</summary>
         <ol id="nearby-list" class="nearby"></ol>
-        <p class="muted small">These models are listed by the shops. A price next to a model was read from one shop page
+        <p class="muted small" data-i18n="nearbyFootnote">These models are listed by the shops. A price next to a model was read from one shop page
           (for at most a few models per search) and is not compared here; it may not be the same product, so check it.
           “Compare this model” starts a new search for it.</p>
       </details>
       <details id="other-products" hidden>
-        <summary>Other products the shops returned (not what you typed)</summary>
+        <summary data-i18n="otherProducts">Other products the shops returned (not what you typed)</summary>
         <ol id="other-list" class="products"></ol>
       </details>
     </section>
@@ -47,16 +55,16 @@
       <div id="variants" class="variants"></div>
       <h3 id="cmp-local-title"></h3>
       <div id="cmp-local"></div>
-      <h3>Web shops</h3>
+      <h3 data-i18n="webShops">Web shops</h3>
       <div id="cmp-online"></div>
-      <p class="muted small">Prices in EUR at the ECB reference rate, original currency underneath. Totals are item
+      <p class="muted small" data-i18n="comparisonFootnote">Prices in EUR at the ECB reference rate, original currency underneath. Totals are item
         price + pickup in the branch or delivery to Slovakia. Unknown shipping is shown as unknown and never counted
         as zero; offers with a known total come first. Shops that do not deliver to Slovakia are shown last and not
         ranked.</p>
     </section>
 
     <section id="manual" hidden>
-      <h2>Not checked automatically: open these yourself</h2>
+      <h2 data-i18n="manualTitle">Not checked automatically: open these yourself</h2>
       <ul id="manual-list" class="manual"></ul>
     </section>
 
@@ -65,7 +73,7 @@
         <summary id="shops-summary"></summary>
         <div class="shop-cols">
           <div><h3 id="local-title">Shops with a branch in Košice</h3><ul id="shops-local" class="shops"></ul></div>
-          <div><h3>Web shops</h3><ul id="shops-online" class="shops"></ul></div>
+          <div><h3 data-i18n="webShops">Web shops</h3><ul id="shops-online" class="shops"></ul></div>
         </div>
         <p id="rates-note" class="muted small"></p>
       </details>
@@ -73,8 +81,14 @@
   </main>
 
   <footer class="muted small">
-    Local tool. Honours robots.txt, waits 3 s between requests to a shop, never gets around bot protection.
+    <section id="usage" class="usage" aria-labelledby="usage-title" hidden>
+      <h2 id="usage-title" data-i18n="usageTitle">Web search credit</h2>
+      <ul id="usage-list"></ul>
+      <p id="usage-note"></p>
+    </section>
+    <p data-i18n="footer">Local tool. Honours robots.txt, waits 3 s between requests to a shop, never gets around bot protection.</p>
   </footer>
+  <script src="/i18n.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

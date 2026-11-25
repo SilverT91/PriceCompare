@@ -4,6 +4,7 @@
 // split into variants by GTIN or colour so colour variants appear side by side.
 
 import { displayGtin } from './gtin.ts';
+import { colourName, t, type Lang } from './i18n.ts';
 import { displayTitle } from './matcher.ts';
 import { headline, reachable, sortOffers } from './totals.ts';
 import type { MatchLevel, Offer, ProductGroup, ProductVariant } from './types.ts';
@@ -38,7 +39,18 @@ function hash(s: string): string {
   return (h >>> 0).toString(36);
 }
 
-export function groupOffers(offers: Offer[]): ProductGroup[] {
+/** lang: the language of the notes and variant labels (default English); the grouping does not depend on it. */
+/** The product notes in `lang`, from the facts they state (the page builds the same lines from noteFacts). */
+export function groupNotes(f: ProductGroup['noteFacts'], lang: Lang = 'en'): string[] {
+  const notes: string[] = [];
+  if (f.noDelivery) notes.push(t(lang, 'noDeliveryOffers', { n: f.noDelivery }));
+  if (f.gtins) notes.push(t(lang, 'gtinCount', { n: f.gtins }));
+  if (f.mixed) notes.push(t(lang, 'somePossible'));
+  if (f.noGtin) notes.push(f.gtins ? t(lang, 'someByName') : t(lang, 'allByName'));
+  return notes;
+}
+
+export function groupOffers(offers: Offer[], lang: Lang = 'en'): ProductGroup[] {
   const uf = new UnionFind(offers.length);
   const byGtin = new Map<string, number>();
   const bySig = new Map<string, number>();
@@ -111,7 +123,8 @@ export function groupOffers(offers: Offer[]): ProductGroup[] {
       const h = headline(vm.length ? vm : v.offers);
       return {
         ...v,
-        label: [v.colour ?? 'colour not stated', words.length ? words.join(' ') : null, v.gtin ? `GTIN ${displayGtin(v.gtin)}` : null].filter(Boolean).join(', '),
+        label: [v.colour ? colourName(lang, v.colour) : t(lang, 'colourNotStated'), words.length ? words.join(' ') : null, v.gtin ? `GTIN ${displayGtin(v.gtin)}` : null].filter(Boolean).join(', '),
+        words,
         offers: sortOffers(v.offers),
         bestItemEur: h.bestItemEur,
         bestItemTotalKnown: h.bestItemTotalKnown,
@@ -122,13 +135,13 @@ export function groupOffers(offers: Offer[]): ProductGroup[] {
     // "2x2.0Ah" kit) must not set the product's headline price.
     const matching = members.filter((m) => m.match.level !== 'different');
     const h = headline(matching.length ? matching : members);
-    const notes: string[] = [];
-    const noDelivery = members.filter((m) => !reachable(m.totals)).length;
-    if (noDelivery) notes.push(`${noDelivery} offer${noDelivery > 1 ? 's' : ''} from shops that do not deliver to Slovakia (not ranked)`);
-    if (gtins.length) notes.push(`${gtins.length} GTIN${gtins.length > 1 ? 's' : ''}`);
-    const mixed = new Set(members.map((m) => m.match.level));
-    if (mixed.size > 1) notes.push('some offers only possibly match: check them');
-    if (members.some((m) => !m.gtin)) notes.push(gtins.length ? 'some offers grouped by name only (no GTIN)' : 'grouped by name only (no GTIN)');
+    const noteFacts: ProductGroup['noteFacts'] = {
+      noDelivery: members.filter((m) => !reachable(m.totals)).length,
+      gtins: gtins.length,
+      mixed: new Set(members.map((m) => m.match.level)).size > 1,
+      noGtin: members.some((m) => !m.gtin),
+    };
+    const notes = groupNotes(noteFacts, lang);
     groups.push({
       id: hash(signature + '|' + gtins.join(',')),
       // The product's name without the shop's suffix, promotion or doubled text; the offer rows keep the shop's own title.
@@ -142,6 +155,7 @@ export function groupOffers(offers: Offer[]): ProductGroup[] {
       offerCount: members.length,
       ...h,
       notes,
+      noteFacts,
       variants: variantList.sort((a, b) => (a.bestItemEur ?? Infinity) - (b.bestItemEur ?? Infinity)),
     });
   }

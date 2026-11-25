@@ -468,7 +468,16 @@ the user typed. `matchTitle(query, input)` goes through these stages:
    form ("iphone" + "16" is `iphone16`), or in the spec segments. A query token of letters followed
    by digits also matches a title that writes the two apart, with at most two neutral or line
    words between them ("io9" for "iO Series 9"); the number must be the same token (not "90", not
-   "9n") and the letter part must not be a neutral word. A missing token with a digit is
+   "9n") and the letter part must not be a neutral word.
+   Specifications are normalised to one token each before this step ("6000 MHz" and "6000MT/s"
+   to `6000mhz`, "4,7 GHz" to `4.7ghz`, "256-bit" to `256bit`); interface versions ("PCI-E 4.0",
+   "USB 3.2") and port counts ("1x HDMI + 3x DP") are dropped. Units are either variants
+   (capacity, memory speed, refresh rate, latency, screen size, power: an unmentioned one makes
+   the match `possible`) or neutral (processor clock, transfer rate, bus width: ignored when
+   unmentioned). A bare query number meets the same number with MHz, Hz or inch when the title
+   has no bare token with it. A one or two digit query number meets a code of digits, two or more
+   letters and digits ("16" and "16IMH10") as `possible`. A missing query word with an unknown
+   title word in its place is `different` ("MX Anywhere 3S" for "mx master 3s"). A missing token with a digit is
    `missing`, except a line digit left out in front of a model number that starts with it and
    follows the same word ("Pro 3000" for "Pro 3 3000"): that makes the match `possible` at best,
    since shops write it so and an older model of that name exists. A missing plain word that is in
@@ -557,6 +566,32 @@ To add a fixture with `tools/extract_fixtures.ts`:
 For a page that is not in the probe cache, `node tools/extract_fixtures.ts --fetch <domain> <url>
 <name>` fetches it once through `ShopSession` (robots.txt, 3 s per host, no retry, bot walls
 reported, at most 2 requests) and writes the same trimmed form, stamped with the day it was fetched.
+
+## 8b. Languages and credit usage
+
+**Languages.** `lang` (`en` or `sk`) comes from the page's switch (`public/i18n.js`: `?lang=`,
+then `localStorage`, then the browser's language) as a query parameter of `/api/search`, or from
+`--lang` on the command line, into `SearchOptions.lang`. Core builds every user-visible sentence
+through `t(lang, key, params)` in `src/core/i18n.ts`: shop details (`pipeline.ts`), delivery and
+pickup notes (`totals.ts`), product notes (`group.ts`), the status summary (`report.ts`). Events
+keep their identifiers (status codes, levels, colour codes), and carry structure next to English
+strings where the page must be able to switch language without a new search: `noteFacts` on a
+product, `words` on a variant, `reasonCodes` next to `reasons` on a match, `reasonIds` next to
+`reasons` on the category choice, `missing` and `distinguishing` on a similar model. Free-text
+shop notes are translated in `data/shops.sk.yaml` (keyed by shop id and field, loaded by
+`loadShopTexts()` in `setup.ts`, applied by `localizeShop()`); a missing translation shows the
+English note. Nothing language-specific is cached. Shop details and delivery notes already on
+screen keep the language they were fetched in until the next search; everything else re-renders
+on a switch.
+
+**Credit usage.** `src/core/usage.ts` turns credits used and a limit into the entries of
+`GET /api/usage` (`provider`, `used`, `limit`, `period`, `source`, `exhausted`), one per provider
+with a key. `Store.creditsUsed()` sums the successful calls in `provider_calls`: since the first
+of the month (UTC) for Brave and Tavily, over all time for Serper. Brave's answers carry
+`X-RateLimit-*` headers; `parseBraveRateLimit()` keeps the entry with the longest window, the
+chain caches it as `provider_quota` until that window resets, and while it exists the entry shows
+the provider's figure (`source: 'provider'`). Limits default to the free allowances and can be set
+in `.env`. The page renders the bars in the footer and refreshes them after each search.
 
 ## 9. Extension points
 

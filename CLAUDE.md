@@ -60,6 +60,10 @@ quota, so use one only to check behaviour that tests cannot show.
   carries the date it was last checked in its heading. When a provider's facts are read again or a
   provider is added, update the table and that date from the provider's own pages, never from
   memory.
+- The page has two languages, English and Slovak. A new sentence a user can read goes into the
+  catalogues in both languages (`src/core/i18n.ts` for what the search builds, `public/i18n.js`
+  for what the page writes), never as a bare string. A note changed in `data/shops.yaml` is
+  changed in `data/shops.sk.yaml` too. English strings that tests assert stay as they are.
 - Dependencies are few and pinned. Add one only with a reason, and say so.
 - On Windows, never put a path with backslashes inside code passed through a shell command; use
   forward slashes and the file-editing tools.

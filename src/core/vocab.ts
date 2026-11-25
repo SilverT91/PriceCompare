@@ -20,6 +20,7 @@ export const COLOURS: [string, string, 'exact' | 'prefix'][] = [
   ['ultramarin', 'ultramarine', 'prefix'],
   ['cier', 'black', 'prefix'], ['cern', 'black', 'prefix'], ['schwarz', 'black', 'prefix'], ['black', 'black', 'exact'],
   ['czarn', 'black', 'prefix'], ['midnight', 'black', 'exact'], ['graphite', 'black', 'exact'], ['graphit', 'black', 'exact'],
+  ['grafit', 'black', 'prefix'], ['bledosed', 'grey', 'prefix'],
   ['biel', 'white', 'prefix'], ['bil', 'white', 'exact'], ['bila', 'white', 'exact'], ['bily', 'white', 'exact'], ['bile', 'white', 'exact'],
   ['weiss', 'white', 'prefix'], ['white', 'white', 'exact'], ['bial', 'white', 'prefix'], ['starlight', 'white', 'exact'],
   ['hellblau', 'light blue', 'exact'], ['svetlomodr', 'light blue', 'prefix'], ['dunkelblau', 'dark blue', 'exact'], ['tmavomodr', 'dark blue', 'prefix'],
@@ -59,6 +60,19 @@ const CATEGORY_EXACT = [
   // tools
   'aku', 'akku', 'vrtacka', 'vrtacky', 'skrutkovac', 'sroubovak', 'wiertarka', 'wkretarka', 'wiertarkowkretarka', 'drill', 'driver',
   'bohrschrauber', 'akkubohrschrauber', 'vrtaci', 'akumulator', 'akumulatorovy', 'akumulatorova',
+  // computers, parts and peripherals (part types shops put in front of the name: "Procesor AMD ...",
+  // "Grafická karta Asus ...", "Pamäťový modul Kingston ...", "Myš Logitech ...")
+  'notebook', 'notebooky', 'ntb', 'laptop', 'laptopy', 'pocitac', 'computer', 'procesor', 'procesory', 'processor', 'prozessor', 'cpu',
+  'graficka', 'graficke', 'graficky', 'graficzna', 'grafikkarte', 'karta', 'karty', 'vga', 'ssd', 'hdd', 'disk', 'dysk', 'ram', 'pamat',
+  'pamatovy', 'pamatova', 'pamatove', 'pametovy', 'pametova', 'modul', 'memory', 'arbeitsspeicher', 'mys', 'mysz', 'maus', 'mouse',
+  'klavesnica', 'klavesnice', 'keyboard', 'tastatur', 'klawiatura', 'monitor', 'monitory', 'bezdrotova', 'bezdrotovy', 'bezdratova',
+  'bezdratovy', 'bezprzewodowa', 'wireless', 'kabellos',
+];
+// Interfaces and form factors shops list next to the name ("NVMe, M.2 SSD", "DIMM DDR5 ... Non-ECC",
+// "PCI-E 4.0 / TLC", "bluetooth"): they describe the product, they do not tell two products apart.
+const SPEC_WORDS = [
+  'm.2', 'nvme', 'pcie', 'sata', 'usb', 'usbc', 'hdmi', 'displayport', 'dp', 'thunderbolt', 'bluetooth', 'dimm', 'sodimm', 'nonecc',
+  'tlc', 'qlc', 'mlc',
 ];
 // Line words that are part of many model names ("Bosch Professional", "Oral-B Professional Care",
 // "Oral-B iO Series 9", which shops also write "iO 9" and "iO9").
@@ -68,6 +82,7 @@ const GENERIC_WORDS = [
   'nove', 'novy', 'nova', 'new', 'neu', 'neue', 'nowy', 'nowa', 'original', 'originalny', 'originalni', 'edition', 'edicia', 'edice',
   'model', 'verzia', 'verze', 'version', 'cashback', 'akcia', 'akce', 'darcek', 'zdarma', 'gratis', 'eu', 'sk', 'cz', 'de', 'pl', 'at',
   'distribucia', 'distribuce', 'cena', 'pri', 'nakupe', 'min', 'za', 'ks1', 'zaruka', 'zaruky', 'garancia', 'mesiacov', 'rokov', 'rok',
+  'farba', 'barva', 'farbe', 'emea',
 ];
 /** Brand tokens and how the brand is written (a corrected query uses this spelling). */
 export const BRAND_SPELLING: Record<string, string> = {
@@ -77,6 +92,10 @@ export const BRAND_SPELLING: Record<string, string> = {
   sonicare: 'Sonicare', panasonic: 'Panasonic', lg: 'LG', tefal: 'Tefal', rowenta: 'Rowenta', dyson: 'Dyson', electrolux: 'Electrolux',
   whirlpool: 'Whirlpool', nivea: 'Nivea', ikea: 'IKEA', lenovo: 'Lenovo', asus: 'Asus', acer: 'Acer', hp: 'HP', dell: 'Dell',
   jbl: 'JBL', garmin: 'Garmin',
+  // computer parts and peripherals. Not "intel": the brand-typo step (correct.ts, one edit from a brand
+  // of five or more letters) would then turn "Intex" or "inter" into "Intel".
+  amd: 'AMD', nvidia: 'NVIDIA', msi: 'MSI', pny: 'PNY', gigabyte: 'Gigabyte', kingston: 'Kingston', corsair: 'Corsair',
+  crucial: 'Crucial', seagate: 'Seagate', logitech: 'Logitech',
 };
 /** Brand names: a brand word never tells two models of that brand apart, but it does name the product family. */
 export const BRANDS = new Set(Object.keys(BRAND_SPELLING));
@@ -84,16 +103,18 @@ const CATEGORY_PREFIX = [
   'mobiln', 'telefo', 'smartf', 'chytr', 'inteligent', 'dotyk',
   'zubn', 'zahnburst', 'zahnbuerst', 'elektr', 'electr', 'oscil', 'rotac', 'rotier', 'rotuj', 'dospel', 'erwachs', 'osobn',
   'vrtack', 'skrutkov', 'sroubov', 'akumulator', 'bezuhl', 'bezuhlik',
+  // vacuum cleaners: "Robotický vysávač s mopom", "Robot sprzątający", "Saugroboter"
+  'robotick', 'vysavac', 'odkurzacz', 'sprzataj', 'staubsaug', 'saugrobot', 'mopom', 'mopem',
 ];
 
 /** Words that say nothing about which product it is: categories, connectors, marketing, specs. */
-export const NEUTRAL = wc([...CONNECTOR_WORDS, ...CATEGORY_EXACT, ...LINE_WORDS, ...GENERIC_WORDS, ...BRANDS], CATEGORY_PREFIX);
+export const NEUTRAL = wc([...CONNECTOR_WORDS, ...CATEGORY_EXACT, ...SPEC_WORDS, ...LINE_WORDS, ...GENERIC_WORDS, ...BRANDS], CATEGORY_PREFIX);
 
 /**
- * The part of NEUTRAL a model name can do without: category and shop words ("elektrická zubná
- * kefka", "akcia"). Brand, line and connector words are not in it.
+ * The part of NEUTRAL a model name can do without: category, interface and shop words ("elektrická
+ * zubná kefka", "NVMe M.2 SSD", "akcia"). Brand, line and connector words are not in it.
  */
-export const CATEGORY_WORDS = wc([...CATEGORY_EXACT, ...GENERIC_WORDS], CATEGORY_PREFIX);
+export const CATEGORY_WORDS = wc([...CATEGORY_EXACT, ...SPEC_WORDS, ...GENERIC_WORDS], CATEGORY_PREFIX);
 
 /** Line words ("Professional", "Series"): neutral for matching, but part of a model's name. */
 export const LINE_WORD_CLASS = wc(LINE_WORDS);
@@ -155,7 +176,15 @@ export function conditionOfToken(token: string): 'used' | 'refurbished' | 'damag
   return null;
 }
 
-/** Units whose value defines a separate variant (storage, volume, battery capacity). */
-export const VARIANT_UNITS = /^\d+(?:\.\d+)?(gb|tb|mb|ml|l|g|kg|mah|ah|wh|w|v)$/;
-/** Units that are specs, not variants (screen size). */
-export const NEUTRAL_UNITS = /^\d+(?:\.\d+)?(in|mm|cm|m)$/;
+/**
+ * Specifications whose value changes what you get: storage, volume, battery capacity, power,
+ * voltage, screen size ("16in"), memory speed and refresh rate ("6000mhz", "144hz"; MT/s is read as
+ * MHz), memory latency ("cl30") and memory type ("ddr5", "gddr7"). One the query does not mention
+ * makes a match "possible"; one it mentions must agree.
+ */
+export const VARIANT_UNITS = /^(?:\d+(?:\.\d+)?(gb|tb|mb|ml|l|g|kg|mah|ah|wh|w|v|in|mhz|hz)|cl\d{2}|(?:lp)?g?ddr\d+x?)$/;
+/**
+ * Specifications that describe the product without telling two apart: lengths, a processor's clock
+ * ("4.7ghz"), transfer rates ("7450mbps"), bus width ("256bit"). Ignored when the query does not mention them.
+ */
+export const NEUTRAL_UNITS = /^\d+(?:\.\d+)?(mm|cm|m|ghz|mbps|gbps|bit)$/;

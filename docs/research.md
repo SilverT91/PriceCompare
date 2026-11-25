@@ -342,3 +342,22 @@ authentication guide says to activate a plan first and then create the key in th
 "API Keys" section (<https://api-dashboard.search.brave.com/app/keys>). No Serper or Tavily page
 states where in the dashboard the key is shown. Which status code Tavily sends when the free credits are used up
 is not stated in its documentation; the adapter treats 432 ("plan limit exceeded") as that.
+
+## 12. Shops for computer parts, checked 2026-11-25
+
+Checked with the project's own tools, at most a handful of requests each.
+
+- **ASBIS SK (online.asbis.sk).** A distributor's shop with customer registration. robots.txt
+  allows its search page and product pages; the search page lists product links. The one product
+  page read carries no schema.org Product data, so no price can be read. Its delivery page states
+  fees without VAT (<https://online.asbis.sk/preprava-a-osobny-odber_d626717.html>). It is in
+  `data/shops.yaml` for its manual link only and is never fetched.
+- **eDigital (edigital.sk) and ProGamingShop (progamingshop.sk).** robots.txt could not be read
+  from this client: the TLS handshake failed, and for the second the certificate names another
+  host. Nothing else was fetched; both are listed under `excluded:`.
+- **CZC.cz and Hej.sk** had been ruled out on 2026-11-24 (one sells through a marketplace
+  storefront, the other redirects to a shop already in the list); **AGEM** is still left out for
+  the stray character in its product data.
+
+The shops that answered computer searches that day were NAY, Datacomp, ABCOM Košice, Mironet.cz,
+Andreashop and TPD Euronics.

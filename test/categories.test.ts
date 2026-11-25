@@ -56,6 +56,15 @@ describe('category guess from the query', () => {
     assert.ok(guessCategories('Bosch').categories?.includes('tools'));
     assert.deepEqual(new Set(guessCategories('Bosch vysávač BGS').categories), new Set(['electronics', 'appliances']));
   });
+  test('PC parts and peripherals go to electronics shops, not to drugstores or DIY stores (queries of a live run, 2026-11-25)', () => {
+    for (const q of ['Samsung 990 Pro 2TB', 'ryzen 7 9800x3d', 'rtx 5070 ti', 'logitech mx master 3s', 'kingston fury 32gb ddr5 6000', 'notebook lenovo ideapad slim 5 16']) {
+      const c = guessCategories(q);
+      assert.ok(c.categories?.includes('electronics'), q);
+      for (const no of ['drugstore', 'pharmacy', 'diy_garden', 'tools']) assert.ok(!c.categories?.includes(no), `${q}: ${no}`);
+    }
+    assert.deepEqual(guessCategories('ryzen 7 9800x3d').reasons, ['computer part / peripheral']);
+    assert.deepEqual(guessCategories('logitech mx master 3s').reasons, ['brand of computer parts and peripherals']);
+  });
   test('no hint: all shops', () => {
     const c = guessCategories('XYZ 123');
     assert.equal(c.categories, null);

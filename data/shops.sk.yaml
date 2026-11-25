@@ -1,0 +1,83 @@
+# Slovak versions of the free-text notes in shops.yaml that the page shows.
+#
+# Keyed by shop id, with the same field names as shops.yaml. Only two fields are shown on the page
+# and so translated here:
+#   no_route_reason        shown in the shop's detail when it has no automatic route
+#   shipping_to_sk.method  shown in the delivery note of an offer when the delivery price comes from
+#                          shops.yaml
+# A shop or field missing here is shown in English. The facts stay exactly as in shops.yaml (prices,
+# dates, shop and carrier names, URLs); only the decimal point is written as a comma, as in Slovak.
+# When a note in shops.yaml changes, change it here too: the app does not notice a stale translation.
+# Loaded by src/node/setup.ts (loadShopTexts); checked by validateShopTexts in src/core/shops.ts.
+
+shops:
+  nay_sk:
+    shipping_to_sk:
+      method: "výdajné miesto Packeta alebo Slovenskej pošty (kuriér na adresu stojí viac; jeho cena sa nezistila)"
+
+  euronics_sk:
+    no_route_reason: "vyhľadávací formulár na úvodnej stránke nemá atribút action a obsluhuje ho JavaScript (/?term=... vráti úvodnú stránku), preto neexistuje jednoduchá adresa vyhľadávania"
+
+  hornbach_sk:
+    shipping_to_sk:
+      method: "balík; zadarmo pre balíky od 99 EUR (cenu pod touto hranicou nebolo možné prečítať: stránka o doprave vyžaduje JavaScript)"
+
+  obi_sk:
+    no_route_reason: "obi.sk odpovedá jednoduchému HTTP klientovi na každú stránku vrátane úvodnej prázdnou odpoveďou HTTP 404 (2026-11-24), preto sa adresu vyhľadávania nepodarilo nájsť"
+
+  mountfield_sk:
+    shipping_to_sk:
+      method: "výdajné miesto (Balíkovo / Alza Box); kuriér 3,80 €; štandardné doručenie zadarmo od 80 €"
+
+  teta_sk:
+    no_route_reason: "vyhľadávanie na webe je formulár ASP.NET postback (POST na default.aspx), preto neexistuje jednoduchá adresa vyhľadávania (overené 2026-11-24)"
+    shipping_to_sk:
+      method: "výdajné miesto SPS Parcel Shop alebo Balíkovobox 1,99 €; kuriér SPS 2,99 €; Packeta Z-box alebo výdajné miesto 2,99 €; kuriér Packeta 3,49 €; na adresu zadarmo od 49 € (nevzťahuje sa na príplatok za nadrozmerný balík); na výdajné miesta jeden balík do 10 kg; dobierka 1,00 €"
+
+  pilulka_sk:
+    shipping_to_sk:
+      method: "vyzdvihnutie v partnerskej lekárni 1,49 €; výdajné miesta 1,99 €; na adresu 3,39 €; všetko zadarmo od 29 €"
+
+  andreashop_sk:
+    shipping_to_sk:
+      method: "výdajné miesto Packeta; kuriér (SPS) 3,99 €; hranica pre doručenie zadarmo nie je uvedená"
+
+  istores_sk:
+    shipping_to_sk:
+      method: "výdajné miesto Packeta / DPD alebo DPD na adresu: 2,98 € do 49 €, nad 50 € zadarmo"
+
+  datacomp_sk:
+    shipping_to_sk:
+      method: "výdajné miesto Packeta, platba vopred (kuriér na adresu a dobierka stoja viac; tieto ceny sa nezistili)"
+
+  abcom_kosice_sk:
+    shipping_to_sk:
+      method: "Packeta (balíky do 5 kg); ceny kuriéra pre väčšie balíky sa nezistili; obchod doručuje len v rámci Slovenska"
+
+  tpd_sk:
+    shipping_to_sk:
+      method: "výdajné miesto alebo box Packeta; väčšie balíky kuriérom od 14,99 €"
+
+  mojalekaren_sk:
+    no_route_reason: "vyhľadávanie na webe je formulár POST (/nasepkavac/), preto neexistuje jednoduchá adresa vyhľadávania; stránky produktov sa hľadajú cez webové vyhľadávanie"
+    shipping_to_sk:
+      method: "od 0,99 € (výdajné miesto Slovenskej pošty); výdajné miesto Packeta 1,99 €; zadarmo od 40 € pri vybraných dopravcoch (ktorí dopravcovia sú zadarmo, sa presne nezistilo)"
+
+  vasalekaren_sk:
+    shipping_to_sk:
+      method: "GLS ParcelShop 0,99 €; výdajné miesto Packeta 1,99 €; výdajné miesto SPS/Balíkovo 2,49 €; kuriér na adresu od 2,99 €; zadarmo od 36,90 € (od tejto sumy je zadarmo aj vyzdvihnutie v lekárni Vaša Lekáreň)"
+
+  nazuby_eu:
+    shipping_to_sk:
+      method: "SPS Parcelshop/Parcelbox 2,49 €; výdajné miesto Packeta 3,09 €; kuriér Packeta 4,49 €; zadarmo od 54,9 €"
+
+  holime_eu:
+    shipping_to_sk:
+      method: "SPS Parcelshop/Parcelbox 2,49 €; výdajné miesto Packeta 3,09 €; kuriér Packeta 4,49 €; hranica pre doručenie zadarmo 400 € podľa počítadla košíka na stránke o doprave"
+
+  profimed_eu:
+    shipping_to_sk:
+      method: "výdajné miesto Packeta 3,39 €; PPL ParcelShop 3,75 €; kuriér SPS 4,49 €; kuriér Packeta 3,89 €; od 39 € platí dopravu Profimed"
+
+  notebooksbilliger_de:
+    no_route_reason: "úvodná stránka odpovedala HTTP 404 (2026-11-24; predtým 403 so správou 'bot detected') a odhadnutá adresa vyhľadávania vrátila 404, preto adresa vyhľadávania nie je známa"

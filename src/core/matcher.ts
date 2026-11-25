@@ -16,7 +16,8 @@ import {
   ACCESSORY_WORDS, BRAND_SPELLING, BRANDS, colourOf, conditionOfToken, GENERIC_SET_WORDS, inClass, LINE_WORD_CLASS, MODEL_WORDS, NEUTRAL, NEUTRAL_UNITS,
   PACKAGE_WORDS, twoPack, VARIANT_UNITS,
 } from './vocab.ts';
-import type { Condition, MatchResult } from './types.ts';
+import { reasonText } from './i18n.ts';
+import type { Condition, MatchReason, MatchResult } from './types.ts';
 
 export interface MatchInput {
   title: string;
@@ -112,10 +113,49 @@ const TWO_PACK_RE = /(?<![a-z0-9])(?:(?:duo|double|twin|doppel)\s*-?\s*pack|duop
 const TWO_COUNT = String.raw`2\s*-?\s*(?:ks|kus|kusy|pcs|pc|pieces|szt|stk|stuck|stueck)(?![a-z])`;
 const DUO_COUNT_RE = new RegExp(String.raw`(?<![a-z0-9])duo[\s,;:()-]*${TWO_COUNT}|(?<![a-z0-9.])${TWO_COUNT}[\s,;:()-]*duo(?![a-z0-9])`, 'g');
 
+// Specifications written with a unit become one token each, so they are read as specifications and
+// never as model numbers (vocab.ts: NEUTRAL_UNITS, VARIANT_UNITS):
+// - the version of an interface goes ("PCI-E 4.0 x4", "USB 3.2", "HDMI 2.1", "Bluetooth 5.3"): the interface describes the product;
+// - a count of ports or fans is not a pack ("1x HDMI + 3x DP");
+// - "6000 MHz", "6000MT/s" -> "6000mhz"; "4,7 GHz" -> "4.7ghz"; "144 Hz" -> "144hz";
+// - "7450 MBps", "7450 MB/s" -> "7450mbps"; "256-bit" -> "256bit"; "512SSD" (a capacity) -> "512gb ssd".
+const INTERFACE = String.raw`pci\s?-?e(?:xpress)?|usb(?:\s?-?c)?|bluetooth|wi\s?-?fi|hdmi|displayport|thunderbolt|sata|dp`;
+const VERSION_RE = new RegExp(String.raw`(?<![a-z0-9])(${INTERFACE})\s*(?:gen\s*)?\d+(?:\.\d+)?(?:\s*x\s?\d+)?(?![\d.]|\s*(?:gb|tb|mb|w|v)(?![a-z]))`, 'g');
+const PORT_COUNT_RE = new RegExp(String.raw`(?<![a-z0-9.])\d+\s*x\s*(?=(?:${INTERFACE}|mini\s?dp|type\s?-?c|vga|dvi|rj\s?-?45|lan|m\.2|nvme|fans?|ventilator\w*)(?![a-z]))`, 'g');
+const FREQ_RE = /(?<![a-z0-9.])(\d+(?:[.,]\d+)?)\s*(mt\/s|mts|mhz|ghz)(?![a-z])/g;
+const HZ_RE = /(?<![a-z0-9.])(\d+)\s*hz(?![a-z])/g;
+const RATE_RE = /(?<![a-z0-9.])(\d+(?:[.,]\d+)?)\s*(mb\/s|mbps|gb\/s|gbps)(?![a-z])/g;
+const BITS_RE = /(?<![a-z0-9.])(\d+)\s*-?\s*bit(?:s|ov|u|y)?(?![a-z])/g;
+const DRIVE_RE = /(?<![a-z0-9.])(\d{3,4})\s*(ssd|hdd)(?![a-z])/g;
+
+function specificationText(folded: string): string {
+  const num = (n: string) => n.replace(',', '.');
+  return folded
+    .replace(VERSION_RE, (_m, iface: string) => `${iface} `)
+    .replace(PORT_COUNT_RE, ' ')
+    .replace(FREQ_RE, (_m, n: string, unit: string) => ` ${num(n)}${unit === 'ghz' ? 'ghz' : 'mhz'} `)
+    .replace(HZ_RE, (_m, n: string) => ` ${n}hz `)
+    .replace(RATE_RE, (_m, n: string, unit: string) => ` ${num(n)}${unit.startsWith('g') ? 'gbps' : 'mbps'} `)
+    .replace(BITS_RE, (_m, n: string) => ` ${n}bit `)
+    .replace(DRIVE_RE, (_m, n: string, kind: string) => ` ${n}gb ${kind} `);
+}
+
+/**
+ * "VENTUS 3X OC": a count between two name words is part of the name (a fan count), not a pack. A
+ * count cut off by the shop's truncation ("16GB GDDR7, 3x...") says nothing about what is counted.
+ */
+function countInName(before: string, after: string): 'name' | 'cut' | null {
+  if (/^\s*\.\.\./.test(after)) return 'cut';
+  const next = /^\s+([a-z][a-z0-9]*)/.exec(after)?.[1];
+  if (!/[a-z]{2,}\s+$/.test(before) || !next) return null;
+  const known = inClass(next, PACKAGE_WORDS) || inClass(next, ACCESSORY_WORDS) || inClass(next, NEUTRAL) || colourOf(next) !== null;
+  return known ? null : 'name';
+}
+
 /** Pack/count phrases become one token: "39-dielna" -> "39pc", "2 ks" -> "2pc", "2x" -> "2x", "1×2 ks" -> "2pc"; a pack of two -> "duo". */
 function packTokens(folded: string): { text: string; packs: string[] } {
   const packs: string[] = [];
-  let text = folded.replace(TWO_PACK_RE, 'duo').replace(DUO_COUNT_RE, 'duo');
+  let text = specificationText(folded).replace(TWO_PACK_RE, 'duo').replace(DUO_COUNT_RE, 'duo');
   text = text.replace(MULTI_RE, (_m, pre: string, a: string, b: string) => {
     const n = Number(a) * Number(b);
     if (n !== 1) packs.push(`${n}pc`);
@@ -126,10 +166,17 @@ function packTokens(folded: string): { text: string; packs: string[] } {
     if (n !== '1') packs.push(`${n}pc`);
     return ' ';
   });
-  text = text.replace(TIMES_RE, (m, a?: string, b?: string, c?: string) => {
+  text = text.replace(TIMES_RE, (m, a: string | undefined, b: string | undefined, c: string | undefined, offset: number, whole: string) => {
     const n = a ?? b ?? c ?? '';
+    const sep = m.startsWith(' ') ? ' ' : m[0] && !/\d|x/.test(m[0]) ? `${m[0]} ` : ' ';
+    if (a) {
+      const at = offset + m.search(/\d/);
+      const where = countInName(whole.slice(0, at), whole.slice(offset + m.length));
+      if (where === 'name') return m; // stays a word of the name: "3x"
+      if (where === 'cut') return sep;
+    }
     if (n && n !== '1') packs.push(`${n}x`);
-    return m.startsWith(' ') ? ' ' : m[0] && !/\d|x/.test(m[0]) ? `${m[0]} ` : ' ';
+    return sep;
   });
   return { text, packs };
 }
@@ -170,7 +217,10 @@ function isPartCode(tok: string, codes: Set<string>): boolean {
   if (codes.has(tok)) return true;
   for (const c of codes) if (/\d/.test(c) && c.length >= 5 && tok.length >= 5 && (c.startsWith(tok) || tok.startsWith(c))) return true;
   if (/^\d{7,}$/.test(tok)) return true;
-  if (tok.length >= 7 && /\d/.test(tok) && /[a-z]/.test(tok)) return true;
+  // Seven characters of letters and digits are a code when they start with a letter ("md1q4sx");
+  // starting with digits they are a model number ("9800x3d", a processor). Eight or more: a code.
+  if (tok.length >= 8 && /[a-z]/.test(tok)) return true;
+  if (tok.length === 7 && /^[a-z]/.test(tok) && /[a-z]/.test(tok)) return true;
   return false;
 }
 
@@ -239,18 +289,34 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   const brandTokens = new Set(brandList);
   const codes = new Set([...tokenize(input.sku ?? ''), ...tokenize(input.mpn ?? '')].filter((t) => t.length >= 4));
   const reasons: string[] = [];
+  const reasonCodes: MatchReason[] = [];
+  // Every reason as data (for a translation) and in English, as `reasons` has always said it.
+  const say = (r: MatchReason) => {
+    reasonCodes.push(r);
+    reasons.push(reasonText('en', r));
+  };
 
   // 1. Query tokens present?
   const missing: string[] = [];
   const missingAlpha: string[] = [];
   const softMissing: string[] = [];
+  /** Short query numbers found only as the start of a longer code ("16" in "16imh10"): a doubt. */
+  const codeStarts: string[] = [];
   const matched: string[] = [];
   const consumed = new Set<number>();
+  /** Where in the title a query token was found (for rule 4 below). */
+  const at = new Map<string, number>();
+  const found = (t: string, i: number) => {
+    matched.push(t);
+    consumed.add(i);
+    if (!at.has(t)) at.set(t, i);
+  };
   for (const t of q.tokens) {
     const idx = coverIndices(t, titleTokens) ?? gluedCover(t, titleTokens);
     if (idx) {
       matched.push(t);
       idx.forEach((i) => consumed.add(i));
+      at.set(t, idx[0]);
       continue;
     }
     if (coverIndices(t, brandList)) {
@@ -260,8 +326,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     // A query pair "iphone","16" may be one title token "iphone16".
     const joined = titleTokens.findIndex((tt) => tt.length > t.length && q.tokens.some((o) => o !== t && (tt === t + o || tt === o + t)));
     if (joined >= 0) {
-      matched.push(t);
-      consumed.add(joined);
+      found(t, joined);
       continue;
     }
     if (coverIndices(t, specTokens)) {
@@ -271,6 +336,25 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     if (lineDigitOmitted(t, q, titleTokens)) {
       softMissing.push(t);
       continue;
+    }
+    if (/^\d+$/.test(t)) {
+      // A bare number meets the same number with a frequency or screen-size unit, when that is the only
+      // reading (the title has no bare token with it): "6000" and "6000 MHz", "6000MT/s"; "16" and 16".
+      // Not other units: "3000" is not "3000 mAh".
+      const withUnit = titleTokens.findIndex((tt, i) => !consumed.has(i) && (tt === `${t}mhz` || tt === `${t}hz` || tt === `${t}in`));
+      if (withUnit >= 0) {
+        found(t, withUnit);
+        continue;
+      }
+      // A number of one or two digits that starts a configuration code ("16" in "16IMH10", "16ARP10": a
+      // number, two or more letters, digits) is only possible; "16e", "9N" and "3000" are no such code.
+      const code = t.length <= 2 ? titleTokens.findIndex((tt, i) => !consumed.has(i) && new RegExp(`^${t}[a-z]{2,}\\d+[a-z]*$`).test(tt)) : -1;
+      if (code >= 0) {
+        found(t, code);
+        codeStarts.push(t);
+        say({ code: 'codeStart', params: { token: t, title: titleTokens[code] } });
+        continue;
+      }
     }
     if (hasDigit(t)) {
       missing.push(t);
@@ -288,9 +372,8 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     if (t.length >= 6) {
       const near = titleTokens.findIndex((tt) => isAlpha(tt) && Math.abs(tt.length - t.length) <= 1 && editDistance(tt, t) <= 1);
       if (near >= 0) {
-        matched.push(t);
-        consumed.add(near);
-        reasons.push(`"${t}" ~ "${titleTokens[near]}"`);
+        found(t, near);
+        say({ code: 'nearSpelling', params: { token: t, title: titleTokens[near] } });
         continue;
       }
     }
@@ -316,6 +399,8 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   for (let i = 0; i < titleTokens.length; i++) {
     const t = titleTokens[i];
     if (qset.has(t) || consumed.has(i) || setSaysNothing(t)) continue;
+    // The same token as one that met the query, written again (a title the shop wrote twice): "16imh10".
+    if (titleTokens.some((x, j) => j !== i && consumed.has(j) && x === t)) continue;
     const cond = conditionOfToken(t);
     if (cond) {
       condWords.push(cond);
@@ -335,11 +420,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
       distinguishing.push(t);
       continue;
     }
-    if (isPartCode(t, codes)) {
-      // Manufacturer order codes in titles ("060186810F") link offers across shops like a GTIN.
-      if (t.length >= 8 && /[a-z]/.test(t) || /^0\d{9}$/.test(t)) titleCodes.push(t);
-      continue;
-    }
+    // Specifications first: "6000mhz" is a memory speed, not an order code of seven characters.
     if (NEUTRAL_UNITS.test(t) || /^ios\d+/.test(t) || /^a\d{2}$/.test(t)) continue;
     // "iO3" in "iO Series 3 iO3": the matched line word and number written once more, glued.
     const glued = /^([a-z]+)(\d+)$/.exec(t);
@@ -350,9 +431,14 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
       specExtras.push(t);
       continue;
     }
+    if (isPartCode(t, codes)) {
+      // Manufacturer order codes in titles ("060186810F") link offers across shops like a GTIN.
+      if (t.length >= 8 && /[a-z]/.test(t) || /^0\d{9}$/.test(t)) titleCodes.push(t);
+      continue;
+    }
     if (inClass(t, NEUTRAL)) continue;
-    if (/^\d+d$/.test(t)) {
-      unknownExtras.push(t); // "3D White", "2D": a head type, not a model number
+    if (/^\d+d$/.test(t) || /^\d+x$/.test(t)) {
+      unknownExtras.push(t); // "3D White", "2D": a head type; "VENTUS 3X": a fan count in the name; not model numbers
       continue;
     }
     if (hasDigit(t)) {
@@ -379,8 +465,24 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   if (input.color && !colour) colour = colourOf(tokenize(input.color)[0] ?? '') ?? foldSimple(input.color);
 
   const condition = conditionFrom(input.itemCondition, input.url, condWords);
-  if (condition !== 'new') reasons.push(`condition: ${condition}${conditionWords.length ? ` (${conditionWords.join(', ')})` : ''}`);
+  if (condition !== 'new') say({ code: 'condition', params: { condition, words: [...conditionWords] } });
 
+  // A missing query word with an unknown title word in its place is another product: "MX Anywhere 3S"
+  // for "MX Master 3S". The place is between the title positions of the query words around it (or
+  // right next to the one neighbour found). With nothing in its place it stays a doubt (below).
+  for (const t of [...missingAlpha]) {
+    const qi = q.tokens.indexOf(t);
+    const prev = q.tokens.slice(0, qi).reverse().find((x) => at.has(x));
+    const next = q.tokens.slice(qi + 1).find((x) => at.has(x));
+    const from = prev !== undefined ? (at.get(prev) as number) + 1 : next !== undefined ? (at.get(next) as number) - 1 : -1;
+    const to = next !== undefined ? (at.get(next) as number) - 1 : prev !== undefined ? (at.get(prev) as number) + 1 : -2;
+    const instead = titleTokens.slice(Math.max(0, from), to + 1).find((tt, k) => !consumed.has(from + k) && isAlpha(tt) && tt.length >= 3 && unknownExtras.includes(tt));
+    if (from >= 0 && to >= from && instead) {
+      missingAlpha.splice(missingAlpha.indexOf(t), 1);
+      missing.push(t);
+      say({ code: 'insteadOf', params: { instead, token: t } });
+    }
+  }
   // A missing tier word ("pro") or two missing words (brand and line: "Braun Series 3 3000" for
   // "Oral-B Pro 3 3000") mean another product; one missing plain word is only a doubt.
   if (missingAlpha.some((t) => inClass(t, MODEL_WORDS) || inClass(t, PACKAGE_WORDS)) || missingAlpha.length >= 2) {
@@ -389,24 +491,25 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   let level: MatchResult['level'];
   if (missing.length || distinguishing.length) {
     level = 'different';
-    if (missing.length) reasons.push(`title lacks ${missing.map((m) => `"${m}"`).join(', ')}`);
-    if (distinguishing.length) reasons.push(`title has ${distinguishing.map((m) => `"${m}"`).join(', ')} that the query lacks`);
-  } else if (softMissing.length || missingAlpha.length || unknownExtras.length || specExtras.length) {
+    if (missing.length) say({ code: 'titleLacks', params: { words: [...missing] } });
+    if (distinguishing.length) say({ code: 'titleHas', params: { words: [...distinguishing] } });
+  } else if (softMissing.length || codeStarts.length || missingAlpha.length || unknownExtras.length || specExtras.length) {
     level = 'possible';
     for (const t of softMissing) {
       const next = q.tokens[q.tokens.indexOf(t) + 1];
-      reasons.push(`title says "${q.tokens[q.tokens.indexOf(t) - 1]} ${next}" without "${t}": the same model or an older one`);
+      say({ code: 'sameOrOlder', params: { before: String(q.tokens[q.tokens.indexOf(t) - 1]), after: String(next), token: t } });
     }
-    if (missingAlpha.length) reasons.push(`title lacks ${missingAlpha.map((m) => `"${m}"`).join(', ')}`);
-    if (specExtras.length) reasons.push(`variant ${specExtras.join(', ')} not in the query`);
-    if (unknownExtras.length) reasons.push(`check extra words: ${unknownExtras.join(', ')}`);
+    if (missingAlpha.length) say({ code: 'titleLacks', params: { words: [...missingAlpha] } });
+    if (specExtras.length) say({ code: 'variantNotInQuery', params: { words: [...specExtras] } });
+    if (unknownExtras.length) say({ code: 'extraWords', params: { words: [...unknownExtras] } });
   } else {
     level = 'exact';
   }
 
   let score: number;
   if (level === 'exact') score = 1;
-  else if (level === 'possible') score = 0.75 - 0.04 * unknownExtras.length - 0.08 * specExtras.length - 0.12 * missingAlpha.length - 0.15 * softMissing.length;
+  else if (level === 'possible') score = 0.75 - 0.04 * unknownExtras.length - 0.08 * specExtras.length - 0.12 * missingAlpha.length - 0.15 * softMissing.length
+    - 0.1 * codeStarts.length;
   else score = 0.35 - 0.05 * distinguishing.length - 0.08 * missing.length;
   score = Math.max(0.01, Math.min(1, score));
 
@@ -415,7 +518,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
 
   return {
     level, score, matched: [...new Set(matched)], missing: [...missing, ...missingAlpha, ...softMissing], distinguishing, specExtras, unknownExtras,
-    condition, conditionWords, colour, signature, codes: titleCodes, reasons,
+    condition, conditionWords, colour, signature, codes: titleCodes, reasons, reasonCodes,
   };
 }
 
