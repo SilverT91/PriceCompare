@@ -6,7 +6,9 @@
 //   options: --cat auto|all|electronics|tools|health|home|books   (default auto: guessed from the query)
 //            --location kosice  --shops nay_sk,hornbach_sk  --providers brave,serper | serper,brave | none
 //            --site-search combined|per-shop  --domains-per-query 6  --no-cache  --json
-//            --as-typed   (no brand correction: "Iral b ..." is searched as typed, not as "Oral-B ...")
+//            --as-typed   (no brand correction: "Iral b ..." is searched as typed, not as "Oral-B ...";
+//                          no effect on a pasted product link, whose name is always taken from the link)
+//   A product link instead of a name works too: npm run search -- "https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm"
 
 import { parseArgs } from 'node:util';
 import { CATEGORY_GROUPS } from '../core/categories.ts';
@@ -77,11 +79,19 @@ for await (const ev of runSearch(query, {
   if (ev.type === 'start') {
     heureka = ev.heurekaUrl;
     const asked = ev.shops.length;
-    if (ev.corrected) {
+    if (ev.fromLink) {
+      console.log(`Searched for "${ev.query}" (from the link you pasted)${ev.linkShop ? `; the link is to ${ev.linkShop}, which is asked like every other shop` : ''}`);
+    } else if (ev.corrected) {
       console.log(`Searched for "${ev.query}" (you typed "${ev.typed}"); to search exactly as typed: npm run search -- "${ev.typed}" --as-typed`);
     }
     console.log(`Searching for "${ev.query}" near ${location.name}; categories: ${ev.categories.label} (${ev.categories.reasons.join('; ')})`);
     console.log(`  web search: ${providers.length ? providers.map((p) => p.id).join(' > ') : 'none (no key set)'}; ${asked} shops in scope${ev.categories.categories ? '; widen with --cat all' : ''}`);
+  }
+  if (ev.type === 'rejected') {
+    // A pasted link without the product's name: nothing was searched.
+    console.error(ev.message);
+    store.close();
+    process.exit(2);
   }
   if (ev.type === 'rates' && ev.error) console.log(`  exchange rates unavailable: ${ev.error}`);
   if (ev.type === 'shop') {

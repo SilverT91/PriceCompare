@@ -205,6 +205,15 @@ Step by step:
    loop stops reading events, but searches already started keep running to completion (shops are
    started eagerly) and `onSearchDone` is not called for them.
 
+   1-pre. **A pasted link** (`linkInput()` in `matcher.ts`), before anything else. An input without
+   spaces that starts with http(s), starts with `www.`, or is a host with a dot and a path, is a
+   link. The query becomes the name in its path: the last segment that carries words, without
+   file endings, leading or trailing ids and path words such as "product"; the query string and
+   fragment are ignored. The link is never fetched. A link with no name in it yields a single
+   `rejected` event and no request. With a name, the correction below is skipped, the `start`
+   event carries `fromLink`, `linkShop` (when the host is one of the shops) and the pasted text
+   as `typed`.
+
    1a. **Query correction** (`correct.ts`, `correctQuery()`), unless `asTyped` is set
    (`as_typed=1` on `/api/search`, `--as-typed` on the command line). A word, or two neighbouring
    words joined, that is letters only, not a vocabulary word, at least four letters long and
@@ -253,6 +262,19 @@ Step by step:
    same session, so robots.txt, the host gap and the budget of 6 apply. The candidates have their
    own cache key and are scored against the full query as usual. The shop's detail says the search
    was repeated, whatever came of it. Not done when results came back and none matched.
+   Since the same day the shorter query is the core query without package words (see 5b), so the
+   retry also drops category and colour words.
+
+   5b. **The text each shop receives** (`searchTexts()` in `pipeline.ts`, `coreQuery()` and
+   `namesSomething()` in `matcher.ts`). Shops in the search location's country get the query as
+   typed. Shops in another country get the core query: the query without category, connector,
+   generic and colour words, keeping brands, line, model, tier and package words and every token
+   with a digit. That applies when the core still names something (a brand plus one more token, or
+   a token with a digit); otherwise they get the query as typed. The same text goes into the
+   combined web query for that country (`queryFor(country)` in the batcher) and into the shop's
+   manual link. Caches are keyed by the text sent; scoring happens after the cache, always
+   against the full query, where a colour in the query is matched by the same colour in any
+   language.
 6. **Politeness, on every request.** `ShopSession.get()` checks robots.txt for the URL and every
    redirect hop, follows only same-registered-domain redirects, counts every request (robots.txt
    included) against the budget, waits through `HostScheduler` for the 3 s gap, applies a 15 s

@@ -95,6 +95,9 @@ export const NEUTRAL = wc([...CONNECTOR_WORDS, ...CATEGORY_EXACT, ...LINE_WORDS,
  */
 export const CATEGORY_WORDS = wc([...CATEGORY_EXACT, ...GENERIC_WORDS], CATEGORY_PREFIX);
 
+/** Line words ("Professional", "Series"): neutral for matching, but part of a model's name. */
+export const LINE_WORD_CLASS = wc(LINE_WORDS);
+
 /** Tier/model words: a title with one the query lacks is a different model. */
 export const MODEL_WORDS = wc(
   ['pro', 'plus', 'max', 'mini', 'ultra', 'lite', 'air', 'fe', 'neo', 'prime', 'slim', 'edge', 'fold', 'flip', 'note',

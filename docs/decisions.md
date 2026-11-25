@@ -171,6 +171,21 @@ what each choice gives and how limited it is. The provider recommended for the l
 one that needs no payment card. Only documented APIs are used; reading a search engine's result
 pages, directly or through a self-hosted metasearch, stays out.
 
+## A pasted link gives its words, and is not fetched (2026-11-25)
+
+A user may paste the address of a product page instead of typing a name. The name is taken from
+the address itself. The page is not read, whichever shop it belongs to: many of the shops people
+copy links from do not allow automated reading, and a rule that depends on the host would be hard
+to explain. Reading the linked page of a shop that allows it, for the exact name and GTIN, stays
+possible later.
+
+## Language-specific words go only to shops that understand them (2026-11-25)
+
+Brand and model are the same in every language; category and colour words are not. Shops outside
+the country searched from receive the query without them, when the rest still names a product.
+The words are not translated: a missing word costs less than a wrong one. The match is judged
+against everything the user typed, so the colour asked for still decides.
+
 ## Only ask shops in the query's category (2026-11-24)
 
 A toothbrush query does not go to a furniture shop. Categories are guessed from the query with a

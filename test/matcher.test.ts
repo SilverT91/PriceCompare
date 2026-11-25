@@ -2,7 +2,9 @@
 // or written the way those shops name products.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { matchTitle, scoreCandidate, parseQuery, cleanTitle, displayTitle, withoutPackageWords } from '../src/core/matcher.ts';
+import {
+  matchTitle, scoreCandidate, parseQuery, cleanTitle, coreQuery, displayTitle, linkInput, namesSomething, withoutPackageWords,
+} from '../src/core/matcher.ts';
 import { tokenize } from '../src/core/text.ts';
 
 const m = (q: string, title: string, extra: Record<string, string> = {}) => matchTitle(q, { title, ...extra });
@@ -341,6 +343,70 @@ describe('a model number glued to its line word, and a pack of two (the sentence
     assert.equal(lvl('Oral-B Pro 3 3000', 'Oral-B Pro 3000'), 'possible');
     assert.equal(lvl('Oral-B Pro 3 3000', 'Oral-B Pro3 3000'), 'exact');
     assert.equal(lvl('Oral-B Pro 3 3000', 'Oral-B Pro 3 3500'), 'different');
+  });
+});
+
+describe('a pasted product link (the first user, 2026-11-25)', () => {
+  const name = (s: string) => linkInput(s)?.query;
+
+  test('the name from the path: id, file ending, query string and fragment removed; brands spelled as the code spells them', () => {
+    assert.deepEqual(linkInput('https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm'), { query: 'Roborock Qrevo Edge 2 Pro', host: 'www.alza.sk' });
+    assert.equal(name('www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm'), 'Roborock Qrevo Edge 2 Pro', 'pasted without the scheme');
+    assert.equal(name('alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm?utm_source=x&utm_medium=y#reviews'), 'Roborock Qrevo Edge 2 Pro');
+  });
+
+  test('the id and path patterns of shop links in this project', () => {
+    // links seen in the search cache, 2026-11-25
+    assert.equal(name('https://www.andreashop.sk/oral-b-precision-clean-pro-p318652'), 'Oral-B Precision Clean Pro');
+    assert.equal(name('https://www.drmax.sk/oral-b-elektricka-kefka-pro-3000-blue-x52018'), 'Oral-B Elektricka Kefka Pro 3000 Blue');
+    assert.equal(name('https://www.morele.net/szczoteczka-oral-b-pro-3-3000-crossaction-niebieska-11255949/'), 'Szczoteczka Oral-B Pro 3 3000 Crossaction Niebieska');
+    assert.equal(name('https://planeo.sk/katalog/1317999-oral-b-pro-3-3900-cross-action-zubna-kefka.html?a_aid=5e563a4b10074'), 'Oral-B Pro 3 3900 Cross Action Zubna Kefka');
+    assert.equal(name('https://www.mediamarkt.at/de/product/_oral-b-pro-3-3000-elektrische-zahnburste-schwarz-100959625.html'), 'Oral-B Pro 3 3000 Elektrische Zahnburste Schwarz');
+    assert.equal(name('https://datacomp.sk/oral-b-eb-20-8-precision-clean_d350684.html'), 'Oral-B Eb 20 8 Precision Clean');
+    assert.equal(name('https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160500-Oral-B-elektricka-zubna-kefka-iO-Series-3-bleda-modra/'),
+      'Oral-B Elektricka Zubna Kefka iO Series 3 Bleda Modra');
+    assert.equal(name('https://www.mironet.cz/oralb-vitality-pro-cerny-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646617/'),
+      'Oral-B Vitality Pro Cerny Elektricky Zubni Kartacek Oscilacni 3 Rezimy Casovac');
+    assert.equal(name('https://www.euronics.sk/produkt/lg-oled65b42'), 'LG oled65b42', 'a brand and a code is a name');
+    // short model numbers are not taken for ids
+    assert.equal(name('https://www.nay.sk/philips-sonicare-3100-hx3671-14'), 'Philips Sonicare 3100 hx3671 14');
+  });
+
+  test('a link without the name: only ids, a language code or nothing', () => {
+    assert.deepEqual(linkInput('https://www.amazon.de/dp/B0C1234567'), { query: null, host: 'www.amazon.de' });
+    assert.equal(name('https://shop.test/de/1'), null);
+    assert.equal(name('https://www.alza.sk/'), null);
+  });
+
+  test('text is not a link, even with a dot in it', () => {
+    for (const q of ['Bosch GSR 12V-15 2.0Ah', 'iPhone 16 128GB', 'node.js', '2.0Ah', 'Oral-B iO 9']) assert.equal(linkInput(q), null, q);
+  });
+});
+
+describe('the core query sent to shops in another country', () => {
+  test('category, colour and generic words go; brand, line, model, tier, package words and digits stay', () => {
+    assert.equal(coreQuery('Oral-B iO Series 9 čierna zubná kefka'), 'Oral-B iO Series 9');
+    assert.equal(coreQuery('iPhone 16 128GB modrá'), 'iPhone 16 128GB');
+    assert.equal(coreQuery('Oral-B io9 doublepack'), 'Oral-B io9 doublepack');
+    assert.equal(coreQuery('Bosch Professional GSR 12V-15 aku vŕtačka'), 'Bosch Professional GSR 12V-15');
+    assert.equal(coreQuery('elektrická zubná kefka Oral-B Pro 3 3000 pre deti'), 'Oral-B Pro 3 3000 deti', 'a tier word ("deti", kids) stays');
+  });
+
+  test('specific enough to send: a brand and one more token, or a token with a digit', () => {
+    assert.equal(coreQuery('vŕtačka bosch'), 'bosch');
+    assert.equal(namesSomething('bosch'), false, 'a brand alone is not sent instead of the query');
+    assert.equal(namesSomething('Oral-B iO Series 9'), true);
+    assert.equal(namesSomething('128GB'), true);
+  });
+
+  test('a colour in the query is met by the same colour in any language, not by another colour', () => {
+    const q = 'Oral-B iO Series 9 čierna zubná kefka';
+    assert.equal(m(q, 'Oral-B iO Series 9 Black').level, 'exact');
+    assert.equal(m(q, 'Zubní kartáček Oral-B iO Series 9 černý').level, 'exact');
+    assert.equal(m(q, 'Oral-B iO Series 9 Black').colour, 'black', 'the title still sets the colour');
+    const white = m(q, 'Oral-B iO Series 9 White');
+    assert.equal(white.level, 'possible');
+    assert.deepEqual(white.missing, ['cierna']);
   });
 });
 

@@ -200,6 +200,8 @@ function cacheKey(p: SearchProvider, locale: Locale, q: string): string {
 export interface BatcherOptions {
   chain: ProviderChain;
   query: string;
+  /** The query text for the shops of one country (the pipeline sends shops abroad the core query); default `query`. */
+  queryFor?: (country: string) => string;
   expected: number;
   mode: SiteSearchMode;
   domainsPerQuery: number;
@@ -275,12 +277,13 @@ export class SiteSearchBatcher {
   private async run(country: string, chunk: SiteSearchBatcher['pending']) {
     const locale = localeFor(country);
     this.queriesNeeded++;
-    const s: SiteSearch = { query: this.opts.query, domains: chunk.map((c) => c.domain) };
+    const text = this.opts.queryFor?.(country) ?? this.opts.query;
+    const s: SiteSearch = { query: text, domains: chunk.map((c) => c.domain) };
     const q = searchText(s);
     let r: Awaited<ReturnType<ProviderChain['search']>> | undefined = await this.opts.chain.cached(s, locale);
     if (!r && chunk.length > 1) {
       // No cached combined result: if every domain has a cached single-domain result, use those.
-      const parts = await Promise.all(chunk.map((c) => this.opts.chain.cached({ query: this.opts.query, domains: [c.domain] }, locale)));
+      const parts = await Promise.all(chunk.map((c) => this.opts.chain.cached({ query: text, domains: [c.domain] }, locale)));
       if (parts.every(Boolean)) r = { hits: parts.flatMap((p) => p?.hits ?? []), provider: parts[0]?.provider };
     }
     r = r ?? (await this.opts.chain.search(s, locale));

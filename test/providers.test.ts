@@ -266,7 +266,27 @@ describe('site-search batching', () => {
     assert.ok(bodies.some((x) => JSON.parse(x).q === siteQuery('Oral-B Pro 3 3000', ['drmax.sk', 'pilulka.sk']) && JSON.parse(x).gl === 'sk'));
     assert.ok(bodies.some((x) => JSON.parse(x).gl === 'cz' && JSON.parse(x).hl === 'cs'));
     assert.deepEqual(r1.hits.map((h) => h.url), ['https://www.drmax.sk/oral-b-pro-3-3000']);
+    assert.ok(bodies.some((x) => JSON.parse(x).q === siteQuery('Oral-B Pro 3 3000', ['datart.cz'])), 'without queryFor every country gets the query');
     assert.equal(r2.hits.length, 1);
     assert.equal(r3.hits.length, 0);
+  });
+
+  test('each country gets its own text (the pipeline sends shops abroad the core query); still one query per country', async () => {
+    const bodies: { q: string; gl: string }[] = [];
+    const f: FetchLike = async (_url, init) => {
+      bodies.push(JSON.parse(String(init?.body)));
+      return new Response(JSON.stringify(SERPER_OK), { status: 200 });
+    };
+    const chain = new ProviderChain([new SerperProvider('s')], new MemoryCache(), { fetch: f, sleep: async () => {} });
+    const typed = 'Oral-B iO Series 9 čierna zubná kefka';
+    const b = new SiteSearchBatcher({
+      chain, query: typed, queryFor: (c) => (c === 'SK' ? typed : 'Oral-B iO Series 9'), expected: 3, mode: 'combined', domainsPerQuery: 6, deadlineMs: 5000,
+    });
+    await Promise.all([b.find('drmax.sk', 'SK'), b.find('pilulka.sk', 'SK'), b.find('datart.cz', 'CZ')]);
+    assert.equal(bodies.length, 2);
+    assert.deepEqual(bodies.map((x) => [x.gl, x.q]).sort(), [
+      ['cz', 'Oral-B iO Series 9 site:datart.cz'],
+      ['sk', `${typed} site:drmax.sk OR site:pilulka.sk`],
+    ]);
   });
 });

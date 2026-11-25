@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { HostScheduler, type FetchLike } from '../src/core/http.ts';
 import { dedupeOffers, runSearch, type SearchEvent } from '../src/core/pipeline.ts';
 import { SerperProvider } from '../src/core/search/serper.ts';
-import { DEFAULT_LOCATION, validateShops } from '../src/core/shops.ts';
+import { buildSearchUrl, DEFAULT_LOCATION, validateShops } from '../src/core/shops.ts';
 import type { ShopResult } from '../src/core/types.ts';
 import { MemoryCache } from './helpers.ts';
 
@@ -381,6 +381,97 @@ test('a brand typo: the corrected query is searched and both forms are in the st
   assert.ok(!calls.some((u) => u.includes('Oral-B')));
 });
 
+// ---- a pasted product link ----------------------------------------------------------------------------
+
+test('a pasted link: its name is searched, the link itself is never requested, the events carry the pasted text', async () => {
+  const { shops: linkShops } = validateShops({
+    shops: [{ id: 'z', name: 'Shop Z', domain: 'z.test', country: 'SK', currency: 'EUR', search_url_template: 'https://www.z.test/s?q={query}' }],
+  });
+  const pasted = 'https://www.z.test/roborock-qrevo-edge-2-pro-d13260955.htm?utm_source=newsletter#reviews';
+  const calls: string[] = [];
+  const f: FetchLike = async (url) => {
+    calls.push(url);
+    if (url === 'https://www.z.test/robots.txt') return robotsOk();
+    if (url === 'https://www.z.test/s?q=Roborock+Qrevo+Edge+2+Pro') return new Response('<html><body><p>Nenašli sme žiadne produkty.</p></body></html>');
+    return new Response('nf', { status: 404 });
+  };
+  const events = await collect(runSearch(pasted, {
+    shops: linkShops, cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }), location: DEFAULT_LOCATION, providers: [], fetch: f,
+    category: 'all', asTyped: true,
+  }));
+  const start = events[0] as Extract<SearchEvent, { type: 'start' }>;
+  assert.deepEqual([start.query, start.typed, start.fromLink, start.corrected, start.linkShop], ['Roborock Qrevo Edge 2 Pro', pasted, true, false, 'Shop Z']);
+  // the shop of the link is asked like any other: robots.txt and its search page with the name, nothing else
+  assert.deepEqual(calls, ['https://www.z.test/robots.txt', 'https://www.z.test/s?q=Roborock+Qrevo+Edge+2+Pro']);
+  assert.ok(!calls.some((u) => /d13260955|utm_|newsletter|reviews/.test(u)), 'nothing of the link but the name goes out');
+  const done = (events.at(-1) as Extract<SearchEvent, { type: 'done' }>).summary;
+  assert.deepEqual([done.query, done.typed], ['Roborock Qrevo Edge 2 Pro', pasted]);
+});
+
+test('a pasted link without the name: no search, no request, one event that asks for the name', async () => {
+  const calls: string[] = [];
+  const f: FetchLike = async (url) => {
+    calls.push(url);
+    return new Response('nf', { status: 404 });
+  };
+  const events = await collect(runSearch('https://www.amazon.de/dp/B0C1234567', {
+    shops, cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }), location: DEFAULT_LOCATION, providers: [], fetch: f, category: 'all',
+  }));
+  assert.equal(events.length, 1);
+  const ev = events[0] as Extract<SearchEvent, { type: 'rejected' }>;
+  assert.equal(ev.type, 'rejected');
+  assert.equal(ev.typed, 'https://www.amazon.de/dp/B0C1234567');
+  assert.match(ev.message, /does not contain the product's name/);
+  assert.deepEqual(calls, []);
+});
+
+// ---- the text a shop in another country receives ---------------------------------------------------------
+
+test('home shop gets the query as typed (then the core query once); a shop abroad gets the core query; offers judged by the full query', async () => {
+  const { shops: twoShops } = validateShops({
+    shops: [
+      { id: 'hs', name: 'Home Shop', domain: 'hs.test', country: 'SK', currency: 'EUR', search_url_template: 'https://hs.test/s?q={query}' },
+      { id: 'fc', name: 'Foreign Shop', domain: 'fc.test', country: 'CZ', currency: 'EUR', search_url_template: 'https://fc.test/hledat?q={query}' },
+    ],
+  });
+  const typed = 'Oral-B iO Series 9 čierna zubná kefka';
+  const full = buildSearchUrl('https://hs.test/s?q={query}', typed);
+  const both = list(['Oral-B iO Series 9 Black', '/p/black'], ['Oral-B iO Series 9 White', '/p/white']);
+  const calls: string[] = [];
+  const f: FetchLike = async (url) => {
+    calls.push(url);
+    if (url.endsWith('/robots.txt')) return robotsOk();
+    if (url === full) return new Response('<html><body><p>Nenašli sme žiadne produkty.</p></body></html>');
+    if (url === 'https://hs.test/s?q=Oral-B+iO+Series+9' || url === 'https://fc.test/hledat?q=Oral-B+iO+Series+9') {
+      return new Response(both.replace(/"\/p\//g, `"https://${new URL(url).host}/p/`));
+    }
+    if (url.endsWith('/p/black')) return new Response(product('Oral-B iO Series 9 Black', 299, '8006540900201'));
+    if (url.endsWith('/p/white')) return new Response(product('Oral-B iO Series 9 White', 289, '8006540900202'));
+    return new Response('nf', { status: 404 });
+  };
+  const events = await collect(runSearch(typed, {
+    shops: twoShops, cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }), location: DEFAULT_LOCATION, providers: [], fetch: f, category: 'all',
+  }));
+  const results = new Map(events.filter((e): e is Extract<SearchEvent, { type: 'shop' }> => e.type === 'shop').map((e) => [e.result.shopId, e.result]));
+  const hs = results.get('hs') as ShopResult;
+  const fc = results.get('fc') as ShopResult;
+  // what each was sent
+  assert.ok(calls.includes(full), 'the home shop gets the query as typed');
+  assert.ok(calls.includes('https://hs.test/s?q=Oral-B+iO+Series+9'), 'then, with no products, the core query once');
+  assert.ok(calls.includes('https://fc.test/hledat?q=Oral-B+iO+Series+9'), 'the shop abroad gets the core query');
+  assert.ok(!calls.some((u) => u.startsWith('https://fc.test/hledat') && /kefka|ierna/i.test(decodeURIComponent(u))), 'no Slovak words abroad');
+  assert.equal(calls.filter((u) => u.startsWith('https://fc.test/hledat')).length, 1, 'no retry abroad: it already got the core query');
+  assert.match(hs.detail, /repeated as "Oral-B iO Series 9"/);
+  assert.match(fc.detail, /searched as "Oral-B iO Series 9": the query without its category, colour and generic words, for a shop in another country/);
+  assert.equal(hs.manualUrl, full);
+  assert.equal(fc.manualUrl, 'https://fc.test/hledat?q=Oral-B+iO+Series+9', 'the manual link uses the text the shop was sent');
+  // the colour the user asked for still decides: black matches, white only possibly
+  for (const r of [hs, fc]) {
+    assert.equal(r.offers.find((o) => o.title.endsWith('Black'))?.match.level, 'exact', r.shopId);
+    assert.equal(r.offers.find((o) => o.title.endsWith('White'))?.match.level, 'possible', r.shopId);
+  }
+});
+
 // ---- the shop search finds nothing for a pack word: once more without it -------------------------------
 
 function packSite() {
@@ -423,7 +514,7 @@ test('own search returned no products for a query with a package word: asked onc
   assert.ok(!calls.includes('https://u.test/p/single'), 'the single brush is scored against the full query and not read');
   assert.deepEqual(calls, ['https://u.test/robots.txt', 'https://u.test/s?q=Oral-B+io9+doublepack', 'https://u.test/s?q=Oral-B+io9', 'https://u.test/p/duo']);
   assert.equal(u.requestsUsed, 4, 'the repeated search counts in the budget');
-  assert.match(u.detail, /the shop search returned no products for "Oral-B io9 doublepack"; repeated without the package word\(s\) as "Oral-B io9": 2 result\(s\)/);
+  assert.match(u.detail, /the shop search returned no products for "Oral-B io9 doublepack"; repeated as "Oral-B io9" \(without category, colour, generic and package words\): 2 result\(s\)/);
 
   // the same search again within 6 hours: everything from the cache, the detail still says it
   calls.length = 0;
@@ -431,7 +522,7 @@ test('own search returned no products for a query with a package word: asked onc
   assert.equal(again.status, 'ok');
   assert.equal(again.requestsUsed, 0);
   assert.deepEqual(calls, []);
-  assert.match(again.detail, /repeated without the package word\(s\) as "Oral-B io9": 2 result\(s\) \(from cache\)/);
+  assert.match(again.detail, /repeated as "Oral-B io9" \(without category, colour, generic and package words\): 2 result\(s\) \(from cache\)/);
 });
 
 test('repeated search: also after an empty first answer from the cache; once only; not without a package word', async () => {
@@ -449,7 +540,7 @@ test('repeated search: also after an empty first answer from the cache; once onl
   const series = await packRun('Oral-B iO Series 9 Duo', empty.f);
   assert.equal(series.status, 'no_match');
   assert.deepEqual(empty.calls, ['https://u.test/robots.txt', 'https://u.test/s?q=Oral-B+iO+Series+9+Duo', 'https://u.test/s?q=Oral-B+iO+Series+9']);
-  assert.match(series.detail, /repeated without the package word\(s\) as "Oral-B iO Series 9": 0 result\(s\)/);
+  assert.match(series.detail, /repeated as "Oral-B iO Series 9" \(without category, colour, generic and package words\): 0 result\(s\)/);
 
   // a query without a package word: no repeated search
   const plain = packSite();

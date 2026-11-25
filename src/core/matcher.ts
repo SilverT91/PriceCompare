@@ -13,7 +13,8 @@
 
 import { tokenize, hasDigit, isAlpha, editDistance, fold } from './text.ts';
 import {
-  ACCESSORY_WORDS, colourOf, conditionOfToken, GENERIC_SET_WORDS, inClass, MODEL_WORDS, NEUTRAL, NEUTRAL_UNITS, PACKAGE_WORDS, twoPack, VARIANT_UNITS,
+  ACCESSORY_WORDS, BRAND_SPELLING, BRANDS, colourOf, conditionOfToken, GENERIC_SET_WORDS, inClass, LINE_WORD_CLASS, MODEL_WORDS, NEUTRAL, NEUTRAL_UNITS,
+  PACKAGE_WORDS, twoPack, VARIANT_UNITS,
 } from './vocab.ts';
 import type { Condition, MatchResult } from './types.ts';
 
@@ -276,6 +277,14 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
       continue;
     }
     if (inClass(t, NEUTRAL)) continue; // a category word in the query ("zubna kefka") is optional
+    // A colour in the query is met by the same colour in any language ("čierna" by "Black", "černý");
+    // another colour stays a doubt, as a missing word. The title's colour word is not consumed, so it
+    // is still recorded as the offer's colour.
+    const want = colourOf(t);
+    if (want && (titleTokens.some((tt) => colourOf(tt) === want) || (input.color && colourOf(tokenize(input.color)[0] ?? '') === want))) {
+      matched.push(t);
+      continue;
+    }
     if (t.length >= 6) {
       const near = titleTokens.findIndex((tt) => isAlpha(tt) && Math.abs(tt.length - t.length) <= 1 && editDistance(tt, t) <= 1);
       if (near >= 0) {
@@ -419,13 +428,118 @@ const ARTICLE_WORDS = new Set([
   'jaky', 'jaka', 'jake', 'aky', 'aka', 'ake',
 ]);
 
+/** Separators between the words of a URL path. */
+const SLUG_SEPARATORS = /[/_+\-]+/g;
+
 /** The URL path as words ("/oral-b-pro-3-3500.html" -> "oral b pro 3 3500"); empty for an invalid URL. */
 export function urlSlug(url: string): string {
   try {
-    return decodeURIComponent(new URL(url).pathname).replace(/[/_+\-]+/g, ' ').replace(/\.(html?|php)$/, '').trim();
+    return decodeURIComponent(new URL(url).pathname).replace(SLUG_SEPARATORS, ' ').replace(/\.(html?|php)$/, '').trim();
   } catch {
     return '';
   }
+}
+
+// What shop links put around the name in a path segment, seen in this project's cache and tests:
+// a file ending (".htm", ".html", ".php"), a trailing id ("-d13260955", "-p318652", "+dp646628",
+// "-x52018", "_d350684", "-11255949"), a leading id ("1317999-", "D160500-"). A single letter with
+// four or more digits, two letters with six or more, or six or more digits alone count as an id;
+// shorter ones may be model numbers ("hx3671", "4090") and stay.
+const FILE_ENDING = /\.(html?|php|aspx?|jsp)$/i;
+const TRAILING_ID = /[-_+](?:[a-z]\d{4,}|[a-z]{2}\d{6,}|\d{6,})$/i;
+const LEADING_ID = /^(?:[a-z]?\d{5,})[-_]/i;
+/** Path words that name a page type, not a product. */
+const PATH_WORDS = new Set(['product', 'products', 'produkt', 'produkty', 'produkte', 'p', 'dp', 'gp', 'item', 'items', 'detail', 'katalog',
+  'kategoria', 'kategorie', 'category', 'shop', 'eshop', 'index', 'artikel', 'www']);
+
+/** A path segment's words, ids and file ending removed; empty when nothing in it names a product. */
+function segmentWords(segment: string): string[] {
+  let s = segment.trim().replace(FILE_ENDING, '');
+  for (let k = 0; k < 2; k++) s = s.replace(TRAILING_ID, '');
+  s = s.replace(LEADING_ID, '');
+  const words = s.split(SLUG_SEPARATORS).filter((w) => w && !PATH_WORDS.has(w.toLowerCase()));
+  // A name needs a word: three letters or more, or a brand ("lg-oled65b42"). An id ("B0C1234567"),
+  // a number ("1") or a language code ("de") alone is not a name.
+  const named = words.some((w) => /^\p{L}{3,}$/u.test(w) || BRANDS.has(tokenize(w).join('')));
+  return named ? words : [];
+}
+
+/** Path words written as a query: a brand as the code spells it ("oral-b" -> "Oral-B"), lower-case words with a capital. */
+function writeWords(words: string[]): string {
+  const out: string[] = [];
+  for (let i = 0; i < words.length; i++) {
+    const pair = i + 1 < words.length ? tokenize(`${words[i]}${words[i + 1]}`).join('') : '';
+    if (pair && BRAND_SPELLING[pair] && !BRANDS.has(tokenize(words[i]).join(''))) {
+      out.push(BRAND_SPELLING[pair]);
+      i++;
+      continue;
+    }
+    const one = tokenize(words[i]).join('');
+    if (BRAND_SPELLING[one]) out.push(BRAND_SPELLING[one]);
+    else if (/^\p{Ll}+$/u.test(words[i])) out.push(words[i][0].toLocaleUpperCase() + words[i].slice(1));
+    else out.push(words[i]); // as the link writes it: mixed case, codes and numbers ("iO", "qe65s85d", "2")
+  }
+  return out.join(' ');
+}
+
+export interface LinkInput {
+  /** The product name derived from the path, or null when the link carries none. */
+  query: string | null;
+  host: string;
+}
+
+/**
+ * A pasted product link instead of a name: an http(s) URL, or one without the scheme
+ * ("www.alza.sk/roborock-..." or "alza.sk/roborock-..."). Text with spaces is never a link. The
+ * name is taken from the last path segment that carries words; query string and fragment are
+ * ignored. Nothing is fetched. Null when the input is not a link.
+ */
+export function linkInput(input: string): LinkInput | null {
+  const text = input.trim();
+  if (!text || /\s/.test(text)) return null;
+  const withScheme = /^https?:\/\//i.test(text) ? text
+    : /^(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}\//i.test(text) || /^www\.[a-z0-9.-]+\.[a-z]{2,}$/i.test(text) ? `https://${text}` : null;
+  if (!withScheme) return null;
+  let url: URL;
+  try {
+    url = new URL(withScheme);
+  } catch {
+    return null;
+  }
+  let path = url.pathname;
+  try {
+    path = decodeURIComponent(path);
+  } catch { /* a malformed escape: the path as it is */ }
+  const segments = path.split('/').filter(Boolean);
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const words = segmentWords(segments[i]);
+    if (words.length) return { query: writeWords(words), host: url.hostname.toLowerCase() };
+  }
+  return { query: null, host: url.hostname.toLowerCase() };
+}
+
+/** A token of a word the core query leaves out: a category, connector or generic word, or a colour (language-specific). */
+function localWord(t: string): boolean {
+  if (hasDigit(t) || BRANDS.has(t) || inClass(t, LINE_WORD_CLASS)) return false;
+  return colourOf(t) !== null || inClass(t, NEUTRAL);
+}
+
+/**
+ * The query without its words in one language: category, connector and generic words and colours
+ * ("Oral-B iO Series 9 čierna zubná kefka" -> "Oral-B iO Series 9"). Brand, line, model, tier and
+ * package words and every token with a digit stay. Nothing is translated.
+ */
+export function coreQuery(query: string): string {
+  return query.trim().split(/\s+/).filter((w) => {
+    const toks = tokenize(w);
+    return !toks.length ? false : !toks.every(localWord);
+  }).join(' ');
+}
+
+/** The text names something specific: a brand and at least one more token, or a token with a digit. */
+export function namesSomething(text: string): boolean {
+  const toks = parseQuery(text).tokens;
+  return toks.some(hasDigit) || (toks.some((t) => BRANDS.has(t)) && toks.length >= 2);
 }
 
 /** A review, comparison, manual or advice page (by title or URL slug), unless the query itself asks for one. */

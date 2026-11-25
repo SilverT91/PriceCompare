@@ -7,7 +7,7 @@ import { groupOffers } from './group.ts';
 import { HostScheduler, MAX_REQUESTS_PER_SHOP, ShopSession, type FetchLike } from './http.ts';
 import { extractListCandidates, extractOffers, offerUrl } from './jsonld.ts';
 import { extractLinkCandidates, pageKey, stripTrackingParams } from './links.ts';
-import { matchTitle, parseQuery, scoreCandidate, withoutPackageWords, type ParsedQuery } from './matcher.ts';
+import { coreQuery, linkInput, matchTitle, namesSomething, parseQuery, scoreCandidate, withoutPackageWords, type ParsedQuery } from './matcher.ts';
 import { nearbyModels } from './nearby.ts';
 import { getRates } from './rates.ts';
 import {
@@ -55,8 +55,16 @@ export interface ShopInfo {
 }
 
 export type SearchEvent =
-  /** query: what is searched; typed: what was typed; corrected: the two differ (a brand typo was corrected). */
-  | { type: 'start'; query: string; typed: string; corrected: boolean; location: string; shops: ShopInfo[]; heurekaUrl: string; providers: string[]; categories: CategoryChoice }
+  /**
+   * query: what is searched; typed: what was typed or pasted; corrected: a brand typo was corrected;
+   * fromLink: the query is the name in a pasted link; linkShop: the shop of that link, when it is one of the shops.
+   */
+  | {
+    type: 'start'; query: string; typed: string; corrected: boolean; fromLink: boolean; linkShop: string | null; location: string; shops: ShopInfo[];
+    heurekaUrl: string; providers: string[]; categories: CategoryChoice;
+  }
+  /** Nothing was searched: a pasted link without the product's name. The only event of such a search. */
+  | { type: 'rejected'; typed: string; message: string }
   | { type: 'rates'; rates: Rates | null; error?: string }
   | { type: 'shop'; result: ShopResult }
   /** groups: the distinct products so far; nearby: similar models the shops list (nearby.ts). */
@@ -104,26 +112,58 @@ interface CachedCandidates {
 
 const normQuery = (q: string) => q.trim().replace(/\s+/g, ' ').toLowerCase();
 
+/**
+ * The text each shop is sent. Shops in the search location's country get the query as typed (after
+ * correction). Shops in another country get the core query (matcher.ts, coreQuery: no category,
+ * connector, generic or colour words, which belong to one language) when it still names something
+ * specific; otherwise the query as typed. The same text goes into the web query for that country
+ * and into the shop's manual link. When a shop's own search returns no products, it is asked once
+ * more with the core query without package words (retryFor), if that differs from what it was sent.
+ * The matcher always judges against the full query.
+ */
+export function searchTexts(query: string, homeCountry: string): { core: string; sentFor: (country: string) => string; retryFor: (sent: string) => string | null } {
+  const core = coreQuery(query);
+  const specific = core !== query && namesSomething(core);
+  const sentFor = (country: string) => (specific && country.toUpperCase() !== homeCountry.toUpperCase() ? core : query);
+  const retryFor = (sent: string) => {
+    const base = specific ? core : query;
+    const text = withoutPackageWords(base) ?? base;
+    return text !== sent && namesSomething(text) ? text : null;
+  };
+  return { core, sentFor, retryFor };
+}
+
 export async function* runSearch(typed: string, opts: SearchOptions): AsyncGenerator<SearchEvent> {
   const t0 = Date.now();
-  // A brand typed with one wrong letter is searched as the brand (correct.ts), unless asked not to.
-  // Everything below (category guess, shop search pages, web queries, matcher, cache keys) uses the searched form.
-  const fix = opts.asTyped ? { query: typed.trim(), typed, corrected: false } : correctQuery(typed);
+  // A pasted product link gives the name in its path (matcher.ts, linkInput); the link is never
+  // fetched and nothing else of it is sent anywhere. A link without a name starts no search.
+  const link = linkInput(typed);
+  if (link && !link.query) {
+    yield { type: 'rejected', typed, message: "This link does not contain the product's name, so nothing was searched. Type or paste the product's name instead." };
+    return;
+  }
+  // Otherwise a brand typed with one wrong letter is searched as the brand (correct.ts), unless asked
+  // not to; "as typed" has no meaning for a link. Everything below (category guess, shop search
+  // pages, web queries, matcher, cache keys) uses the searched form.
+  const fix = link?.query ? { query: link.query, typed, corrected: false } : opts.asTyped ? { query: typed.trim(), typed, corrected: false } : correctQuery(typed);
   const query = fix.query;
+  const linkShop = link ? opts.shops.find((s) => link.host === s.domain || link.host.endsWith(`.${s.domain}`))?.name ?? null : null;
   const inScope = opts.shops.filter((s) => s.in_scope);
   const choice = chooseCategories(query, opts.category);
   const shops = inScope.filter((s) => shopIsRelevant(s, choice.categories));
   const skipped = inScope.filter((s) => !shopIsRelevant(s, choice.categories));
   const pq = parseQuery(query);
+  const texts = searchTexts(query, opts.location.country);
   yield {
-    type: 'start', query, typed: fix.typed, corrected: fix.corrected, location: opts.location.id, heurekaUrl: heurekaUrl(query), providers: opts.providers.map((p) => p.id),
+    type: 'start', query, typed: fix.typed, corrected: fix.corrected, fromLink: Boolean(link), linkShop,
+    location: opts.location.id, heurekaUrl: heurekaUrl(query), providers: opts.providers.map((p) => p.id),
     categories: choice,
     shops: inScope.map((s) => ({ id: s.id, name: s.name, domain: s.domain, section: sectionFor(s, opts.location), branchKnown: s[opts.location.branchField] })),
   };
   const notRelevant: ShopResult[] = skipped.map((s) => ({
     shopId: s.id, shopName: s.name, domain: s.domain, section: sectionFor(s, opts.location), status: 'not_relevant',
     detail: `not asked: its categories (${s.categories.join(', ')}) do not fit ${choice.label}`, route: 'none',
-    manualUrl: s.search_url_template ? buildSearchUrl(s.search_url_template, query) : null,
+    manualUrl: s.search_url_template ? buildSearchUrl(s.search_url_template, texts.sentFor(s.country)) : null,
     offers: [], candidates: [], requestsUsed: 0, fromCache: true, ms: 0,
   }));
   for (const r of notRelevant) yield { type: 'shop', result: r };
@@ -132,7 +172,10 @@ export async function* runSearch(typed: string, opts: SearchOptions): AsyncGener
   const ratesP = getRates(currencies, opts.cache, opts.fetch);
 
   const chain = opts.providers.length ? new ProviderChain(opts.providers, opts.cache, { fetch: opts.fetch, onCall: opts.onProviderCall }) : null;
-  const batchOpts = { query, expected: shops.length, mode: opts.siteSearchMode ?? 'combined', domainsPerQuery: opts.domainsPerQuery ?? 6 } as const;
+  // The web query for shops of one country uses the text those shops' own search gets (searchTexts).
+  const batchOpts = {
+    query, queryFor: texts.sentFor, expected: shops.length, mode: opts.siteSearchMode ?? 'combined', domainsPerQuery: opts.domainsPerQuery ?? 6,
+  } as const;
   const batcher = chain ? new SiteSearchBatcher({ chain, ...batchOpts, deadlineMs: 8000 }) : null;
   // Second phase: shops whose own search found nothing matching try the web search too. Every shop
   // decides once (find or decline), so the fallback queries are batched across shops like the first ones.
@@ -165,14 +208,15 @@ export async function* runSearch(typed: string, opts: SearchOptions): AsyncGener
         },
       }
       : null;
-    searchShop(shop, pq, opts, batcher, slot, ratesP.then((r) => r.rates), contexts)
+    const sent = texts.sentFor(shop.country);
+    searchShop(shop, pq, opts, batcher, slot, ratesP.then((r) => r.rates), contexts, { sent, retry: texts.retryFor(sent) })
       .finally(() => {
         if (fallback && !fallbackDecided) fallback.decline();
       })
       .catch((e): ShopResult => ({
         shopId: shop.id, shopName: shop.name, domain: shop.domain, section: sectionFor(shop, opts.location), status: 'error',
         detail: `internal error: ${e instanceof Error ? e.message : String(e)}`, route: 'none',
-        manualUrl: shop.search_url_template ? buildSearchUrl(shop.search_url_template, query) : null,
+        manualUrl: shop.search_url_template ? buildSearchUrl(shop.search_url_template, sent) : null,
         offers: [], candidates: [], requestsUsed: 0, fromCache: false, ms: 0,
       }))
       .then((r) => {
@@ -500,12 +544,13 @@ async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidat
 
 async function searchShop(
   shop: Shop, pq: ParsedQuery, opts: SearchOptions, batcher: SiteSearchBatcher | null, fallback: FallbackSlot | null, ratesP: Promise<Rates | null>,
-  contexts: Map<string, ShopCtx>,
+  contexts: Map<string, ShopCtx>, texts: { sent: string; retry: string | null },
 ): Promise<ShopResult> {
   const t0 = Date.now();
-  const query = pq.raw;
+  // What the shop's search, the web query and the manual link get (searchTexts); the matcher uses pq, the full query.
+  const sent = texts.sent;
   const section = sectionFor(shop, opts.location);
-  const manualUrl = shop.search_url_template ? buildSearchUrl(shop.search_url_template, query) : null;
+  const manualUrl = shop.search_url_template ? buildSearchUrl(shop.search_url_template, sent) : null;
   const base = { shopId: shop.id, shopName: shop.name, domain: shop.domain, section, manualUrl };
   const session = new ShopSession(shop.domain, { scheduler: opts.scheduler, cache: opts.cache, fetch: opts.fetch, acceptLanguage: shop.accept_language });
   let declined = false;
@@ -534,11 +579,13 @@ async function searchShop(
   if (blocked) return finish('blocked', `bot protection (${blocked.vendor}) at ${blocked.at}; skipped for an hour`);
 
   // ---- 1. candidates -------------------------------------------------------------------------
-  const candKey = `${shop.id}|${normQuery(query)}|${opts.providers.map((p) => p.id).join(',') || 'none'}|${opts.siteSearchMode ?? 'combined'}`;
+  // Keyed by the text sent: candidates are stored unscored, and scored against the full query after the cache.
+  const candKey = `${shop.id}|${normQuery(sent)}|${opts.providers.map((p) => p.id).join(',') || 'none'}|${opts.siteSearchMode ?? 'combined'}`;
   const cached = await opts.cache.get<CachedCandidates>('candidates', candKey);
   let route: ShopResult['route'] = cached?.route ?? 'none';
   let candidates: Candidate[] = cached?.candidates ?? [];
   const notes: string[] = [];
+  if (sent !== pq.raw) notes.push(`searched as "${sent}": the query without its category, colour and generic words, for a shop in another country`);
 
   if (!cached) {
     let searchAllowed = false;
@@ -568,7 +615,7 @@ async function searchShop(
         return finish('error', `search page failed: ${why}${hint}`, { route });
       }
       const fromList = extractListCandidates(page.text, page.finalUrl);
-      candidates = fromList.length ? fromList : extractLinkCandidates(page.text, page.finalUrl, query, shop.link_exclude_regex);
+      candidates = fromList.length ? fromList : extractLinkCandidates(page.text, page.finalUrl, sent, shop.link_exclude_regex);
       if (!fromList.length) notes.push('no JSON-LD ItemList on the search page; candidates from links');
     } else if (batcher) {
       route = 'search_provider';
@@ -590,14 +637,15 @@ async function searchShop(
     notes.push('candidates from cache');
   }
 
-  // ---- 1b. the shop's own search returned no products for a query with package words -------------
-  // Shops often name the pack another way ("Duo Pack" for "doublepack"): their search is asked once
-  // more without the package words, and what it lists is scored against the full query as usual.
-  // Also after an empty first answer from the cache; the retry has its own cache entry.
-  const shorter = route === 'shop_search' && !candidates.length && shop.search_url_template ? withoutPackageWords(query) : null;
+  // ---- 1b. the shop's own search returned no products: once more with the core query -------------
+  // Shops often name the pack another way ("Duo Pack" for "doublepack") and do not know words of
+  // another language: their search is asked once more with the core query without package words
+  // (searchTexts, retryFor), and what it lists is scored against the full query as usual. Also after
+  // an empty first answer from the cache; the retry has its own cache entry.
+  const shorter = route === 'shop_search' && !candidates.length && shop.search_url_template ? texts.retry : null;
   if (shorter && shop.search_url_template) {
-    const said = `the shop search returned no products for "${query}"; repeated without the package word(s) as "${shorter}"`;
-    const retryKey = `${candKey}|without package words|${normQuery(shorter)}`;
+    const said = `the shop search returned no products for "${sent}"; repeated as "${shorter}" (without category, colour, generic and package words)`;
+    const retryKey = `${candKey}|retry|${normQuery(shorter)}`;
     const hit = await opts.cache.get<CachedCandidates>('candidates', retryKey);
     if (hit) {
       candidates = hit.candidates;

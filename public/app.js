@@ -94,12 +94,16 @@ function start(q, loc, cat, asTyped = false) {
   source.addEventListener('start', (m) => {
     const ev = JSON.parse(m.data);
     state.heureka = ev.heurekaUrl;
-    // A brand typo was corrected: say what was searched, with a way to search exactly as typed.
-    if (ev.corrected) {
+    // A pasted link: say which name was taken from it. A corrected brand typo: say what was searched,
+    // with a way to search exactly as typed.
+    if (ev.fromLink) {
+      $('#corrected').replaceChildren(`Searched for "${ev.query}" (from the link you pasted).`,
+        ev.linkShop ? ` The link is to ${ev.linkShop}, which is asked like every other shop.` : '');
+    } else if (ev.corrected) {
       $('#corrected').replaceChildren(`Searched for "${ev.query}" (you typed "${ev.typed}"). `,
         el('button', { type: 'button', class: 'link', onclick: () => go(ev.typed, loc, cat, true) }, 'Search exactly as typed'));
     }
-    $('#corrected').hidden = !ev.corrected;
+    $('#corrected').hidden = !(ev.fromLink || ev.corrected);
     for (const s of ev.shops) state.shops.set(s.id, { info: s, result: null });
     const c = ev.categories;
     const widen = c.categories ? el('button', { type: 'button', class: 'link', onclick: () => go(q, loc, 'all') }, 'Search all shops instead') : null;
@@ -131,6 +135,17 @@ function start(q, loc, cat, asTyped = false) {
     source.close();
     $('#search button').disabled = false;
     renderAll();
+  });
+  // A pasted link without the product's name: nothing was searched; ask for the name.
+  source.addEventListener('rejected', (m) => {
+    const ev = JSON.parse(m.data);
+    state.done = true;
+    source.close();
+    $('#search button').disabled = false;
+    $('#corrected').replaceChildren(ev.message);
+    $('#corrected').hidden = false;
+    $('#progress').hidden = true;
+    $('#q').focus();
   });
   source.onerror = () => {
     if (!state.done) {

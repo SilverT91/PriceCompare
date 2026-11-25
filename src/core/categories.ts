@@ -52,6 +52,7 @@ const RULES: Rule[] = [
   { why: 'brand Apple / Samsung / Sony / LG', categories: ELECTRONICS, re: /\b(apple|samsung|sony|\blg\b|huawei|lenovo|asus|acer|dell|\bhp\b|jbl|philips|panasonic|tefal|rowenta|dyson|delonghi|electrolux|whirlpool|sencor|eta)\b/ },
   { why: 'brand Bosch (tools and appliances)', categories: ['tools', 'diy_garden', 'electronics', 'appliances'], re: /\bbosch\b/ },
   { why: 'brand Braun', categories: PERSONAL_CARE_ELECTRIC, re: /\bbraun\b/ },
+  { why: 'brand Roborock / iRobot / Ecovacs / Dreame (robot vacuums)', categories: ELECTRONICS, re: /\b(roborock|irobot|roomba|ecovacs|deebot|dreame)\b/ },
 ];
 
 export interface CategoryChoice {

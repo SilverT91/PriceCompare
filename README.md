@@ -28,6 +28,17 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
    - The words for a pack of two mean the same thing: duo, duopack, duo pack, doublepack, double
      pack, twin pack, Doppelpack, dvojbalenie. "Súprava ... Duo Pack" and "Duo, 2 ks" are that
      same pack. A pack of two is still a different product from the single item.
+   - **A pasted product link works as a query.** Paste the address of a product page
+     (`https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm`) and the app searches for the
+     name in it: `Searched for "Roborock Qrevo Edge 2 Pro" (from the link you pasted)`. The linked
+     page itself is not read; only the words of the address are used, and ids, tracking parameters
+     and file endings are dropped. A link that holds only an id gets a message asking for the
+     product's name, and nothing is searched.
+   - **Words of one language stay in that language's shops.** A colour or category word
+     ("čierna zubná kefka") is sent to the shops of the country you search from. Shops in other
+     countries get the query without those words ("Oral-B iO Series 9"), when what is left still
+     names a product. The match is always judged against everything you typed, and colours are
+     compared across languages ("čierna", "black", "schwarz", "czarna").
 0. **Chooses which shops to ask.** By default ("Auto") the likely categories are guessed from brand
    and product words in the query (Slovak, Czech, German, Polish, English; `src/core/categories.ts`)
    and only shops whose `categories` fit are asked: a toothbrush query does not go to IKEA or a
@@ -41,11 +52,11 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
    - otherwise a web search restricted to the shop's domain (`site:`), through Brave Search,
      Serper.dev or Tavily, when a key is set;
    - otherwise nothing, and the shop says so.
-   - **Once more without the package word:** when a shop's own search returns no products and the
-     query has a package word ("doublepack", "set"), the shop's search is asked one more time
-     without it ("Oral-B io9"). The results are still judged against the whole query, so a single
-     brush is not offered for a duo pack. It is one request, inside the shop's limit of 6, and the
-     shop's detail says it happened.
+   - **Once more with the shorter query:** when a shop's own search returns no products, the
+     shop's search is asked one more time with the query reduced to brand, line and model, without
+     category, colour and package words ("Oral-B io9" for "Oral-B io9 doublepack"). The results
+     are still judged against the whole query, so a single brush is not offered for a duo pack. It
+     is one request, inside the shop's limit of 6, and the shop's detail says what was sent.
    - **Second route:** when the shop's own search ends with nothing matching (no products, no
      matching candidate, or pages read with no matching offer) and a web search provider is usable,
      the shop also tries the web search before it is reported as `no_match`. These fallback queries
@@ -191,6 +202,7 @@ Command line options:
 ```
 npm run search -- "iPhone 16 128GB" --pick 2          # compare product #2 of the list
 npm run search -- "Iral b io9" --as-typed             # do not correct a brand typo
+npm run search -- "https://shop.example/product-name-p12345.html"   # a pasted product link
 npm run search -- "..." --cat all                     # ask all shops (default auto; or electronics, tools, health, home, books)
 npm run search -- "Bosch GSR 12V-15" --shops nay_sk,hornbach_sk
 npm run search -- "..." --providers serper,brave      # provider order for this run ("none" = off)

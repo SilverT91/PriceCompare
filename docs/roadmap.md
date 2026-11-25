@@ -25,6 +25,10 @@ What the fifth round did (the same day):
 - **Tavily is a third provider** (no card, 1,000 credits a month), last in the default order. On
   the same four searches it gave a matching offer at 5 shops where Brave gave 10, so it is a
   fallback.
+- **A pasted product link is a query.** The first user asked for it. The name is taken from the
+  address; the page is not fetched.
+- **Language-specific words stay at home.** Shops outside Slovakia get the query without category
+  and colour words; colours are compared across languages.
 
 What the fourth round did (a short one, the same day):
 
@@ -77,6 +81,7 @@ What the test searches give (the first four measured on 2026-11-24, the last two
 | Oral-B Pro 3 3000 | One possible offer: Nazuby.eu lists a "PRO 3000 Blue" at 62.01 € (64.50 € delivered), to be checked by the user. The model appears to be leaving the shelves: NAY's pages for it answer 404 and the other shops list its successors, which the page now offers as similar models. Morele.net has it but does not deliver here |
 | Oral-B PRO 3 3500 (reached through "Compare this model") | Thin as well: Planeo in Košice 74.99 € (out of stock), Nazuby.eu 68.22 € (70.71 € delivered, possible match), TPD an ex-display piece at 49.99 € |
 | Iral b io9 doublepack (the first user's sentence, searched as "Oral-B io9 doublepack") | Useful: NAY in Košice 297.90 € with free pickup, MojaLekáreň 299.96 € delivered (possible match), Profimed 450.90 € (out of stock). Datart.cz and Morele.net list it but do not deliver to Slovakia. Without a search key: the NAY offer only |
+| https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm (a link the first user pasted, searched as "Roborock Qrevo Edge 2 Pro") | Useful: 7 shops with offers. TPD Euronics and Andreashop 699 € (701.99 € delivered), Datacomp 709.89 €, NAY in Košice 709.90 € (in store only), ABCOM Košice 917 € (out of stock). Datart.cz and Morele.net list it but do not deliver to Slovakia. Alza itself is blocked and gets a manual link |
 
 What the second round did (2026-11-24):
 
@@ -103,25 +108,28 @@ not be read without a browser, 2 have no automatic route, 7 had nothing matching
 (wrong category).
 
 A product search costs about 5 to 7 web queries with nothing cached (3 to 4 before the second
-route). Search quota used so far: Brave 80 requests (of about 1,000 per month), Serper 45 (of 2,500
+route). Search quota used so far: Brave 85 requests (of about 1,000 per month), Serper 45 (of 2,500
 in total), Tavily 27 (of 1,000 per month). The third round used 7 Brave requests, for one live
 search; the fourth none (it worked from the cache); the fifth 8 for the first user's sentence,
-then 13 Brave and 27 Tavily for the measurement of Tavily.
+then 13 Brave and 27 Tavily for the measurement of Tavily. The search from a pasted link used 5 more Brave requests.
 
 ## Next round
 
 In this order.
 
-1. **Re-check the provider table in the README** ("Where to get a key") from time to time and
+1. **More real queries from the first user**, typed as he types them, in several categories.
+   Run each without a key first (no quota), then with a key where it matters. His first two
+   inputs each showed something the tidy test queries had not.
+2. **Re-check the provider table in the README** ("Where to get a key") from time to time and
    update its date. Tavily stays a fallback: one query per shop was tried for the first user's
    sentence and found nothing either. Its `language` parameter is untried.
-2. **Read Brave's terms on keeping results.** Its FAQ says storing results needs a plan with
+3. **Read Brave's terms on keeping results.** Its FAQ says storing results needs a plan with
    storage rights; the app keeps web search results for 6 hours. If the terms do not allow that,
    shorten or drop the cache for Brave.
-3. **Similar models, third pass.** The first user's search showed rough names (see known
+4. **Similar models, third pass.** The first user's search showed rough names (see known
    problems).
-4. **Work through "Code issues found in review"** below; none blocks use.
-5. **Browser engine: nothing to do now.** `tools/render_probe.py` measured dm's product page
+5. **Work through "Code issues found in review"** below; none blocks use.
+6. **Browser engine: nothing to do now.** `tools/render_probe.py` measured dm's product page
    (numbers in [architecture.md](architecture.md), section "Add a new route for reading a shop"):
    it needs dm's assets host and data hosts let through, more than 71 requests per page.
    Use the tool on any other shop that reads as `needs_js` before reopening the decision. If a
@@ -179,7 +187,14 @@ In this order.
 - **"Series" is now a neutral word**, so "Oral-B iO Series 3" matches a title "Oral-B iO 3"
   exactly.
 - **"iO Series 9N"** (MediaMarkt Austria's duo pack) counts as a different model from "iO 9".
+- **A name taken from a link** can be long when a shop puts a description into its addresses
+  ("Oral-B Vitality Pro Cerny Elektricky Zubni Kartacek ..."). A trailing model code of one letter
+  and four or more digits ("s9000") is read as an id and dropped.
+- **Category words the matcher does not know** leave a correct offer as "possible" ("Robotický
+  vysávač Roborock Qrevo Edge 2 Pro biely").
 - **Similar models:**
+  - Accessories whose link text runs words together ("Roborock Vacuum Cleaner
+    AccessoryRoborockRotating Mop Cloth...") appear as models with very long names.
   - Rough names seen in the search for "Oral-B io9 doublepack" (the list is collapsed there,
     below an exact match): "DUO na Oral-B", "Oral-B Oral B IO 9" (the brand twice),
     "Oral-B iOM9D.2J2.2AD Duo" (an order code as the name), "Oral-B iO Series 6 Duo 2", and one

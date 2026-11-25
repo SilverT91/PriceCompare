@@ -47,7 +47,8 @@ export function createApp(deps: AppDeps) {
   app.get('/api/history', (c) => c.json(deps.history?.() ?? []));
 
   app.get('/api/search', (c) => {
-    const q = (c.req.query('q') ?? '').trim().slice(0, 200);
+    // Room for a pasted product link (only the name in its path is used; the link is never fetched).
+    const q = (c.req.query('q') ?? '').trim().slice(0, 600);
     if (!q) return c.json({ error: 'missing q' }, 400);
     const location = locationById(c.req.query('location'));
     const category = (c.req.query('cat') ?? 'auto').slice(0, 20);
