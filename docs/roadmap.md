@@ -104,17 +104,17 @@ not be read without a browser, 2 have no automatic route, 7 had nothing matching
 
 A product search costs about 5 to 7 web queries with nothing cached (3 to 4 before the second
 route). Search quota used so far: Brave 80 requests (of about 1,000 per month), Serper 45 (of 2,500
-in total), Tavily 18 (of 1,000 per month). The third round used 7 Brave requests, for one live
+in total), Tavily 27 (of 1,000 per month). The third round used 7 Brave requests, for one live
 search; the fourth none (it worked from the cache); the fifth 8 for the first user's sentence,
-then 13 Brave and 18 Tavily for the measurement of Tavily.
+then 13 Brave and 27 Tavily for the measurement of Tavily.
 
 ## Next round
 
 In this order.
 
-1. **Tavily, second look** (only if it is to be more than a fallback). It is in as the third
-   provider and measured weaker than Brave ([research.md](research.md), section 11). Untried: one
-   query per shop (about 14 credits per product search instead of 5), its `language` parameter.
+1. **Re-check the provider table in the README** ("Where to get a key") from time to time and
+   update its date. Tavily stays a fallback: one query per shop was tried for the first user's
+   sentence and found nothing either. Its `language` parameter is untried.
 2. **Read Brave's terms on keeping results.** Its FAQ says storing results needs a plan with
    storage rights; the app keeps web search results for 6 hours. If the terms do not allow that,
    shorten or drop the cache for Brave.

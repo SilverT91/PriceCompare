@@ -56,6 +56,10 @@ quota, so use one only to check behaviour that tests cannot show.
 - A matcher change needs a test in `test/matcher.test.ts` for the case that motivated it.
 - Test fixtures are trimmed JSON-LD blocks made with `tools/extract_fixtures.ts`, never whole shop
   pages.
+- The README table "Where to get a key" (sign-up pages, free allowance, card, sign-in options)
+  carries the date it was last checked in its heading. When a provider's facts are read again or a
+  provider is added, update the table and that date from the provider's own pages, never from
+  memory.
 - Dependencies are few and pinned. Add one only with a reason, and say so.
 - On Windows, never put a path with backslashes inside code passed through a shell command; use
   forward slashes and the file-editing tools.

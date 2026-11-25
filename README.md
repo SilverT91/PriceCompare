@@ -172,7 +172,8 @@ If you use PowerShell instead of Command Prompt and it answers that "running scr
 this system", type `npm.cmd` in place of `npm` (for example `npm.cmd start`).
 
 The app works without any account. A free web search key makes it reach more shops; see
-"Web search keys" below for what each choice gives and how limited it is.
+"Web search keys" below for where to get one (a table with the sign-up pages), what each choice
+gives and how limited it is.
 
 ## Install and run (short form, any system)
 
@@ -217,6 +218,22 @@ Some shops do not allow their own search page to be read automatically, and a fe
 can be called. For those the app finds product pages through a web search API. That is the only
 part of the app that needs an account somewhere, and it is optional.
 
+### Where to get a key (checked on 2026-11-25)
+
+| Provider | Sign up at | Free allowance | Payment card | Sign in with | Where the key is |
+|---|---|---|---|---|---|
+| Serper | <https://serper.dev/signup> | 2,500 queries, once | not needed | a Serper account: name, email, password | in the Serper dashboard after signing in |
+| Tavily | <https://app.tavily.com> | 1,000 credits a month | not needed | Google, GitHub, LinkedIn or Microsoft account, or email | on the Tavily dashboard after signing in |
+| Brave | <https://api-dashboard.search.brave.com/register> | 5 USD of credit a month, about 1,000 queries | asked for | Google or GitHub account, or email and password | first choose a plan in the dashboard, then create a key at <https://api-dashboard.search.brave.com/app/keys> |
+
+Each key goes into the file `.env` (see "Setting a key" below). One key is enough; with several,
+the app uses them in the order `brave,serper,tavily` and moves on when one runs out.
+
+These offers change. The date in the heading is when the pages were last read; when you check
+them again, update the table and the date. Not stated on the providers' pages that day: whether
+Serper's 2,500 queries expire, and the exact place of the key in the Serper and Tavily
+dashboards. The Tavily sign-in options are as seen at sign-up; its public pages do not list them.
+
 ### What each choice gives, and its limits
 
 One product search needs about 5 to 7 web queries when nothing is cached; a repeat within 6 hours
@@ -228,7 +245,7 @@ change, so check the page before relying on them.
 | No key | none | no | none needed | unlimited, but only at the shops whose own search may be read (see below) |
 | [Serper.dev](https://serper.dev/) | name, email, password | no | 2,500 queries (the page does not say whether they expire) | about 350 to 500 in total |
 | [Brave Search API](https://brave.com/search/api/) | email, or a Google or GitHub login | yes, asked for at sign-up | 5 USD of credit every month, about 1,000 queries | about 140 to 200 a month |
-| [Tavily](https://tavily.com/) | an account on its site | no | 1,000 credits every month, one per query | about 140 to 200 a month |
+| [Tavily](https://tavily.com/) | Google, GitHub, LinkedIn or Microsoft login, or email | no | 1,000 credits every month, one per query | about 140 to 200 a month |
 
 **Without a key** the app still asks every shop whose own search page may be read. Measured on
 2026-11-25 with a toothbrush query: of the 32 shops that sell such goods, 10 ended as
@@ -261,7 +278,8 @@ of 2026-11-25 it returned pages at fewer of these shops than Brave did on the sa
 | Queries used | 13 (some results were cached) | 18 |
 
 Small sample: four searches on one day. Tavily was asked the same way as the others, several shop
-domains in one query; one query per shop was not tried.
+domains in one query. Asking one shop per query was tried for the first search and found no
+matching offer either (9 more credits).
 
 The free allowances are small on purpose, and the app is careful with them: several shops share
 one query, results are kept for 6 hours, and the command line prints what a search cost on its

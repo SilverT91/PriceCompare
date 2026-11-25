@@ -328,7 +328,17 @@ credit cost and status codes are from <https://docs.tavily.com/documentation/api
 | Bosch GSR 12V-15 | 1 (Morele.net) | 1 (Morele.net) |
 
 19 shops take the web-search route. Tavily returned at most 6 pages for a domain and none for most
-domains; Brave returned up to 10 for many. Queries used: Tavily 18, Brave 13 new. Not tried: one
-Tavily query per shop, Tavily's `language` parameter, and a query worded for Tavily (the first
-search has an unusual pack word). Which status code Tavily sends when the free credits are used up
+domains; Brave returned up to 10 for many. Queries used: Tavily 18, Brave 13 new. One Tavily query
+per shop was then tried for the first search: 9 more credits, 3 pages returned in all (a brand
+page at one shop), no matching offer. Not tried: Tavily's `language` parameter, and a query worded
+for Tavily (the first search has an unusual pack word).
+
+Where a key is obtained, from the providers' pages on 2026-11-25: Serper at
+<https://serper.dev/signup> (name, email, password); Tavily at <https://app.tavily.com> (its
+quickstart links there; the sign-in options Google, GitHub, LinkedIn and Microsoft were seen by
+the owner at sign-up and are not listed on a public page); Brave at
+<https://api-dashboard.search.brave.com/register> (GitHub, Google or email), where its
+authentication guide says to activate a plan first and then create the key in the dashboard's
+"API Keys" section (<https://api-dashboard.search.brave.com/app/keys>). No Serper or Tavily page
+states where in the dashboard the key is shown. Which status code Tavily sends when the free credits are used up
 is not stated in its documentation; the adapter treats 432 ("plan limit exceeded") as that.
