@@ -68,6 +68,7 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 | `links.ts` | `extractLinkCandidates()`: product links from a search page that has no `ItemList` (uses cheerio). `stripTrackingParams()`: removes click-tracking parameters from candidate URLs. `pageKey()`: one key per page (tracking parameters and fragment removed). |
 | `gtin.ts` | `normaliseGtin()` maps UPC/EAN/GTIN-14/ISBN to one 14-digit form; `displayGtin()`. |
 | `text.ts` | `fold()` (lowercase, no diacritics), `tokenize()`, `editDistance()`. |
+| `correct.ts` | `correctQuery()`: a brand typed with one wrong, missing or extra letter is searched as the brand (section 4, step 1a). |
 | `vocab.ts` | Word lists for the matcher: colours, neutral words, tier/package/accessory words, condition words, unit patterns. `NEUTRAL` is built from sub-lists; `BRANDS` and `CATEGORY_WORDS` (category and shop words) are exported for `nearby.ts`. |
 | `matcher.ts` | `parseQuery()`, `matchTitle()` (query vs title: exact / possible / different, condition, colour, signature, codes, matched query tokens), `scoreCandidate()` (cheap pre-fetch score), `isArticlePage()` and `urlSlug()` (used by `scoreCandidate` and `nearby.ts`). |
 | `group.ts` | `groupOffers()`: links offers into distinct products and variants. |
@@ -203,6 +204,16 @@ Step by step:
    `runSearch()` directly and builds its tables from the same events. If the client disconnects, the
    loop stops reading events, but searches already started keep running to completion (shops are
    started eagerly) and `onSearchDone` is not called for them.
+
+   1a. **Query correction** (`correct.ts`, `correctQuery()`), unless `asTyped` is set
+   (`as_typed=1` on `/api/search`, `--as-typed` on the command line). A word, or two neighbouring
+   words joined, that is letters only, not a vocabulary word, at least four letters long and
+   exactly one edit away from exactly one brand of five or more letters is replaced by the brand
+   as `BRAND_SPELLING` writes it ("Iral b" becomes "Oral-B"). The corrected query is what
+   everything after this uses: the category guess, shop search URLs, web queries, the matcher, the
+   cache keys and the Heureka link. The `start` event carries `query`, `typed` and `corrected`, the
+   `done` summary `typed`; the page and the command line show both forms and offer the search as
+   typed.
 2. **Category selection.** `runSearch()` calls `chooseCategories(query, opts.category)`:
    `all`, a group id, or `auto`, which runs `guessCategories()` over `RULES` in `categories.ts`.
    Strong (product-word) rules beat brand-only rules. `shopIsRelevant()` keeps shops whose
@@ -234,6 +245,14 @@ Step by step:
    - Otherwise the shop ends as `needs_search_key` (it has a template that is disallowed) or
      `no_route` (nothing to search with).
    Candidates are cached after a successful lookup. Failures are not cached.
+
+   5a. **Once more without the package words** (step 1b in `searchShop()`). When the shop's own
+   search returned no products (also when that empty answer came from the cache) and
+   `withoutPackageWords(query)` differs from the query ("Oral-B io9 doublepack" becomes
+   "Oral-B io9"), the shop's search page is asked once more with the shorter query, through the
+   same session, so robots.txt, the host gap and the budget of 6 apply. The candidates have their
+   own cache key and are scored against the full query as usual. The shop's detail says the search
+   was repeated, whatever came of it. Not done when results came back and none matched.
 6. **Politeness, on every request.** `ShopSession.get()` checks robots.txt for the URL and every
    redirect hop, follows only same-registered-domain redirects, counts every request (robots.txt
    included) against the budget, waits through `HostScheduler` for the 3 s gap, applies a 15 s
@@ -418,8 +437,16 @@ the user typed. `matchTitle(query, input)` goes through these stages:
    `displayTitle()` uses the same suffix and promotion step, plus `nameOnly()` (a leading
    specification list removed, a doubled title taken once), for the product name shown in "Which one
    do you mean?" (`group.ts`); it keeps bundle contents after " + " and bracketed codes.
+   Every way of writing a pack of two becomes the one token `duo` (`twoPack()` in `vocab.ts`:
+   duopack, "duo pack", doublepack, "double pack", "twin pack", Doppelpack, dvojbalenie); a piece
+   count of two right next to it ("Duo, 2 ks") is absorbed, and so is a generic set word in a title
+   that has the two-pack word (`GENERIC_SET_WORDS`: "Súprava ... Duo Pack"). A bare "2 ks" stays a
+   piece count, and a set word without a two-pack word stays an extra.
 3. **Cover the query tokens.** Every query token must appear in the title, in the brand, in a joined
-   form ("iphone" + "16" is `iphone16`), or in the spec segments. A missing token with a digit is
+   form ("iphone" + "16" is `iphone16`), or in the spec segments. A query token of letters followed
+   by digits also matches a title that writes the two apart, with at most two neutral or line
+   words between them ("io9" for "iO Series 9"); the number must be the same token (not "90", not
+   "9n") and the letter part must not be a neutral word. A missing token with a digit is
    `missing`, except a line digit left out in front of a model number that starts with it and
    follows the same word ("Pro 3000" for "Pro 3 3000"): that makes the match `possible` at best,
    since shops write it so and an older model of that name exists. A missing plain word that is in
@@ -472,6 +499,7 @@ shops; a vocabulary change can flip them.
 | File | Covers |
 |---|---|
 | `matcher.test.ts` | Tokenizer, matcher rules, candidate scoring. |
+| `correct.test.ts` | Query correction: brands corrected, and what is left as typed. |
 | `jsonld.test.ts` | JSON-LD extraction against fixtures, `parsePrice`. |
 | `group_totals.test.ts` | `computeTotals`, sorting, headline, `groupOffers`. |
 | `nearby.test.ts` | Similar models: family rule, accessories / articles / used items / bundles of the query's model left out, name derivation on real titles, slug fallback, the self-check, clustering, ordering, the cap, `seenPrice`. |

@@ -343,6 +343,122 @@ test('provider out of credit: shops get needs_search_key with the reason', async
   assert.match(r.detail, /credits used up/);
 });
 
+// ---- a brand typo in the query ----------------------------------------------------------------------
+
+test('a brand typo: the corrected query is searched and both forms are in the stream; as typed on request', async () => {
+  const { shops: typoShops } = validateShops({
+    shops: [{ id: 't', name: 'Shop T', domain: 't.test', country: 'SK', currency: 'EUR', categories: ['drugstore'], search_url_template: 'https://t.test/s?q={query}' }],
+  });
+  const calls: string[] = [];
+  const f: FetchLike = async (url) => {
+    calls.push(url);
+    if (url === 'https://t.test/robots.txt') return robotsOk();
+    if (url === 'https://t.test/s?q=Oral-B+io9+doublepack') return new Response(list(['Oral-B iO Series 9 Duo, 2 ks', 'https://t.test/p/io9-duo']));
+    if (url === 'https://t.test/p/io9-duo') return new Response(product('Zubná kefka Oral-B iO Series 9 Duo, 2 ks', 449, '8006540900001'));
+    return new Response('nf', { status: 404 });
+  };
+  const run = (asTyped: boolean) => collect(runSearch('Iral b io9 doublepack', {
+    shops: typoShops, cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }), location: DEFAULT_LOCATION, providers: [], fetch: f, asTyped,
+  }));
+
+  const events = await run(false);
+  const start = events[0] as Extract<SearchEvent, { type: 'start' }>;
+  assert.deepEqual([start.query, start.typed, start.corrected], ['Oral-B io9 doublepack', 'Iral b io9 doublepack', true]);
+  assert.ok(start.categories.reasons.includes('electric toothbrush / shaver'), 'the category guess runs on the corrected query');
+  assert.match(start.heurekaUrl, /Oral-B\+io9\+doublepack$/);
+  assert.ok(calls.includes('https://t.test/s?q=Oral-B+io9+doublepack'), 'the shop search gets the corrected query, the pack word as typed');
+  const t = (events.find((e) => e.type === 'shop') as Extract<SearchEvent, { type: 'shop' }>).result;
+  assert.equal(t.status, 'ok');
+  assert.equal(t.offers[0].match.level, 'exact');
+  const done = (events.at(-1) as Extract<SearchEvent, { type: 'done' }>).summary;
+  assert.deepEqual([done.query, done.typed], ['Oral-B io9 doublepack', 'Iral b io9 doublepack']);
+
+  calls.length = 0;
+  const asTyped = await run(true);
+  const start2 = asTyped[0] as Extract<SearchEvent, { type: 'start' }>;
+  assert.deepEqual([start2.query, start2.typed, start2.corrected], ['Iral b io9 doublepack', 'Iral b io9 doublepack', false]);
+  assert.ok(calls.includes('https://t.test/s?q=Iral+b+io9+doublepack'));
+  assert.ok(!calls.some((u) => u.includes('Oral-B')));
+});
+
+// ---- the shop search finds nothing for a pack word: once more without it -------------------------------
+
+function packSite() {
+  const calls: string[] = [];
+  const f: FetchLike = async (url) => {
+    calls.push(url);
+    if (url === 'https://u.test/robots.txt') return robotsOk();
+    if (url === 'https://u.test/s?q=Oral-B+io9') {
+      return new Response(list(
+        ['Súprava zubných kefiek Oral-B iO9 Series Duo Pack Black', 'https://u.test/p/duo'],
+        ['Zubná kefka Oral-B iO9 Series Black', 'https://u.test/p/single'],
+      ));
+    }
+    if (url === 'https://u.test/p/duo') return new Response(product('Súprava zubných kefiek Oral-B iO9 Series Duo Pack Black', 499, '8006540900101'));
+    if (url === 'https://u.test/p/single') return new Response(product('Zubná kefka Oral-B iO9 Series Black', 299, '8006540900102'));
+    // every other search: no products
+    if (url.startsWith('https://u.test/s?q=')) return new Response('<html><body><p>Nenašli sme žiadne produkty.</p></body></html>');
+    return new Response('nf', { status: 404 });
+  };
+  return { f, calls };
+}
+
+const { shops: packShops } = validateShops({
+  shops: [{ id: 'u', name: 'Shop U', domain: 'u.test', country: 'SK', currency: 'EUR', search_url_template: 'https://u.test/s?q={query}' }],
+});
+
+async function packRun(q: string, f: FetchLike, cache = new MemoryCache()) {
+  const events = await collect(runSearch(q, {
+    shops: packShops, cache, scheduler: new HostScheduler({ intervalMs: 0 }), location: DEFAULT_LOCATION, providers: [], fetch: f, category: 'all',
+  }));
+  return (events.find((e) => e.type === 'shop') as Extract<SearchEvent, { type: 'shop' }>).result;
+}
+
+test('own search returned no products for a query with a package word: asked once more without it; the duo is read, the single is not', async () => {
+  const { f, calls } = packSite();
+  const cache = new MemoryCache();
+  const u = await packRun('Oral-B io9 doublepack', f, cache);
+  assert.equal(u.status, 'ok');
+  assert.deepEqual(u.offers.map((o) => [o.url, o.match.level]), [['https://u.test/p/duo', 'exact']]);
+  assert.ok(!calls.includes('https://u.test/p/single'), 'the single brush is scored against the full query and not read');
+  assert.deepEqual(calls, ['https://u.test/robots.txt', 'https://u.test/s?q=Oral-B+io9+doublepack', 'https://u.test/s?q=Oral-B+io9', 'https://u.test/p/duo']);
+  assert.equal(u.requestsUsed, 4, 'the repeated search counts in the budget');
+  assert.match(u.detail, /the shop search returned no products for "Oral-B io9 doublepack"; repeated without the package word\(s\) as "Oral-B io9": 2 result\(s\)/);
+
+  // the same search again within 6 hours: everything from the cache, the detail still says it
+  calls.length = 0;
+  const again = await packRun('Oral-B io9 doublepack', f, cache);
+  assert.equal(again.status, 'ok');
+  assert.equal(again.requestsUsed, 0);
+  assert.deepEqual(calls, []);
+  assert.match(again.detail, /repeated without the package word\(s\) as "Oral-B io9": 2 result\(s\) \(from cache\)/);
+});
+
+test('repeated search: also after an empty first answer from the cache; once only; not without a package word', async () => {
+  // an empty answer cached by an earlier search does not prevent the repeated search
+  const { f, calls } = packSite();
+  const cache = new MemoryCache();
+  await cache.set('candidates', 'u|oral-b io9 doublepack|none|combined', { route: 'shop_search', candidates: [] });
+  const u = await packRun('Oral-B io9 doublepack', f, cache);
+  assert.equal(u.status, 'ok');
+  assert.ok(calls.includes('https://u.test/s?q=Oral-B+io9'));
+  assert.ok(!calls.includes('https://u.test/s?q=Oral-B+io9+doublepack'), 'the first answer came from the cache');
+
+  // the repeated search finds nothing either: no third search, and the detail says it was repeated
+  const empty = packSite();
+  const series = await packRun('Oral-B iO Series 9 Duo', empty.f);
+  assert.equal(series.status, 'no_match');
+  assert.deepEqual(empty.calls, ['https://u.test/robots.txt', 'https://u.test/s?q=Oral-B+iO+Series+9+Duo', 'https://u.test/s?q=Oral-B+iO+Series+9']);
+  assert.match(series.detail, /repeated without the package word\(s\) as "Oral-B iO Series 9": 0 result\(s\)/);
+
+  // a query without a package word: no repeated search
+  const plain = packSite();
+  const single = await packRun('Oral-B iO Series 9', plain.f);
+  assert.equal(single.status, 'no_match');
+  assert.deepEqual(plain.calls, ['https://u.test/robots.txt', 'https://u.test/s?q=Oral-B+iO+Series+9']);
+  assert.doesNotMatch(single.detail, /repeated/);
+});
+
 // ---- prices for the similar-models list -------------------------------------------------------------
 
 const { shops: priceShops } = validateShops({

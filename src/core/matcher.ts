@@ -13,7 +13,7 @@
 
 import { tokenize, hasDigit, isAlpha, editDistance, fold } from './text.ts';
 import {
-  ACCESSORY_WORDS, colourOf, conditionOfToken, inClass, MODEL_WORDS, NEUTRAL, NEUTRAL_UNITS, PACKAGE_WORDS, VARIANT_UNITS,
+  ACCESSORY_WORDS, colourOf, conditionOfToken, GENERIC_SET_WORDS, inClass, MODEL_WORDS, NEUTRAL, NEUTRAL_UNITS, PACKAGE_WORDS, twoPack, VARIANT_UNITS,
 } from './vocab.ts';
 import type { Condition, MatchResult } from './types.ts';
 
@@ -32,6 +32,24 @@ const PACK_RE =
   /(\d+)\s*-?\s*(dielna|dielny|dielnou|dielnej|dilna|dilny|dilnou|teilig|tlg|czesciowy|czesci|pcs|pc|pieces|piece|ks|kus|kusy|kusov|stuck|stueck|stk|szt|pack|pak|er\s?pack)(?![a-z])/g;
 const TIMES_RE =
   /(?:^|[^a-z0-9.])(\d+)\s*x(?![a-z0-9])|(?:^|[^a-z0-9])x\s*(\d+)(?![a-z0-9.])|(?:^|[^a-z0-9.])([2-9])\s*x\s*(?=\d+(?:[.,]\d+)?\s*(?:ah|mah|wh)\b)/g;
+
+/**
+ * The query without its package words ("Oral-B io9 doublepack" -> "Oral-B io9"), for asking a
+ * shop's search once more when it found no products: shops often name the pack another way.
+ * A word counts when all its tokens are package words ("doublepack", "duo", "sada"); "double",
+ * "twin" or "doppel" in front of one goes with it. Nothing else is changed. Null when the query
+ * has no package word, or nothing else.
+ */
+export function withoutPackageWords(query: string): string | null {
+  const words = query.trim().split(/\s+/).filter(Boolean);
+  const isPack = (w: string) => {
+    const toks = tokenize(w);
+    return toks.length > 0 && toks.every((t) => inClass(twoPack(t), PACKAGE_WORDS));
+  };
+  const kept = words.filter((w, i) => !isPack(w) && !(/^(double|twin|doppel)$/i.test(w) && i + 1 < words.length && isPack(words[i + 1])));
+  if (kept.length === words.length || !kept.some((w) => tokenize(w).length)) return null;
+  return kept.join(' ');
+}
 
 /** Remove page-title suffixes ("... | iStores - Apple Premium Partner") and an appended cashback promotion. */
 function withoutSuffix(title: string, shopName?: string | null): string {
@@ -86,10 +104,18 @@ const MULTI_RE = /(^|[^a-z0-9.])(\d+)\s*x\s*(\d+)\s*-?\s*(ks|kus|kusy|kusov|pcs|
 // "1×75 ml": one package of the amount that follows.
 const ONE_OF_RE = /(^|[^a-z0-9.])1\s*x\s*(?=\d)/g;
 
-/** Pack/count phrases become one token: "39-dielna" -> "39pc", "2 ks" -> "2pc", "2x" -> "2x", "1×2 ks" -> "2pc". */
+// A pack of two, however it is written ("Duo Pack", "Doublepack", "double pack", "Doppelpack",
+// "dvojbalenie"), is the one word "duo"; a piece count of 2 right next to it ("Duo, 2 ks") says the
+// same thing again and is not a count of its own. A bare "2 ks" stays a piece count ("2pc").
+const TWO_PACK_RE = /(?<![a-z0-9])(?:(?:duo|double|twin|doppel)\s*-?\s*pack|duopack|doublepack|twinpack|doppelpack|dvojbalenie|dvojbaleni)(?![a-z0-9])/g;
+const TWO_COUNT = String.raw`2\s*-?\s*(?:ks|kus|kusy|pcs|pc|pieces|szt|stk|stuck|stueck)(?![a-z])`;
+const DUO_COUNT_RE = new RegExp(String.raw`(?<![a-z0-9])duo[\s,;:()-]*${TWO_COUNT}|(?<![a-z0-9.])${TWO_COUNT}[\s,;:()-]*duo(?![a-z0-9])`, 'g');
+
+/** Pack/count phrases become one token: "39-dielna" -> "39pc", "2 ks" -> "2pc", "2x" -> "2x", "1×2 ks" -> "2pc"; a pack of two -> "duo". */
 function packTokens(folded: string): { text: string; packs: string[] } {
   const packs: string[] = [];
-  let text = folded.replace(MULTI_RE, (_m, pre: string, a: string, b: string) => {
+  let text = folded.replace(TWO_PACK_RE, 'duo').replace(DUO_COUNT_RE, 'duo');
+  text = text.replace(MULTI_RE, (_m, pre: string, a: string, b: string) => {
     const n = Number(a) * Number(b);
     if (n !== 1) packs.push(`${n}pc`);
     return `${pre} `;
@@ -163,6 +189,25 @@ function coverIndices(q: string, titleTokens: string[]): number[] | null {
   return null;
 }
 
+/**
+ * A query token of letters and a number written as one ("io9") met by a title that writes them
+ * apart with up to two neutral or line words between ("iO Series 9"); written side by side ("iO 9")
+ * coverIndices already joins them. The number must be the same token ("9", not "90" or "9n"), and
+ * the letters must not be a neutral word themselves (the Slovak "s" in "s 24 mesačnou zárukou").
+ */
+function gluedCover(q: string, titleTokens: string[]): number[] | null {
+  const m = /^([a-z]+)(\d+)$/.exec(q);
+  if (!m || inClass(m[1], NEUTRAL)) return null;
+  for (let i = 0; i < titleTokens.length; i++) {
+    if (titleTokens[i] !== m[1]) continue;
+    for (let j = i + 1; j < Math.min(titleTokens.length, i + 4); j++) {
+      if (titleTokens[j] === m[2]) return Array.from({ length: j - i + 1 }, (_, k) => i + k);
+      if (!inClass(titleTokens[j], NEUTRAL)) break;
+    }
+  }
+  return null;
+}
+
 export function conditionFrom(itemCondition: string | null | undefined, url: string | null | undefined, words: Condition[]): Condition {
   const ic = (itemCondition ?? '').toLowerCase();
   if (ic.includes('refurbished')) return 'refurbished';
@@ -201,7 +246,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   const matched: string[] = [];
   const consumed = new Set<number>();
   for (const t of q.tokens) {
-    const idx = coverIndices(t, titleTokens);
+    const idx = coverIndices(t, titleTokens) ?? gluedCover(t, titleTokens);
     if (idx) {
       matched.push(t);
       idx.forEach((i) => consumed.add(i));
@@ -256,9 +301,12 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   const conditionWords: string[] = [];
   const titleCodes: string[] = [];
   let colour: string | null = null;
+  // "Súprava zubných kefiek ... Duo Pack": with the two-pack word in the title, a generic set word says nothing more.
+  const twoPackTitle = titleTokens.includes('duo') || specTokens.includes('duo');
+  const setSaysNothing = (t: string) => twoPackTitle && GENERIC_SET_WORDS.has(t);
   for (let i = 0; i < titleTokens.length; i++) {
     const t = titleTokens[i];
-    if (qset.has(t) || consumed.has(i)) continue;
+    if (qset.has(t) || consumed.has(i) || setSaysNothing(t)) continue;
     const cond = conditionOfToken(t);
     if (cond) {
       condWords.push(cond);
@@ -284,6 +332,9 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
       continue;
     }
     if (NEUTRAL_UNITS.test(t) || /^ios\d+/.test(t) || /^a\d{2}$/.test(t)) continue;
+    // "iO3" in "iO Series 3 iO3": the matched line word and number written once more, glued.
+    const glued = /^([a-z]+)(\d+)$/.exec(t);
+    if (glued && matched.includes(glued[1]) && matched.includes(glued[2])) continue;
     // "12 V" next to "12V-15": the voltage repeats part of the model token.
     if (hasDigit(t) && q.tokens.some((x) => x !== t && x.length > t.length && x.startsWith(t))) continue;
     if (VARIANT_UNITS.test(t)) {
@@ -304,7 +355,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   }
   for (const p of [...packs, ...spec.packs]) if (!q.packs.includes(p) && !distinguishing.includes(p)) distinguishing.push(p);
   for (const t of specTokens) {
-    if (qset.has(t)) continue;
+    if (qset.has(t) || setSaysNothing(t)) continue;
     const cond = conditionOfToken(t);
     if (cond) {
       condWords.push(cond);

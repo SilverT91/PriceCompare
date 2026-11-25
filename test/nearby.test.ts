@@ -154,12 +154,20 @@ describe('name derivation', () => {
   });
 
   test('self-check: a name that does not find its own listing again is left out', () => {
-    // "Set" before the brand is not in the name, and it makes the listing another product for that name.
+    // hand-written: "Súprava" before the brand is not in the name, and it makes the listing another product for that name.
+    const title = 'Súprava zubných kefiek Oral-B PRO 3 3900 Cross Action | NAY';
+    const name = nameOf(title, 'NAY');
+    assert.equal(name, 'Oral-B PRO 3 3900');
+    assert.equal(matchTitle(parseQuery(name as string), { title: productPart(title, 'NAY') }).level, 'different');
+    assert.deepEqual(names([shop('nay_sk', [[title, 'https://www.nay.sk/suprava-zubnych-kefiek-oral-b-pro-3-3900-cross-action']])]), []);
+  });
+
+  test('a set word next to the two-pack word is no reason to leave a listing out', () => {
+    // Datart: "Set ... DUO" is the pack of two, so the name finds its listing again (until 2026-11-25 it did not).
     const title = 'Set zubních kartáčků Oral-B PRO 3 3900 Cross Action DUO | DATART';
-    const name = nameOf(title, 'Datart.cz');
-    assert.equal(name, 'Oral-B PRO 3 3900 Cross Action DUO');
-    assert.equal(matchTitle(parseQuery(name as string), { title: productPart(title, 'Datart.cz') }).level, 'different');
-    assert.deepEqual(names([shop('datart_cz', [[title, 'https://www.datart.cz/set-zubnich-kartacku-oral-b-pro-3-3900-cross-action-duo.html']])]), []);
+    assert.equal(nameOf(title, 'Datart.cz'), 'Oral-B PRO 3 3900 Cross Action DUO');
+    assert.deepEqual(names([shop('datart_cz', [[title, 'https://www.datart.cz/set-zubnich-kartacku-oral-b-pro-3-3900-cross-action-duo.html']])]),
+      ['Oral-B Pro 3 3900 Cross Action DUO']);
   });
 });
 

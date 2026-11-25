@@ -20,7 +20,7 @@
 import { pageKey } from './links.ts';
 import { cleanTitle, isArticlePage, matchTitle, nameOnly, parseQuery, scoreCandidate, urlSlug, type MatchInput, type ParsedQuery } from './matcher.ts';
 import { hasDigit, isAlpha, tokenize } from './text.ts';
-import { ACCESSORY_WORDS, BRANDS, CATEGORY_WORDS, colourOf, conditionOfToken, inClass, MODEL_WORDS, NEUTRAL, PACKAGE_WORDS } from './vocab.ts';
+import { ACCESSORY_WORDS, BRANDS, CATEGORY_WORDS, colourOf, conditionOfToken, inClass, MODEL_WORDS, NEUTRAL, PACKAGE_WORDS, twoPack } from './vocab.ts';
 import type { MatchResult, NearbyList, NearbyModel, NearbyShop, ShopResult } from './types.ts';
 
 export const NEARBY_LIMIT = 8;
@@ -54,7 +54,8 @@ export function productPart(title: string, shopName?: string | null): string {
  */
 export function deriveName(text: string, m: MatchResult, brand?: string | null, family: string[] = []): string | null {
   const words = text.split(/\s+/).filter(Boolean);
-  const toks = words.map((w) => tokenize(w));
+  // "Duopack", "Doppelpack" ...: the matcher reports them as "duo".
+  const toks = words.map((w) => tokenize(w).map(twoPack));
   const matched = new Set(m.matched);
   const placed = new Set([...m.matched, ...m.distinguishing, ...m.specExtras]);
   const found = new Set<string>();
@@ -161,7 +162,7 @@ function consider(pq: ParsedQuery, family: string[], rest: string[], l: Listing)
  * "oralb", as "Oral-B"), and tokens that only repeat two others ("iO3" after "iO" and "3") are left out.
  */
 function nameTokens(name: string): string[] {
-  const raw = tokenize(name);
+  const raw = tokenize(name).map(twoPack);
   const toks: string[] = [];
   for (let i = 0; i < raw.length; i++) {
     const pair = raw[i] + (raw[i + 1] ?? '');

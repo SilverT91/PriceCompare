@@ -17,6 +17,17 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
 
 ## What it does
 
+0. **Reads the query the way people type it.**
+   - A brand typed with one wrong, missing or extra letter is searched as the brand ("Iral b io9"
+     as "Oral-B io9", "Bosh" as "Bosch"). The page and the command line say so: `Searched for
+     "Oral-B io9 doublepack" (you typed "Iral b io9 doublepack")`, with a link (or `--as-typed`) to
+     search exactly as typed. Only brands of five or more letters are corrected, and never a word
+     the app knows.
+   - A model number written together with its line matches the shops' spelling: "io9" finds
+     "iO Series 9" and "iO 9", and the other way round.
+   - The words for a pack of two mean the same thing: duo, duopack, duo pack, doublepack, double
+     pack, twin pack, Doppelpack, dvojbalenie. "Súprava ... Duo Pack" and "Duo, 2 ks" are that
+     same pack. A pack of two is still a different product from the single item.
 0. **Chooses which shops to ask.** By default ("Auto") the likely categories are guessed from brand
    and product words in the query (Slovak, Czech, German, Polish, English; `src/core/categories.ts`)
    and only shops whose `categories` fit are asked: a toothbrush query does not go to IKEA or a
@@ -30,6 +41,11 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
    - otherwise a web search restricted to the shop's domain (`site:`), through Brave Search or
      Serper.dev, when a key is set;
    - otherwise nothing, and the shop says so.
+   - **Once more without the package word:** when a shop's own search returns no products and the
+     query has a package word ("doublepack", "set"), the shop's search is asked one more time
+     without it ("Oral-B io9"). The results are still judged against the whole query, so a single
+     brush is not offered for a duo pack. It is one request, inside the shop's limit of 6, and the
+     shop's detail says it happened.
    - **Second route:** when the shop's own search ends with nothing matching (no products, no
      matching candidate, or pages read with no matching offer) and a web search provider is usable,
      the shop also tries the web search before it is reported as `no_match`. These fallback queries
@@ -109,7 +125,56 @@ Shops without an offer that have a search template get a **manual link** (the sh
 for your query). There is always a manual link to **Heureka.sk** as well; the app never fetches
 Heureka itself, because its terms and robots.txt do not allow it.
 
-## Install and run
+## Install on Windows, step by step
+
+What you need: Windows 10 or 11 with `winget` (the "App Installer" from Microsoft, part of Windows
+11 and of current Windows 10), an internet connection, and about 150 MB of free disk space for
+Node.js and the app. The app runs on your own computer and is reachable only from it
+(`127.0.0.1`); nothing is installed as a service.
+
+1. Open **Command Prompt** (Start menu, type `cmd`).
+2. Install Node.js 26 or newer (the app needs at least 26, because it runs TypeScript directly):
+
+   ```
+   winget install --id OpenJS.NodeJS.LTS -e
+   ```
+
+3. Install Git, to download the app and to update it later:
+
+   ```
+   winget install --id Git.Git -e
+   ```
+
+   Without Git: download the ZIP from the repository page on GitHub (Code, Download ZIP), unpack
+   it, and skip the `git clone` line below.
+4. **Close Command Prompt and open it again**, so the new programs are found. Check with
+   `node --version`: it must print `v26` or higher.
+5. Download the app and its four libraries:
+
+   ```
+   git clone https://github.com/SilverT91/PriceCompare.git
+   cd PriceCompare
+   npm install
+   ```
+
+6. Start it, and leave the window open while you use it:
+
+   ```
+   npm start
+   ```
+
+   Then open <http://localhost:8787> in your browser. Stop the app with Ctrl+C in the window.
+
+Next time: open Command Prompt, `cd PriceCompare`, `npm start`. To update: `git pull`, then
+`npm install`, then `npm start`.
+
+If you use PowerShell instead of Command Prompt and it answers that "running scripts is disabled on
+this system", type `npm.cmd` in place of `npm` (for example `npm.cmd start`).
+
+The app works without any account. A free web search key makes it reach more shops; see
+"Web search keys" below for what each choice gives and how limited it is.
+
+## Install and run (short form, any system)
 
 Needs Node.js 26 (TypeScript runs directly, no build step) and npm.
 
@@ -124,6 +189,7 @@ Command line options:
 
 ```
 npm run search -- "iPhone 16 128GB" --pick 2          # compare product #2 of the list
+npm run search -- "Iral b io9" --as-typed             # do not correct a brand typo
 npm run search -- "..." --cat all                     # ask all shops (default auto; or electronics, tools, health, home, books)
 npm run search -- "Bosch GSR 12V-15" --shops nay_sk,hornbach_sk
 npm run search -- "..." --providers serper,brave      # provider order for this run ("none" = off)
@@ -147,14 +213,63 @@ never stored. Delete the file to start fresh.
 
 ## Web search keys
 
-Without a key, shops whose own search page robots.txt disallows end as `needs_search_key`.
-Copy `.env.example` to `.env` (git-ignored) and set one or both keys:
+Some shops do not allow their own search page to be read automatically, and a few have none that
+can be called. For those the app finds product pages through a web search API. That is the only
+part of the app that needs an account somewhere, and it is optional.
+
+### What each choice gives, and its limits
+
+One product search needs about 5 to 7 web queries when nothing is cached; a repeat within 6 hours
+needs none. The allowances below are from the providers' own pages, read on 2026-11-25; they
+change, so check the page before relying on them.
+
+| Choice | Account | Payment card | Free allowance | Product searches that gives |
+|---|---|---|---|---|
+| No key | none | no | none needed | unlimited, but only at the shops whose own search may be read (see below) |
+| [Serper.dev](https://serper.dev/) | name, email, password | no | 2,500 queries (the page does not say whether they expire) | about 350 to 500 in total |
+| [Brave Search API](https://brave.com/search/api/) | email, or a Google or GitHub login | yes, asked for at sign-up | 5 USD of credit every month, about 1,000 queries | about 140 to 200 a month |
+
+**Without a key** the app still asks every shop whose own search page may be read. Measured on
+2026-11-25 with a toothbrush query: of the 32 shops that sell such goods, 10 ended as
+`needs_search_key` (Planeo, Dr.Max, Pilulka, iStores, Vaša Lekáreň, Profimed, Sanitino, Datart.cz,
+MediaMarkt Austria, Morele.net) and 3 more have no search page that can be called (Teta,
+MojaLekáreň, Euronics). Each of them gets a manual link instead. The second route (a web search
+when the shop's own search finds nothing) is not available either.
+
+An example from the same day, the query "Iral b io9 doublepack" (an Oral-B iO 9 pack of two):
+
+| | Shops with an offer | What was found |
+|---|---|---|
+| No key | 1 | NAY in Košice, 297.90 € |
+| With a key (8 queries) | 5 | also MojaLekáreň 299.96 € delivered and Profimed 450.90 € (out of stock); Datart.cz and Morele.net list it but do not deliver to Slovakia |
+
+**For the least effort, use Serper**: no card, and the app supports it as it is. When its queries
+are used up the app says so in the shop statuses and carries on as without a key.
+
+The free allowances are small on purpose, and the app is careful with them: several shops share
+one query, results are kept for 6 hours, and the command line prints what a search cost on its
+last line.
+
+Other providers were looked at on the same day (the details are in
+[docs/research.md](docs/research.md), section 11). Tavily and Exa have a free monthly allowance
+without a card, but filter by domain through their own parameter, so the app would need a small
+adapter for them; it has none yet. Google's Custom Search JSON API is closed to new customers and
+Bing's Web Search API was retired in 2025. The app only uses documented APIs, so it does not read
+a search engine's result pages itself.
+
+### Setting a key
+
+Copy `.env.example` to `.env` (git-ignored; in Command Prompt: `copy .env.example .env`), open it
+in Notepad and set one or both keys:
 
 ```
-BRAVE_API_KEY=...       # https://brave.com/search/api/  (monthly free credit, about 1 request/s)
-SERPER_API_KEY=...      # https://serper.dev/            (one-time free credit)
+SERPER_API_KEY=...      # https://serper.dev/            (2,500 free queries, no card)
+BRAVE_API_KEY=...       # https://brave.com/search/api/  (monthly free credit, card needed, about 1 request/s)
 SEARCH_PROVIDERS=brave,serper
 ```
+
+Then start the app again. A key belongs only in `.env`: do not paste it into chats, issues or
+commits.
 
 The first provider in `SEARCH_PROVIDERS` (default `brave,serper`) is used; when it reports used-up
 credit (Brave: HTTP 402) or a rejected key, it is marked unusable (Brave until the next month,
@@ -262,6 +377,7 @@ src/core/          portable core: only fetch, URL, AbortSignal, TextDecoder (+ c
   links.ts           product links from search pages without an ItemList
   gtin.ts            GTIN normalisation (UPC-A / EAN-13 / GTIN-14 / ISBN -> one 14-digit form)
   text.ts, vocab.ts  tokenizer and word lists (sk/cs/de/pl/en)
+  correct.ts         a brand typed with one wrong letter is searched as the brand
   matcher.ts         query vs title: exact / possible / different, condition, colour, signature
   group.ts           distinct products and their variants
   nearby.ts          similar models the shops list (from what a search collected, no requests)

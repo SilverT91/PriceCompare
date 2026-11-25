@@ -53,6 +53,7 @@ select, button { font: inherit; padding: 9px 10px; border-radius: 8px; border: 1
 button { background: var(--accent); color: var(--on-accent); border-color: transparent; cursor: pointer; font-weight: 600; }
 button:disabled { opacity: 0.6; cursor: default; }
 button.link { all: unset; color: var(--accent); text-decoration: underline; cursor: pointer; }
+.corrected { margin: 8px 0 0; overflow-wrap: anywhere; }
 #scope, #progress { margin: 8px 0 0; }
 
 .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--chip); white-space: nowrap; }
@@ -97,6 +98,11 @@ table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
 thead th { border-top: 0; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
 td.num, th.num { text-align: right; white-space: nowrap; }
+/* The amount stays on one line; the note under it wraps, so a long delivery note cannot squeeze the other columns. */
+td.num .sub { white-space: normal; max-width: 32ch; margin-left: auto; }
+/* Headers and the shop and variant cells break between words, not inside them. */
+thead th, tbody td:nth-child(-n+2) { overflow-wrap: normal; }
+tbody td:last-child { white-space: nowrap; }
 td.total { font-weight: 600; }
 tr.unknown-total td.total { color: var(--warn); font-weight: 400; }
 tr.nodelivery { opacity: 0.75; }

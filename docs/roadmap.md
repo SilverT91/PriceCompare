@@ -2,10 +2,26 @@
 
 Where the project stands and what comes next. Update this file when a round of work finishes.
 
-## State on 2026-11-25 (after the fourth round)
+## State on 2026-11-25 (after the fifth round)
 
 The app works end to end: web page, command line, unit tests passing. The database has 39 non-food
 shops in scope.
+
+What the fifth round did (the same day):
+
+- **The first user's own sentence works.** He typed "Iral b io9 doublepack" (an Oral-B iO 9 pack
+  of two). Before this round every shop title was rejected. Now:
+  - a brand typed with one wrong letter is searched as the brand, and the page says so, with a
+    link to search exactly as typed;
+  - "io9" matches "iO Series 9" and "iO 9";
+  - the words for a pack of two (duo, duopack, doublepack, "Duo Pack", "Súprava ... Duo Pack",
+    "Duo, 2 ks") are one thing, still different from the single brush;
+  - a shop whose own search finds nothing for a query with a package word is asked once more
+    without it.
+- **Install guide for Windows** in the README (winget, Node.js 26, Git, four commands).
+- **Search providers for a second user** were researched ([research.md](research.md), section
+  11). Without a key the app still works at the shops whose own search may be read. The least
+  effort with a key is Serper: no payment card, 2,500 queries.
 
 What the fourth round did (a short one, the same day):
 
@@ -48,7 +64,7 @@ What the third round did:
   either: the product is currently unavailable there, which explains the pages without data seen
   in the second round.
 
-What the test searches give (the first four measured on 2026-11-24, the last on 2026-11-25):
+What the test searches give (the first four measured on 2026-11-24, the last two on 2026-11-25):
 
 | Search | Result |
 |---|---|
@@ -57,6 +73,7 @@ What the test searches give (the first four measured on 2026-11-24, the last on 
 | Oral-B iO Series 3 | Useful: 12 shops with offers. From 59.90 € (62.89 € delivered) at Andreashop and TPD; NAY in Košice 64.90 € with free pickup; also Planeo, Profimed, MojaLekáreň, Nazuby.eu, Teta, Sanitino |
 | Oral-B Pro 3 3000 | One possible offer: Nazuby.eu lists a "PRO 3000 Blue" at 62.01 € (64.50 € delivered), to be checked by the user. The model appears to be leaving the shelves: NAY's pages for it answer 404 and the other shops list its successors, which the page now offers as similar models. Morele.net has it but does not deliver here |
 | Oral-B PRO 3 3500 (reached through "Compare this model") | Thin as well: Planeo in Košice 74.99 € (out of stock), Nazuby.eu 68.22 € (70.71 € delivered, possible match), TPD an ex-display piece at 49.99 € |
+| Iral b io9 doublepack (the first user's sentence, searched as "Oral-B io9 doublepack") | Useful: NAY in Košice 297.90 € with free pickup, MojaLekáreň 299.96 € delivered (possible match), Profimed 450.90 € (out of stock). Datart.cz and Morele.net list it but do not deliver to Slovakia. Without a search key: the NAY offer only |
 
 What the second round did (2026-11-24):
 
@@ -83,17 +100,25 @@ not be read without a browser, 2 have no automatic route, 7 had nothing matching
 (wrong category).
 
 A product search costs about 5 to 7 web queries with nothing cached (3 to 4 before the second
-route). Search quota used so far: Brave 59 requests (of about 1,000 per month), Serper 45 (of 2,500
+route). Search quota used so far: Brave 67 requests (of about 1,000 per month), Serper 45 (of 2,500
 in total). The third round used 7 Brave requests, for one live search; the fourth used none (it
-worked from the cache).
+worked from the cache); the fifth used 8, for one live search of the first user's sentence.
 
 ## Next round
 
 In this order.
 
-1. **Test with the exact model the first user was looking for**, once known.
-2. **Work through "Code issues found in review"** below; none blocks use.
-3. **Browser engine: nothing to do now.** `tools/render_probe.py` measured dm's product page
+1. **Decide on a search provider with a monthly allowance and no card** (owner's decision). Tavily
+   and Exa each have one; each needs an adapter that sends the shop domains as a parameter, and a
+   measurement against the current providers before it becomes a default
+   ([research.md](research.md), section 11).
+2. **Read Brave's terms on keeping results.** Its FAQ says storing results needs a plan with
+   storage rights; the app keeps web search results for 6 hours. If the terms do not allow that,
+   shorten or drop the cache for Brave.
+3. **Similar models, third pass.** The first user's search showed rough names (see known
+   problems).
+4. **Work through "Code issues found in review"** below; none blocks use.
+5. **Browser engine: nothing to do now.** `tools/render_probe.py` measured dm's product page
    (numbers in [architecture.md](architecture.md), section "Add a new route for reading a shop"):
    it needs dm's assets host and data hosts let through, more than 71 requests per page.
    Use the tool on any other shop that reads as `needs_js` before reopening the decision. If a
@@ -141,7 +166,22 @@ In this order.
   they are not ranked lower.
 - **Out-of-credit handling** for Brave (402) and Serper is tested with mocks only, never seen live.
 - **An HTTP 503 from an unknown vendor** is treated as `blocked`.
+- **Query correction** changes a real word that is one letter from a long brand ("brain" to
+  Braun, "apply" to Apple). The line above the results and the link to search as typed are the
+  only guard. Brands of four letters (Sony, Dell, Acer, Asus, IKEA) are not corrected at all, nor
+  are typos of two letters.
+- **The repeat without package words** also drops tool package words ("solo", the battery words),
+  so "Bosch GSR 12V-15 solo" is repeated as "Bosch GSR 12V-15" when the first search is empty. The
+  kits that come back stay `different`; it costs one request.
+- **"Series" is now a neutral word**, so "Oral-B iO Series 3" matches a title "Oral-B iO 3"
+  exactly.
+- **"iO Series 9N"** (MediaMarkt Austria's duo pack) counts as a different model from "iO 9".
 - **Similar models:**
+  - Rough names seen in the search for "Oral-B io9 doublepack" (the list is collapsed there,
+    below an exact match): "DUO na Oral-B", "Oral-B Oral B IO 9" (the brand twice),
+    "Oral-B iOM9D.2J2.2AD Duo" (an order code as the name), "Oral-B iO Series 6 Duo 2", and one
+    name made of a whole specification sentence where a shop's link text runs the name and the
+    description together.
   - A shorter form with an extra word of its own is not merged ("Elktrická Pro 3500", a shop's
     spelling; "EK Pro Kids 3+").
   - "Pro 3 Kids" and "Pro Kids 3+" count as one model because they have the same words; the "3"

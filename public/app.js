@@ -56,7 +56,7 @@ async function init() {
   if (params.get('cat')) $('#cat').value = params.get('cat');
   if (params.get('q')) {
     $('#q').value = params.get('q');
-    start(params.get('q'), params.get('location') || 'kosice', params.get('cat') || 'auto');
+    start(params.get('q'), params.get('location') || 'kosice', params.get('cat') || 'auto', params.get('as_typed') === '1');
   }
   $('#search').addEventListener('submit', (ev) => {
     ev.preventDefault();
@@ -65,13 +65,18 @@ async function init() {
   });
 }
 
-function go(q, loc, cat) {
-  history.replaceState(null, '', `?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&cat=${encodeURIComponent(cat)}`);
-  $('#cat').value = cat;
-  start(q, loc, cat);
+// asTyped: search the query exactly as typed, without the brand correction (the server's as_typed=1).
+function searchParams(q, loc, cat, asTyped) {
+  return `q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&cat=${encodeURIComponent(cat)}${asTyped ? '&as_typed=1' : ''}`;
 }
 
-function start(q, loc, cat) {
+function go(q, loc, cat, asTyped = false) {
+  history.replaceState(null, '', `?${searchParams(q, loc, cat, asTyped)}`);
+  $('#cat').value = cat;
+  start(q, loc, cat, asTyped);
+}
+
+function start(q, loc, cat, asTyped = false) {
   if (source) source.close();
   state = {
     q, loc, cat, shops: new Map(), groups: [], nearby: { models: [], total: 0 }, nearbyOpenFor: null, selected: null, done: false, heureka: null,
@@ -79,15 +84,22 @@ function start(q, loc, cat) {
   };
   for (const id of ['#products', '#comparison', '#manual', '#shops']) $(id).hidden = true;
   $('#scope').hidden = true;
+  $('#corrected').hidden = true;
   $('#progress').hidden = false;
   $('#progress').textContent = 'Asking the shops…';
   $('#rates-note').textContent = '';
   $('#local-title').textContent = `Shops with a branch in ${state.locName}`;
   $('#search button').disabled = true;
-  source = new EventSource(`/api/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&cat=${encodeURIComponent(cat)}`);
+  source = new EventSource(`/api/search?${searchParams(q, loc, cat, asTyped)}`);
   source.addEventListener('start', (m) => {
     const ev = JSON.parse(m.data);
     state.heureka = ev.heurekaUrl;
+    // A brand typo was corrected: say what was searched, with a way to search exactly as typed.
+    if (ev.corrected) {
+      $('#corrected').replaceChildren(`Searched for "${ev.query}" (you typed "${ev.typed}"). `,
+        el('button', { type: 'button', class: 'link', onclick: () => go(ev.typed, loc, cat, true) }, 'Search exactly as typed'));
+    }
+    $('#corrected').hidden = !ev.corrected;
     for (const s of ev.shops) state.shops.set(s.id, { info: s, result: null });
     const c = ev.categories;
     const widen = c.categories ? el('button', { type: 'button', class: 'link', onclick: () => go(q, loc, 'all') }, 'Search all shops instead') : null;

@@ -55,25 +55,31 @@ const CATEGORY_EXACT = [
   'telefon', 'telefony', 'smartfon', 'smartfony', 'smartphone', 'handy', 'mobil', 'phone', 'dual', 'sim', 'esim', 'nano',
   '5g', '4g', 'lte', 'nfc', 'wifi', 'android',
   // toothbrushes
-  'kefka', 'kefky', 'kefku', 'kartacek', 'kartacky', 'toothbrush', 'szczoteczka', 'zebow', 'elektryczna', 'elektryczny',
+  'kefka', 'kefky', 'kefku', 'kefiek', 'kartacek', 'kartacky', 'kartacku', 'toothbrush', 'szczoteczka', 'zebow', 'elektryczna', 'elektryczny',
   // tools
   'aku', 'akku', 'vrtacka', 'vrtacky', 'skrutkovac', 'sroubovak', 'wiertarka', 'wkretarka', 'wiertarkowkretarka', 'drill', 'driver',
   'bohrschrauber', 'akkubohrschrauber', 'vrtaci', 'akumulator', 'akumulatorovy', 'akumulatorova',
 ];
-// Line words that are part of many model names ("Bosch Professional", "Oral-B Professional Care").
-const LINE_WORDS = ['professional', 'profesional', 'profi'];
+// Line words that are part of many model names ("Bosch Professional", "Oral-B Professional Care",
+// "Oral-B iO Series 9", which shops also write "iO 9" and "iO9").
+const LINE_WORDS = ['professional', 'profesional', 'profi', 'series', 'serie', 'seria', 'serii'];
 // generic shop and marketing words
 const GENERIC_WORDS = [
   'nove', 'novy', 'nova', 'new', 'neu', 'neue', 'nowy', 'nowa', 'original', 'originalny', 'originalni', 'edition', 'edicia', 'edice',
   'model', 'verzia', 'verze', 'version', 'cashback', 'akcia', 'akce', 'darcek', 'zdarma', 'gratis', 'eu', 'sk', 'cz', 'de', 'pl', 'at',
   'distribucia', 'distribuce', 'cena', 'pri', 'nakupe', 'min', 'za', 'ks1', 'zaruka', 'zaruky', 'garancia', 'mesiacov', 'rokov', 'rok',
 ];
+/** Brand tokens and how the brand is written (a corrected query uses this spelling). */
+export const BRAND_SPELLING: Record<string, string> = {
+  apple: 'Apple', samsung: 'Samsung', xiaomi: 'Xiaomi', google: 'Google', motorola: 'Motorola', nokia: 'Nokia', sony: 'Sony',
+  huawei: 'Huawei', honor: 'Honor', oneplus: 'OnePlus', bosch: 'Bosch', makita: 'Makita', dewalt: 'DeWalt', metabo: 'Metabo',
+  milwaukee: 'Milwaukee', einhell: 'Einhell', ryobi: 'Ryobi', stanley: 'Stanley', oralb: 'Oral-B', braun: 'Braun', philips: 'Philips',
+  sonicare: 'Sonicare', panasonic: 'Panasonic', lg: 'LG', tefal: 'Tefal', rowenta: 'Rowenta', dyson: 'Dyson', electrolux: 'Electrolux',
+  whirlpool: 'Whirlpool', nivea: 'Nivea', ikea: 'IKEA', lenovo: 'Lenovo', asus: 'Asus', acer: 'Acer', hp: 'HP', dell: 'Dell',
+  jbl: 'JBL', garmin: 'Garmin',
+};
 /** Brand names: a brand word never tells two models of that brand apart, but it does name the product family. */
-export const BRANDS = new Set([
-  'apple', 'samsung', 'xiaomi', 'google', 'motorola', 'nokia', 'sony', 'huawei', 'honor', 'oneplus', 'bosch', 'makita', 'dewalt',
-  'metabo', 'milwaukee', 'einhell', 'ryobi', 'stanley', 'oralb', 'braun', 'philips', 'sonicare', 'panasonic', 'lg', 'tefal',
-  'rowenta', 'dyson', 'electrolux', 'whirlpool', 'nivea', 'ikea', 'lenovo', 'asus', 'acer', 'hp', 'dell', 'jbl', 'garmin',
-]);
+export const BRANDS = new Set(Object.keys(BRAND_SPELLING));
 const CATEGORY_PREFIX = [
   'mobiln', 'telefo', 'smartf', 'chytr', 'inteligent', 'dotyk',
   'zubn', 'zahnburst', 'zahnbuerst', 'elektr', 'electr', 'oscil', 'rotac', 'rotier', 'rotuj', 'dospel', 'erwachs', 'osobn',
@@ -106,6 +112,22 @@ export const PACKAGE_WORDS = wc(
     'bateriou', 'bateriami', 'baterii', 'akumulatorom', 'akumulatormi', 'akumulatory', 'akumulatorami', 'akkus', 'akumulatorem'],
   ['prislusenst', 'prislusenst', 'zubehor', 'akcesori'],
 );
+
+/**
+ * One word for a pack of two, however it is written: "duo", "duopack", "doublepack", "twinpack",
+ * "doppelpack", "dvojbalenie" are all "duo". The matcher also reads the two-word forms ("Duo Pack",
+ * "double pack") this way (matcher.ts, packTokens).
+ */
+const TWO_PACK_WORDS = new Set(['duo', 'duopack', 'doublepack', 'twinpack', 'doppelpack', 'dvojbalenie', 'dvojbaleni']);
+export const twoPack = (token: string): string => (TWO_PACK_WORDS.has(token) ? 'duo' : token);
+
+/**
+ * Package words that only say "a set" without saying which ("Súprava ... Duo Pack"): next to the
+ * two-pack word they add nothing. Not in it: words for another package (trio, family, multipack,
+ * "kit", which for tools means with batteries, cases), the "without" words (solo, bez, ohne, bare,
+ * body) and battery words.
+ */
+export const GENERIC_SET_WORDS = new Set(['set', 'sada', 'sady', 'souprava', 'suprava', 'supravy', 'zestaw', 'bundle', 'combo', 'komplet', 'pack']);
 
 /** Accessory/spare-part words: the title is for a part, not the product itself. */
 export const ACCESSORY_WORDS = wc(

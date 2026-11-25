@@ -2,7 +2,7 @@
 // or written the way those shops name products.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { matchTitle, scoreCandidate, parseQuery, cleanTitle, displayTitle } from '../src/core/matcher.ts';
+import { matchTitle, scoreCandidate, parseQuery, cleanTitle, displayTitle, withoutPackageWords } from '../src/core/matcher.ts';
 import { tokenize } from '../src/core/text.ts';
 
 const m = (q: string, title: string, extra: Record<string, string> = {}) => matchTitle(q, { title, ...extra });
@@ -254,6 +254,93 @@ describe('part codes and page-title noise', () => {
   test('order numbers do not count as distinguishing tokens', () => {
     assert.equal(m('Bosch GSR 12V-15', 'Aku vŕtačka Bosch GSR 12V-15, 060186810F').level, 'exact');
     assert.equal(m('iPhone 16 128GB', 'Smartfon Apple iPhone 16 128GB Black MYE73', { mpn: 'MYE73' }).level, 'exact');
+  });
+});
+
+describe('a model number glued to its line word, and a pack of two (the sentence a user typed, 2026-11-25)', () => {
+  // Titles written the way shops name the iO Series 9 two-handle pack; the queries are the ones measured.
+  const TITLES = {
+    duopack: 'Oral-B iO 9 Duopack',
+    seriesDuo: 'Oral-B iO Series 9 Duo Black Onyx + Rose Quartz',
+    duoTwoPieces: 'Zubná kefka Oral-B iO Series 9 Duo, 2 ks',
+    gluedDuoPack: 'Oral-B iO9 Duo Pack',
+    single: 'Oral-B iO Series 9 Black Onyx',
+  };
+  const lvl = (q: string, t: string) => m(q, t).level;
+
+  test('"Oral-B io9 doublepack" (the corrected typed query) finds every way of writing the duo pack', () => {
+    const q = 'Oral-B io9 doublepack';
+    assert.equal(lvl(q, TITLES.duopack), 'exact');
+    assert.equal(lvl(q, TITLES.duoTwoPieces), 'exact', 'iO Series 9 = io9, Duo = doublepack, "2 ks" next to Duo is no extra count');
+    assert.equal(lvl(q, TITLES.gluedDuoPack), 'exact');
+    const colours = m(q, TITLES.seriesDuo);
+    assert.equal(colours.level, 'possible', 'colour names the matcher does not know');
+    assert.deepEqual([colours.missing, colours.distinguishing], [[], []]);
+    assert.equal(lvl('Oral b io9 doublepack', TITLES.duopack), 'exact', 'the brand written as two words');
+  });
+
+  test('"Oral-B iO 9 duopack" and "Oral-B iO Series 9 Duo" find each other\'s forms', () => {
+    assert.equal(lvl('Oral-B iO 9 duopack', TITLES.duopack), 'exact');
+    assert.deepEqual(m('Oral-B iO 9 duopack', TITLES.seriesDuo).missing, []);
+    assert.equal(lvl('Oral-B iO 9 duopack', TITLES.duoTwoPieces), 'exact');
+    assert.equal(lvl('Oral-B iO Series 9 Duo', TITLES.duoTwoPieces), 'exact', 'no extra "2pc"');
+    assert.equal(lvl('Oral-B iO Series 9 Duo', TITLES.gluedDuoPack), 'exact', '"iO9" = "iO Series 9", "Duo Pack" = "Duo"');
+    assert.equal(lvl('Oral-B iO 9 Duo', 'Oral-B iO9 Duo'), 'exact');
+    for (const two of ['Twin Pack', 'twinpack', 'Doppelpack', 'double pack', 'dvojbalenie', 'dvojbalení', 'Duo-Pack']) {
+      assert.equal(lvl('Oral-B iO Series 9 Duo', `Oral-B iO Series 9 ${two}`), 'exact', two);
+    }
+  });
+
+  test('NAY, 2026-11-25: a set word next to the two-pack word is no extra (search result title, doubled by the page)', () => {
+    const nay = 'Súprava zubných kefiek Oral-B iO9 Series Duo Pack Black Súprava zubných kefiek Oral-B iO9 Series Duo Pack Black';
+    const url = 'https://www.nay.sk/suprava-zubnych-kefiek-oral-b-io9-series-duo-pack-black';
+    const r = m('Oral-B io9 doublepack', nay);
+    assert.equal(r.level, 'exact');
+    assert.deepEqual([r.missing, r.distinguishing], [[], []]);
+    assert.equal(scoreCandidate(parseQuery('Oral-B io9 doublepack'), nay, url).level, 'exact', 'the candidate score accepts it too');
+    assert.equal(lvl('Oral-B iO Series 9 Duo', 'Oral-B iO Series 9 Duo sada'), 'exact');
+    // without the two-pack word a set word stays what it is
+    assert.deepEqual(m('Oral-B iO Series 9', 'Súprava zubných kefiek Oral-B iO Series 9 Black').distinguishing, ['suprava']);
+    assert.equal(lvl('Oral-B io9 doublepack', 'Oral-B iO Series 9 set'), 'different', 'a duo query is not a title that only says "set"');
+    assert.deepEqual(m('Oral-B iO Series 9 Duo', 'Oral-B iO Series 9 Duo Family').distinguishing, ['family'], 'another package word stays');
+  });
+
+  test('the query without its package words, for a repeated shop search', () => {
+    assert.equal(withoutPackageWords('Oral-B io9 doublepack'), 'Oral-B io9');
+    assert.equal(withoutPackageWords('Oral-B iO 9 double pack'), 'Oral-B iO 9');
+    assert.equal(withoutPackageWords('Oral-B iO Series 9 Duo'), 'Oral-B iO Series 9');
+    assert.equal(withoutPackageWords('Oral-B io9'), null, 'no package word');
+    assert.equal(withoutPackageWords('duopack'), null, 'nothing else');
+  });
+
+  test('a different package stays a different product', () => {
+    assert.equal(lvl('Oral-B io9 doublepack', TITLES.single), 'different', 'the duo pack is not the single brush');
+    assert.deepEqual(m('Oral-B io9 doublepack', TITLES.single).missing, ['duo']);
+    assert.equal(lvl('Oral-B iO Series 9', TITLES.duoTwoPieces), 'different', 'a query without a pack word is not the duo pack');
+    assert.deepEqual(m('Oral-B iO Series 9', TITLES.gluedDuoPack).distinguishing, ['duo']);
+    assert.equal(lvl('Oral-B iO Series 9 Duo', 'Oral-B iO Series 9 Trio'), 'different', 'a trio is another package');
+    assert.deepEqual(m('Oral-B iO Series 9 Duo', 'Oral-B iO Series 9 Duo, 3 ks').distinguishing, ['3pc'], 'only a count of 2 joins "Duo"');
+    // a bare piece count stays a count: not the duo concept
+    const bare = m('Oral-B io9 doublepack', 'Oral-B iO Series 9, 2 ks');
+    assert.equal(bare.level, 'different');
+    assert.deepEqual([bare.missing, bare.distinguishing], [['duo'], ['2pc']]);
+    assert.equal(lvl('Oral-B iO Series 9 2 ks', 'Oral-B iO Series 9, 2 ks'), 'exact');
+  });
+
+  test('glued and apart: the same number only, close together, not after a connector word', () => {
+    assert.equal(lvl('Oral-B iO9', 'Oral-B iO Series 90'), 'different', '"90" is not "9"');
+    assert.equal(lvl('Oral-B iO9', 'Oral-B iO Series 9N'), 'different', '"9n" is not "9"');
+    assert.equal(lvl('Oral-B iO9', 'Oral-B iO Series 9'), 'exact');
+    // Datart, 2026-11-25: the model written once more, glued, is no extra model number
+    assert.equal(lvl('Oral-B iO Series 3', 'Zubní kartáček Oral-B iO Series 3 iO3 Pink'), 'exact');
+    assert.equal(lvl('Oral-B iO Series 3', 'Oral-B iO Series 3 iO4 Pink'), 'different', 'another number glued stays another model');
+    // "s24": an "S" and a "24" in one title are not the model
+    assert.equal(lvl('Samsung Galaxy S24', 'Samsung Galaxy A55 s nabíjačkou, záruka 24 mesiacov'), 'different');
+    assert.equal(lvl('Samsung Galaxy S24', 'Samsung Galaxy A15 s 2 rokmi záruky 24'), 'different');
+    // "Pro 3 3000" as before
+    assert.equal(lvl('Oral-B Pro 3 3000', 'Oral-B Pro 3000'), 'possible');
+    assert.equal(lvl('Oral-B Pro 3 3000', 'Oral-B Pro3 3000'), 'exact');
+    assert.equal(lvl('Oral-B Pro 3 3000', 'Oral-B Pro 3 3500'), 'different');
   });
 });
 

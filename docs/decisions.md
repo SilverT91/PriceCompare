@@ -148,6 +148,24 @@ more hosts on dm's own services domain, which were not tried. So for dm a render
 71 requests to several hosts for one price, nearly all of them less than 3 seconds apart. That
 supports the decision.
 
+## A corrected query is shown, and can be undone (2026-11-25)
+
+The first user's own sentence had a typo in the brand, and nothing was found. The app now corrects
+a brand that is one letter off, because a search that silently finds nothing teaches the user
+nothing. The correction is deliberately narrow (brands of five or more letters, never a word the
+app knows), it is always shown above the results with both forms, and one click searches exactly
+what was typed. The matcher was also taught the ways people and shops write the same thing ("io9"
+and "iO Series 9"; "doublepack" and "Duo Pack"), instead of expecting the user to know a shop's
+spelling.
+
+## A second user installs it without an account (2026-11-25)
+
+The app must be useful with no key at all: shops whose own search may be read are asked, and the
+rest get a manual link. A web search key is an option that widens coverage, and the README says
+what each choice gives and how limited it is. The provider recommended for the least effort is the
+one that needs no payment card. Only documented APIs are used; reading a search engine's result
+pages, directly or through a self-hosted metasearch, stays out.
+
 ## Only ask shops in the query's category (2026-11-24)
 
 A toothbrush query does not go to a furniture shop. Categories are guessed from the query with a

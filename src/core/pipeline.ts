@@ -2,11 +2,12 @@
 // streamed as they arrive. Uses only web-standard APIs plus the injected cache/fetch.
 
 import { chooseCategories, shopIsRelevant, type CategoryChoice } from './categories.ts';
+import { correctQuery } from './correct.ts';
 import { groupOffers } from './group.ts';
 import { HostScheduler, MAX_REQUESTS_PER_SHOP, ShopSession, type FetchLike } from './http.ts';
 import { extractListCandidates, extractOffers, offerUrl } from './jsonld.ts';
 import { extractLinkCandidates, pageKey, stripTrackingParams } from './links.ts';
-import { matchTitle, parseQuery, scoreCandidate, type ParsedQuery } from './matcher.ts';
+import { matchTitle, parseQuery, scoreCandidate, withoutPackageWords, type ParsedQuery } from './matcher.ts';
 import { nearbyModels } from './nearby.ts';
 import { getRates } from './rates.ts';
 import {
@@ -36,6 +37,8 @@ export interface SearchOptions {
   onProviderCall?: (c: ProviderCall) => void;
   /** How long the second-route batch waits for more shops after the first one asks (default 15 s). */
   fallbackDeadlineMs?: number;
+  /** Search the query exactly as typed: no brand correction (correct.ts). */
+  asTyped?: boolean;
 }
 
 /** One shop's single chance to join the second-route (fallback) web search batch. */
@@ -52,7 +55,8 @@ export interface ShopInfo {
 }
 
 export type SearchEvent =
-  | { type: 'start'; query: string; location: string; shops: ShopInfo[]; heurekaUrl: string; providers: string[]; categories: CategoryChoice }
+  /** query: what is searched; typed: what was typed; corrected: the two differ (a brand typo was corrected). */
+  | { type: 'start'; query: string; typed: string; corrected: boolean; location: string; shops: ShopInfo[]; heurekaUrl: string; providers: string[]; categories: CategoryChoice }
   | { type: 'rates'; rates: Rates | null; error?: string }
   | { type: 'shop'; result: ShopResult }
   /** groups: the distinct products so far; nearby: similar models the shops list (nearby.ts). */
@@ -60,7 +64,10 @@ export type SearchEvent =
   | { type: 'done'; summary: SearchSummary };
 
 export interface SearchSummary {
+  /** What was searched (the corrected query, if a brand typo was corrected). */
   query: string;
+  /** What was typed. */
+  typed: string;
   ms: number;
   statusCounts: Partial<Record<ShopStatus, number>>;
   offers: number;
@@ -97,15 +104,19 @@ interface CachedCandidates {
 
 const normQuery = (q: string) => q.trim().replace(/\s+/g, ' ').toLowerCase();
 
-export async function* runSearch(query: string, opts: SearchOptions): AsyncGenerator<SearchEvent> {
+export async function* runSearch(typed: string, opts: SearchOptions): AsyncGenerator<SearchEvent> {
   const t0 = Date.now();
+  // A brand typed with one wrong letter is searched as the brand (correct.ts), unless asked not to.
+  // Everything below (category guess, shop search pages, web queries, matcher, cache keys) uses the searched form.
+  const fix = opts.asTyped ? { query: typed.trim(), typed, corrected: false } : correctQuery(typed);
+  const query = fix.query;
   const inScope = opts.shops.filter((s) => s.in_scope);
   const choice = chooseCategories(query, opts.category);
   const shops = inScope.filter((s) => shopIsRelevant(s, choice.categories));
   const skipped = inScope.filter((s) => !shopIsRelevant(s, choice.categories));
   const pq = parseQuery(query);
   yield {
-    type: 'start', query, location: opts.location.id, heurekaUrl: heurekaUrl(query), providers: opts.providers.map((p) => p.id),
+    type: 'start', query, typed: fix.typed, corrected: fix.corrected, location: opts.location.id, heurekaUrl: heurekaUrl(query), providers: opts.providers.map((p) => p.id),
     categories: choice,
     shops: inScope.map((s) => ({ id: s.id, name: s.name, domain: s.domain, section: sectionFor(s, opts.location), branchKnown: s[opts.location.branchField] })),
   };
@@ -189,7 +200,7 @@ export async function* runSearch(query: string, opts: SearchOptions): AsyncGener
   yield {
     type: 'done',
     summary: {
-      query, ms: Date.now() - t0, statusCounts, offers: allOffers.length, groups: groups.length,
+      query, typed: fix.typed, ms: Date.now() - t0, statusCounts, offers: allOffers.length, groups: groups.length,
       nearby: nearby.total,
       nearbyPrices: priced.prices,
       providerCalls: chain?.calls ?? [],
@@ -577,6 +588,40 @@ async function searchShop(
   } else {
     decline();
     notes.push('candidates from cache');
+  }
+
+  // ---- 1b. the shop's own search returned no products for a query with package words -------------
+  // Shops often name the pack another way ("Duo Pack" for "doublepack"): their search is asked once
+  // more without the package words, and what it lists is scored against the full query as usual.
+  // Also after an empty first answer from the cache; the retry has its own cache entry.
+  const shorter = route === 'shop_search' && !candidates.length && shop.search_url_template ? withoutPackageWords(query) : null;
+  if (shorter && shop.search_url_template) {
+    const said = `the shop search returned no products for "${query}"; repeated without the package word(s) as "${shorter}"`;
+    const retryKey = `${candKey}|without package words|${normQuery(shorter)}`;
+    const hit = await opts.cache.get<CachedCandidates>('candidates', retryKey);
+    if (hit) {
+      candidates = hit.candidates;
+      notes.push(`${said}: ${candidates.length} result(s) (from cache)`);
+    } else if (session.remaining() <= 0) {
+      notes.push(`${said} was not possible: the request budget (${MAX_REQUESTS_PER_SHOP} per shop) is used up`);
+    } else {
+      const page = await session.get(buildSearchUrl(shop.search_url_template, shorter), 'search');
+      if (page.blocked) {
+        await markBlocked(page.blocked);
+        return finish('blocked', `${said}: bot protection (${page.blocked}) on the search page; skipped for an hour`, { route });
+      }
+      const failed = page.robotsDisallowed ? `redirected to ${page.robotsDisallowed}, which robots.txt disallows`
+        : page.offsiteRedirect ? `redirected off-site to ${page.offsiteRedirect}`
+        : page.budgetExhausted ? `the request budget (${MAX_REQUESTS_PER_SHOP} per shop) is used up`
+        : !page.ok ? (page.error ?? `HTTP ${page.status}`) : null;
+      if (failed) notes.push(`${said}: failed (${failed})`);
+      else {
+        const fromList = extractListCandidates(page.text, page.finalUrl);
+        candidates = fromList.length ? fromList : extractLinkCandidates(page.text, page.finalUrl, shorter, shop.link_exclude_regex);
+        await opts.cache.set('candidates', retryKey, { route, candidates } satisfies CachedCandidates, CACHE_TTL.candidates);
+        notes.push(`${said}: ${candidates.length} result(s)`);
+      }
+    }
   }
 
   const first = await readCandidates(ctx, route, candidates, notes);

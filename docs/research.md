@@ -248,3 +248,70 @@ What follows from it:
 - Alza's partner API is worth checking again once it is released.
 - Shops produce product feeds for comparison services, at an address the service downloads from.
   Whether any shop publishes that address openly was not established, and none was probed.
+
+## 11. Web search providers for someone who wants no card and little setup (2026-11-25)
+
+The question: what can a second user install with the least effort, and how limited is it. All
+facts are from the providers' own pages, read on 2026-11-25. "Not stated" means the page was read
+and does not say. One product search costs 5 to 7 queries with nothing cached.
+
+The two providers the app supports:
+
+| | Brave Search API | Serper.dev |
+|---|---|---|
+| Free allowance | 5 USD of credit every month; at 5 USD per 1,000 requests that is about 1,000 requests. The same page also says "up to $20 in free calls every month" in its headline | 2,500 queries |
+| Recurring | Monthly | Not stated |
+| Expiry | Not stated | Not stated for the free queries (paid credits: 6 months) |
+| Payment card at sign-up | Yes ("to prevent abuse") | No ("no credit-card needed") |
+| Sign-up | Email and password, or a Google or GitHub login; then a plan must be activated before a key can be made | Name, email, password |
+| `site:` with OR | Documented, marked as experimental | Not stated |
+| Product searches | About 140 to 200 a month | About 350 to 500 in total |
+
+Sources: <https://brave.com/search/api/>,
+<https://api-dashboard.search.brave.com/documentation/resources/search-operators>,
+<https://api-dashboard.search.brave.com/documentation/guides/authentication>,
+<https://serper.dev>, <https://serper.dev/signup>, <https://serper.dev/terms>.
+
+Two points to keep in mind:
+
+- Brave's FAQ says that storing results needs a plan with storage rights. The app keeps web search
+  results for 6 hours to save queries. Brave's full terms on this were not read; it is an open
+  point, not a finding.
+- Serper's terms describe its data as "web-scraped data collected from public domain sources" and
+  say it is not affiliated with Google. The app calls only Serper's documented API.
+
+Other providers:
+
+| Provider | Free allowance | Card | Domain filter | Source |
+|---|---|---|---|---|
+| Tavily | 1,000 credits a month, 1 per basic search | No | `include_domains` parameter (no `site:` in the docs) | <https://tavily.com/pricing>, <https://docs.tavily.com/documentation/api-reference/endpoint/search> |
+| Exa | 10 USD of credit a month, "up to 2,500 Lite searches" | No | `includeDomains` parameter | <https://exa.ai/pricing>, <https://docs.exa.ai/reference/search> |
+| You.com | An endpoint with no key and no account, 100 queries a day, over the MCP protocol; accounts get 10 USD of credit | No | `site:` and OR documented for the Web Search API; not confirmed for the keyless endpoint | <https://you.com/docs/agents/mcp-server.md>, <https://you.com/docs/guides/search/search-operators.md> |
+| Google Custom Search JSON API | 100 queries a day | n/a | n/a | Closed to new customers; service ends 2027-01-01: <https://developers.google.com/custom-search/v1/overview> |
+| Bing Web Search API | none | n/a | n/a | Retired 2025-08-11: <https://learn.microsoft.com/en-us/lifecycle/announcements/bing-search-api-retirement> |
+| Mojeek API | A free credit of unstated size | Yes | Operators included, not listed | <https://www.mojeek.com/services/api.html> |
+| Kagi Search API | None stated; 12 USD per 1,000 | Not stated | Not stated | <https://kagi.com/api/pricing> |
+| Marginalia | Free non-commercial key by email; a shared public key that "often hits a rate limit" | No | Not documented | <https://about.marginalia-search.com/article/api> |
+| DuckDuckGo | No official web search API was found | | | Could not be verified on its own pages |
+
+Left out on purpose:
+
+- **Resellers of collected search results** (SerpApi, SearchApi.io, ScrapingDog): small free
+  allowances (250 a month, 100 once, 20 requests), and their data comes from reading search
+  engines' result pages.
+- **Self-hosted metasearch (SearXNG).** Its documentation says it passes requests on to other
+  search services and is classified by them as a bot. Google's terms and robots.txt do not allow
+  automated access to its result pages. That is outside this project's request rules.
+- **Common Crawl.** A free archive and URL index, crawled about monthly. Its FAQ calls it a sample
+  of the web and warns of strict rate limits on the index. It gives URLs without text search or
+  ranking, a few weeks old, so it does not replace a search API.
+
+What follows from it:
+
+- There is no key-free web search API among the established providers, apart from You.com's
+  endpoint, which needs more code and whose domain filter is unconfirmed.
+- **Least effort today: Serper.** No card, and no change to the app.
+- **A provider with a monthly allowance and no card would be Tavily or Exa.** Each needs an adapter
+  that sends the shop domains as a parameter, and a measurement like the one in the README before
+  it becomes a default. Whether their indexes cover small Slovak and Czech shops is not stated
+  anywhere.

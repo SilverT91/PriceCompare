@@ -6,6 +6,7 @@
 //   options: --cat auto|all|electronics|tools|health|home|books   (default auto: guessed from the query)
 //            --location kosice  --shops nay_sk,hornbach_sk  --providers brave,serper | serper,brave | none
 //            --site-search combined|per-shop  --domains-per-query 6  --no-cache  --json
+//            --as-typed   (no brand correction: "Iral b ..." is searched as typed, not as "Oral-B ...")
 
 import { parseArgs } from 'node:util';
 import { CATEGORY_GROUPS } from '../core/categories.ts';
@@ -29,13 +30,14 @@ const { values, positionals } = parseArgs({
     'domains-per-query': { type: 'string', default: '6' },
     'no-cache': { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
+    'as-typed': { type: 'boolean', default: false },
     width: { type: 'string', default: '160' },
   },
 });
 
 const query = positionals.join(' ').trim();
 if (!query) {
-  console.error(`usage: npm run search -- "product name" [--cat auto|all|${CATEGORY_GROUPS.map((g) => g.id).join('|')}] [--pick N] [--shops id,id] [--providers brave,serper|none]`);
+  console.error(`usage: npm run search -- "product name" [--cat auto|all|${CATEGORY_GROUPS.map((g) => g.id).join('|')}] [--pick N] [--shops id,id] [--providers brave,serper|none] [--as-typed]`);
   process.exit(2);
 }
 
@@ -70,11 +72,15 @@ for await (const ev of runSearch(query, {
   siteSearchMode: values['site-search'] === 'per-shop' ? 'per_shop' : 'combined',
   domainsPerQuery: Number(values['domains-per-query']) || 6,
   onProviderCall: (c) => store.recordProviderCall(c),
+  asTyped: values['as-typed'],
 })) {
   if (ev.type === 'start') {
     heureka = ev.heurekaUrl;
     const asked = ev.shops.length;
-    console.log(`Searching for "${query}" near ${location.name}; categories: ${ev.categories.label} (${ev.categories.reasons.join('; ')})`);
+    if (ev.corrected) {
+      console.log(`Searched for "${ev.query}" (you typed "${ev.typed}"); to search exactly as typed: npm run search -- "${ev.typed}" --as-typed`);
+    }
+    console.log(`Searching for "${ev.query}" near ${location.name}; categories: ${ev.categories.label} (${ev.categories.reasons.join('; ')})`);
     console.log(`  web search: ${providers.length ? providers.map((p) => p.id).join(' > ') : 'none (no key set)'}; ${asked} shops in scope${ev.categories.categories ? '; widen with --cat all' : ''}`);
   }
   if (ev.type === 'rates' && ev.error) console.log(`  exchange rates unavailable: ${ev.error}`);
@@ -89,7 +95,7 @@ for await (const ev of runSearch(query, {
   if (ev.type === 'done') summary = ev.summary;
 }
 if (summary) {
-  store.recordSearch({ query, location: location.id, startedAt, ms: summary.ms, statusCounts: summary.statusCounts, offers: summary.offers, groups: summary.groups });
+  store.recordSearch({ query: summary.query, location: location.id, startedAt, ms: summary.ms, statusCounts: summary.statusCounts, offers: summary.offers, groups: summary.groups });
 }
 
 if (values.json) {
