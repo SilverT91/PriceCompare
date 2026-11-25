@@ -269,7 +269,9 @@ src/node/          Node-only: SQLite store (node:sqlite), .env, shops.yaml, serv
 public/            plain HTML/CSS/JS page (works from 380 px wide; offer tables become cards on narrow screens)
 test/              node:test unit tests; fixtures are trimmed JSON-LD blocks, not whole pages
 tools/             probe_shops.py (feasibility probe), extract_fixtures.ts, measure_site_search.ts,
-                   fetch_info.ts (reads a shop's delivery/pickup/homepage under the request rules)
+                   fetch_info.ts (reads a shop's delivery/pickup/homepage under the request rules),
+                   render_probe.py (measures what a browser engine would add for one page; the app
+                   itself uses no browser)
 ```
 
 ## Coverage and cost (measured 2026-11-24, no guarantees)

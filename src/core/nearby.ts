@@ -18,8 +18,8 @@
 //   again as exact or possible (self-check).
 
 import { pageKey } from './links.ts';
-import { cleanTitle, isArticlePage, matchTitle, parseQuery, scoreCandidate, urlSlug, type MatchInput, type ParsedQuery } from './matcher.ts';
-import { fold, hasDigit, isAlpha, tokenize } from './text.ts';
+import { cleanTitle, isArticlePage, matchTitle, nameOnly, parseQuery, scoreCandidate, urlSlug, type MatchInput, type ParsedQuery } from './matcher.ts';
+import { hasDigit, isAlpha, tokenize } from './text.ts';
 import { ACCESSORY_WORDS, BRANDS, CATEGORY_WORDS, colourOf, conditionOfToken, inClass, MODEL_WORDS, NEUTRAL, PACKAGE_WORDS } from './vocab.ts';
 import type { MatchResult, NearbyList, NearbyModel, NearbyShop, ShopResult } from './types.ts';
 
@@ -35,24 +35,13 @@ export function familyTokens(pq: ParsedQuery): string[] {
 /**
  * The part of a title that names the product: shop suffix and promotion removed (cleanTitle), only
  * the name of a "Name / spec / spec" title, nothing after " + " (bundled extras such as a travel
- * case), and a title the shop wrote twice in a row taken once.
+ * case), then a leading spec list removed and a title the shop wrote twice in a row taken once (nameOnly).
  */
 export function productPart(title: string, shopName?: string | null): string {
   let t = cleanTitle(title, shopName);
   const segments = t.split(/\s\/\s/);
   if (segments.length >= 3) t = segments[0];
-  t = t.split(/\s\+\s/)[0];
-  // A spec list in front of the name ("Typ: Zubná kefka • Použitie: … • Počet rýchlostí: 3 ORAL-B Series iO 2"):
-  // the name follows the last "label: number" pair.
-  const bullets = t.split(/\s•\s/);
-  if (bullets.length >= 2 && bullets[0].includes(':')) t = (bullets.at(-1) ?? t).replace(/^\p{L}[\p{L} .]{0,40}:\s*\d+\s+(?=\S)/u, '');
-  const words = t.split(/\s+/).filter(Boolean);
-  const n = words.length;
-  if (n >= 4 && n % 2 === 0) {
-    const half = n / 2;
-    if (fold(words.slice(0, half).join(' ')) === fold(words.slice(half).join(' '))) return words.slice(0, half).join(' ');
-  }
-  return words.join(' ');
+  return nameOnly(t.split(/\s\+\s/)[0]);
 }
 
 /**
@@ -167,11 +156,38 @@ function consider(pq: ParsedQuery, family: string[], rest: string[], l: Listing)
   return { shop: l.shop, text: l.text, input, fromSlug: l.fromSlug, match: m, name, priceEur: l.priceEur };
 }
 
-/** Cluster keys of a name: its tokens run together in order, and as a sorted set. Tokens that only repeat two others ("iO3" after "iO" and "3") are left out. */
+/**
+ * The tokens of a name for comparing names: a brand written as two words is one token ("Oral B" =
+ * "oralb", as "Oral-B"), and tokens that only repeat two others ("iO3" after "iO" and "3") are left out.
+ */
+function nameTokens(name: string): string[] {
+  const raw = tokenize(name);
+  const toks: string[] = [];
+  for (let i = 0; i < raw.length; i++) {
+    const pair = raw[i] + (raw[i + 1] ?? '');
+    if (i + 1 < raw.length && BRANDS.has(pair)) {
+      toks.push(pair);
+      i++;
+    } else toks.push(raw[i]);
+  }
+  return toks.filter((t) => !toks.some((a) => t.length > a.length && t.startsWith(a) && toks.includes(t.slice(a.length))));
+}
+
+/** Cluster keys of a name: its tokens run together in order, and as a sorted set. */
 function clusterKeys(name: string): string[] {
-  const toks = tokenize(name);
-  const kept = toks.filter((t) => !toks.some((a) => t.length > a.length && t.startsWith(a) && toks.includes(t.slice(a.length))));
+  const kept = nameTokens(name);
   return [`run:${kept.join('')}`, `set:${[...new Set(kept)].sort().join(' ')}`];
+}
+
+/**
+ * The fuller name names the model of this listing too: searched for, it finds the listing as exact
+ * or possible, and the only thing it lacks there is a line digit the shop left out (the matcher's
+ * "Pro 3000" for "Pro 3 3000"). A missing word ("Spiderman" for a "Pro Kids 3+ Lion King") is another
+ * product, even where the matcher only calls it a doubt.
+ */
+function namesListing(fuller: string, input: MatchInput): boolean {
+  const m = matchTitle(parseQuery(fuller), input);
+  return m.level !== 'different' && m.missing.every(hasDigit);
 }
 
 const isTierOrPackage = (t: string) => inClass(t, MODEL_WORDS) || inClass(t, PACKAGE_WORDS) || /^\d+(pc|x)$/.test(t);
@@ -204,19 +220,102 @@ function queryBrand(pq: ParsedQuery): { token: string; text: string } | null {
   return null;
 }
 
-/** "ORAL-B PRO 3 3900" / "oral b pro 3 3900" -> "Oral-B PRO 3 3900" for a query that writes "Oral-B". */
-function withQueryBrand(name: string, brand: { token: string; text: string } | null): string {
-  if (!brand) return name;
-  const words = name.split(' ');
-  for (let k = 1; k <= Math.min(3, words.length); k++) {
-    const joined = tokenize(words.slice(0, k).join(' ')).join('');
-    if (joined === brand.token) return [brand.text, ...words.slice(k)].join(' ');
-    if (!brand.token.startsWith(joined)) break;
+/**
+ * A name in the query's writing: "ORAL-B PRO 3 3900" / "oral b pro 3 3900" -> "Oral-B Pro 3 3900" for
+ * the query "Oral-B Pro 3 3000". The brand as the query spells it; a word the query also has, in the
+ * query's capitals ("PRO" -> "Pro"); a word of five or more letters, all capitals, with only its first
+ * letter upper case ("SERIES" -> "Series"). Shorter words and words with digits or signs stay as the
+ * shop writes them ("iO", "GSR", "OLED", "D103", "12V-15", "SC+TC"): a short word in capitals is more
+ * often an abbreviation than a shop's way of writing.
+ */
+function inQueryWriting(name: string, pq: ParsedQuery, brand: { token: string; text: string } | null): string {
+  let words = name.split(' ');
+  if (brand) {
+    for (let k = 1; k <= Math.min(3, words.length); k++) {
+      const joined = tokenize(words.slice(0, k).join(' ')).join('');
+      if (joined === brand.token) {
+        words = [brand.text, ...words.slice(k)];
+        break;
+      }
+      if (!brand.token.startsWith(joined)) break;
+    }
   }
-  return name;
+  const queryWord = new Map(pq.raw.trim().split(/\s+/).map((w) => [w.toLocaleLowerCase(), w]));
+  return words
+    .map((w) => queryWord.get(w.toLocaleLowerCase()) ?? (/^\p{Lu}{5,}$/u.test(w) ? w[0] + w.slice(1).toLocaleLowerCase() : w))
+    .join(' ');
 }
 
 const capsWords = (name: string) => name.split(' ').filter((w) => w.length >= 3 && /\p{L}/u.test(w) && w === w.toUpperCase()).length;
+
+/** Listings of one model. `shorter`: names that came in with a cluster merged into this one as a shorter form. */
+interface Cluster {
+  keys: Set<string>;
+  sources: Source[];
+  shorter: Set<string>;
+}
+
+/**
+ * The name of a cluster: one from a title rather than a slug, that finds most of the cluster's
+ * listings again, not a shorter form merged in ("Oral-B PRO 3 3500" over "Oral-B Pro 3500", which
+ * also finds them), written in the form most shops use ("Oral-B Pro 3" over "Oral B Pro 3" and
+ * "Oral-B Pro3"), with the fewest words in capitals, then the shortest.
+ */
+function chooseName(c: Cluster): string {
+  const names = [...new Set(c.sources.map((s) => s.name))];
+  const form = (n: string) => tokenize(n).join(' ');
+  const rank = (n: string) => {
+    const own = c.sources.filter((s) => s.name === n);
+    return {
+      slug: own.every((s) => s.fromSlug) ? 1 : 0,
+      hits: c.sources.filter((s) => selfMatches(n, s.input)).length,
+      shorter: c.shorter.has(n) ? 1 : 0,
+      form: new Set(c.sources.filter((s) => form(s.name) === form(n)).map((s) => s.shop.shopId)).size,
+      caps: capsWords(n),
+      len: n.length,
+    };
+  };
+  return names
+    .map((n) => ({ n, r: rank(n) }))
+    .sort((a, b) => a.r.slug - b.r.slug || b.r.hits - a.r.hits || a.r.shorter - b.r.shorter || b.r.form - a.r.form || a.r.caps - b.r.caps
+      || a.r.len - b.r.len || a.n.localeCompare(b.n))[0].n;
+}
+
+/**
+ * The same model written two ways ("Oral-B Pro 3500" and "Oral-B PRO 3 3500") ends up in two
+ * clusters, because the keys differ. Cluster B joins cluster A when every name of B has only tokens
+ * of A's name (B is A with something left out) and A's name names every listing of B (namesListing).
+ * Shorter names go first, and a cluster of fewer shops before one of more with the same tokens, so
+ * the merged model is the fuller name and the more common form. When several clusters could take B,
+ * the one listed by most shops does.
+ */
+function mergeShorterForms(clusters: Cluster[]): Cluster[] {
+  const shopCount = (c: Cluster) => new Set(c.sources.map((s) => s.shop.shopId)).size;
+  const merged = new Set<Cluster>();
+  const order = clusters
+    .map((c) => ({ c, size: nameTokens(chooseName(c)).length, shops: shopCount(c) }))
+    .sort((a, b) => a.size - b.size || a.shops - b.shops)
+    .map((x) => x.c);
+  for (const b of order) {
+    const bNames = [...new Set(b.sources.map((s) => s.name))].map(nameTokens);
+    const targets = clusters
+      .filter((a) => a !== b && !merged.has(a))
+      .map((a) => ({ a, name: chooseName(a) }))
+      .filter(({ name }) => {
+        const toks = new Set(nameTokens(name));
+        return bNames.every((n) => n.every((t) => toks.has(t))) && b.sources.every((s) => namesListing(name, s.input));
+      })
+      .sort((x, y) => shopCount(y.a) - shopCount(x.a) || y.a.sources.length - x.a.sources.length || nameTokens(x.name).length - nameTokens(y.name).length);
+    const a = targets[0]?.a;
+    if (!a) continue;
+    a.sources.push(...b.sources);
+    for (const s of b.sources) a.shorter.add(s.name);
+    b.shorter.forEach((n) => a.shorter.add(n));
+    b.keys.forEach((k) => a.keys.add(k));
+    merged.add(b);
+  }
+  return clusters.filter((c) => !merged.has(c));
+}
 
 function differsText(missing: string[], distinguishing: string[]): string {
   const q = (xs: string[]) => xs.map((x) => `"${x}"`).join(', ');
@@ -269,38 +368,21 @@ export function nearbyModels(pq: ParsedQuery, results: ShopResult[], limit = NEA
   }
 
   // ---- cluster the same model across shops ----
-  const clusters: { keys: Set<string>; sources: Source[] }[] = [];
+  const clusters: Cluster[] = [];
   for (const s of sources) {
     const keys = clusterKeys(s.name);
     const hit = clusters.find((c) => keys.some((k) => c.keys.has(k)));
     if (hit) {
       hit.sources.push(s);
       keys.forEach((k) => hit.keys.add(k));
-    } else clusters.push({ keys: new Set(keys), sources: [s] });
+    } else clusters.push({ keys: new Set(keys), sources: [s], shorter: new Set() });
   }
 
-  const models: (NearbyModel & { local: boolean })[] = clusters.map((c) => {
-    // The name: one from a title rather than a slug, that finds most of the cluster's listings again,
-    // written in the form most shops use ("Oral-B Pro 3" over "Oral B Pro 3" and "Oral-B Pro3"),
-    // with the fewest words in capitals, then the shortest.
-    const names = [...new Set(c.sources.map((s) => s.name))];
-    const form = (n: string) => tokenize(n).join(' ');
-    const rank = (n: string) => {
-      const own = c.sources.filter((s) => s.name === n);
-      return {
-        slug: own.every((s) => s.fromSlug) ? 1 : 0,
-        hits: c.sources.filter((s) => selfMatches(n, s.input)).length,
-        form: new Set(c.sources.filter((s) => form(s.name) === form(n)).map((s) => s.shop.shopId)).size,
-        caps: capsWords(n),
-        len: n.length,
-      };
-    };
-    const chosen = names
-      .map((n) => ({ n, r: rank(n) }))
-      .sort((a, b) => a.r.slug - b.r.slug || b.r.hits - a.r.hits || b.r.form - a.r.form || a.r.caps - b.r.caps || a.r.len - b.r.len || a.n.localeCompare(b.n))[0].n;
-    // The brand as the query writes it, if the name still finds a listing that way.
-    const rebranded = withQueryBrand(chosen, brand);
-    const query = rebranded !== chosen && c.sources.some((s) => selfMatches(rebranded, s.input)) ? rebranded : chosen;
+  const models: (NearbyModel & { local: boolean })[] = mergeShorterForms(clusters).map((c) => {
+    const chosen = chooseName(c);
+    // In the query's writing, if the name still finds a listing that way.
+    const rewritten = inQueryWriting(chosen, pq, brand);
+    const query = rewritten !== chosen && c.sources.some((s) => selfMatches(rewritten, s.input)) ? rewritten : chosen;
     const dist = (s: Source) => nearbyDistance(s.match.missing, s.match.distinguishing);
     const closest = [...c.sources].sort((a, b) => dist(a) - dist(b))[0];
     const order = (t: string) => (pq.tokens.includes(t) ? pq.tokens.indexOf(t) : pq.tokens.length);

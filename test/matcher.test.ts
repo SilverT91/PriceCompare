@@ -2,7 +2,7 @@
 // or written the way those shops name products.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { matchTitle, scoreCandidate, parseQuery, cleanTitle } from '../src/core/matcher.ts';
+import { matchTitle, scoreCandidate, parseQuery, cleanTitle, displayTitle } from '../src/core/matcher.ts';
 import { tokenize } from '../src/core/text.ts';
 
 const m = (q: string, title: string, extra: Record<string, string> = {}) => matchTitle(q, { title, ...extra });
@@ -233,6 +233,23 @@ describe('part codes and page-title noise', () => {
   test('bracketed codes and shop suffixes are removed', () => {
     assert.equal(cleanTitle('iPhone 16 128 GB čierna | iStores - Apple Premium Partner'), 'iPhone 16 128 GB čierna');
     assert.equal(cleanTitle('Apple iPhone 16 128 GB (MYED3SX/A)'), 'Apple iPhone 16 128 GB');
+  });
+  test('the product name to show: suffix, appended promotion, spec list and doubled text go; bundle contents and codes stay', () => {
+    // titles of shop search results for "Oral-B Pro 3 3000" (2026-11-25); the last but one is hand-written
+    assert.equal(displayTitle('ORAL-B IO Series 3 Ice Blue + Cashback 10€ pri nákupe min. za 70€ ORAL-B IO Series 3 Ice Blue + Cashback 10€ pri nákupe min. za 70€', 'Andreashop'),
+      'ORAL-B IO Series 3 Ice Blue');
+    assert.equal(displayTitle('BRAUN ORAL-B PROFESSIONAL CARE 3000 (D20.535) + CASHBACK AŽ 60€ | Andrea Shop', 'Andreashop'), 'BRAUN ORAL-B PROFESSIONAL CARE 3000 (D20.535)');
+    assert.equal(displayTitle('Zubní kartáček Oral-B PRO 3 3500 Cross Action Black + cestovní pouzdro | DATART', 'Datart.cz'),
+      'Zubní kartáček Oral-B PRO 3 3500 Cross Action Black + cestovní pouzdro');
+    assert.equal(displayTitle('ORAL-B PRO 3 3500 Sensitive Clean White zubná kefka + cestovné puzdro - MojaLekáreň.sk', 'MojaLekáreň.sk'),
+      'ORAL-B PRO 3 3500 Sensitive Clean White zubná kefka + cestovné puzdro');
+    assert.equal(displayTitle('Typ: Zubná kefka • Použitie: Pre dospelých • Napájanie: Akumulátorové • Počet rýchlostí: 3 ORAL-B Series iO 2 Black + Cashback 10€ pri nákupe min. za 70€', 'TPD Euronics'),
+      'ORAL-B Series iO 2 Black');
+    assert.equal(displayTitle('Zubná kefka Oral-B iO Series 3 Ice Blue Zubná kefka Oral-B iO Series 3 Ice Blue', 'NAY'), 'Zubná kefka Oral-B iO Series 3 Ice Blue');
+    assert.equal(displayTitle('ORAL-B Vitality PRO D103+Vitality Kids D100 Frozen ORAL-B Vitality PRO D103+Vitality Kids D100 Frozen', 'Andreashop'),
+      'ORAL-B Vitality PRO D103+Vitality Kids D100 Frozen');
+    assert.equal(displayTitle('Oral-B Pro 3 3000 Cross Action + CASHBACK 10 €'), 'Oral-B Pro 3 3000 Cross Action');
+    assert.equal(displayTitle('Oral-B Pro 3 3000 Cross Action'), 'Oral-B Pro 3 3000 Cross Action');
   });
   test('order numbers do not count as distinguishing tokens', () => {
     assert.equal(m('Bosch GSR 12V-15', 'Aku vŕtačka Bosch GSR 12V-15, 060186810F').level, 'exact');

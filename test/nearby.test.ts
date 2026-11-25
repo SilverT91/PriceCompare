@@ -22,6 +22,7 @@ const SHOPS: Record<string, [string, 'local' | 'online']> = {
   tpd_sk: ['TPD Euronics', 'online'],
   sanitino_sk: ['Sanitino.sk', 'online'],
   morele_net: ['Morele.net', 'online'],
+  mironet_cz: ['Mironet.cz', 'online'],
   h: ['Shop H', 'online'],
   m: ['Shop M', 'online'],
 };
@@ -73,8 +74,8 @@ describe('family rule', () => {
       shop('nay_sk', [['Braun Series 3 3000s holiaci strojček', 'https://www.nay.sk/braun-series-3-3000s'],
         ['Philips Sonicare 3100 HX3671/14 zubná kefka', 'https://www.nay.sk/philips-sonicare-3100-hx3671-14']]),
     ];
-    // the brand in the query's spelling ("Oral B" in both titles)
-    assert.deepEqual(names(r).sort(), ['Oral-B PRO 3 3500', 'Oral-B iO Series 3']);
+    // the brand and "Pro" in the query's spelling ("Oral B", "PRO" in the titles)
+    assert.deepEqual(names(r).sort(), ['Oral-B Pro 3 3500', 'Oral-B iO Series 3']);
   });
 
   test('a page that only names the brand or a broader line is not a model', () => {
@@ -148,8 +149,8 @@ describe('name derivation', () => {
       shop('mojalekaren_sk', [['Oscilačné zubné kefky, magnetické zubné kefky - MojaLekáreň.sk', 'https://mojalekaren.sk/oral-b-pro-3-3900-cross-action-duo-elektricke-zubne-kefky']]),
       shop('planeo_sk', [['', 'https://www.planeo.sk/oral-b-pro-3-3500-cross-action']]),
     ];
-    // the brand in the query's spelling; the rest as the slug writes it
-    assert.deepEqual(names(r).sort(), ['Oral-B pro 3 3500', 'Oral-B pro 3 3900 cross action duo']);
+    // the brand and the query's words in the query's spelling; the rest as the slug writes it
+    assert.deepEqual(names(r).sort(), ['Oral-B Pro 3 3500', 'Oral-B Pro 3 3900 cross action duo']);
   });
 
   test('self-check: a name that does not find its own listing again is left out', () => {
@@ -180,7 +181,7 @@ describe('clustering and ordering', () => {
     const { models, total } = nearbyModels(pq, PRO3500);
     assert.equal(total, 1);
     const m = models[0];
-    assert.equal(m.query, 'Oral-B PRO 3 3500');
+    assert.equal(m.query, 'Oral-B Pro 3 3500');
     assert.deepEqual(m.shops.map((s) => s.shopName), ['Planeo Elektro', 'MojaLekáreň.sk', 'Datart.cz', 'NAY']);
     assert.equal(m.shops[0].title, 'Zubná kefka Oral B PRO 3 3500 CROSS ACTION | Planeo', 'the title as the shop wrote it');
     assert.equal(m.differs, 'has "3500", lacks "3000"');
@@ -207,19 +208,21 @@ describe('clustering and ordering', () => {
       shop('profimed_eu', [['Oral-B Professional Care 3000 oscilačno-rotačná kefka - Profimed.eu', 'https://www.profimed.eu/oral-b-professional-care-3000-oscilacno-rotacna-kefka-p2543']]),
       shop('planeo_sk', [['Zubná kefka Oral B PRO 3 3900 CROSS ACTION | Planeo', 'https://planeo.sk/katalog/1317999-oral-b-pro-3-3900-cross-action-zubna-kefka.html']]),
       shop('teta_sk', [['Oral B elektrická zubná kefka iO Series 3 bledá modrá | Teta drogérie eshop',
-        'https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160500-Oral-B-elektricka-zubna-kefka-iO-Series-3-bleda-modra/']]),
+        'https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160500-Oral-B-elektricka-zubna-kefka-iO-Series-3-bleda-modra/'],
+      ['Oral B elektrická zubná kefka PRO Series 1 Caribbean blue | Teta drogérie eshop',
+        'https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160496-Oral-B-elektricka-zubna-kefka-PRO-Series-1-Caribbean-blue/']]),
       shop('nay_sk', [['Zubná kefka Oral-B iO Series 3 Ice Blue Zubná kefka Oral-B iO Series 3 Ice Blue', 'https://www.nay.sk/zubna-kefka-oral-b-io-series-3-ice-blue']]),
       shop('andreashop_sk', [['ORAL-B IO Series 3 PINK + Cashback 10€ pri nákupe min. za 70€ ORAL-B IO Series 3 PINK + Cashback 10€ pri nákupe min. za 70€',
         'https://www.andreashop.sk/oral-b-io-series-3-pink-p318647']]),
     ];
     const { models } = nearbyModels(pq, r);
     assert.deepEqual(models.map((m) => [m.query, m.distance, m.shops.length]), [
-      // tier 1: the same line with another number, by shops
-      ['Oral-B PRO 3 3500', 1, 4],
-      ['Oral-B PRO 3 3900', 1, 1],
+      // tier 1: the same line with another number, by shops ("Pro 3500" of Pilulka and Nazuby.eu joined the 3500)
+      ['Oral-B Pro 3 3500', 1, 6],
+      ['Oral-B Pro 3 3900', 1, 1],
       // tier 2: by shops, then distance, then a local branch
       ['Oral-B iO Series 3', 3, 3],
-      ['Oral-B Pro 3500', 2, 2],
+      ['Oral-B Pro Series 1', 2, 1],
       ['Oral-B Professional Care 3000', 3, 1], // Profimed has a Košice branch
       ['Oral-B TriZone 3000', 3, 1],
     ]);
@@ -242,11 +245,92 @@ describe('clustering and ordering', () => {
       shop('andreashop_sk', [['ORAL-B Precision Clean Pro ORAL-B Precision Clean Pro', 'https://www.andreashop.sk/oral-b-precision-clean-pro-p318652']]),
       shop('pilulka_sk', [['Oral-B Elektrická kefka Pro 3500 White | Pilulka.sk', 'https://www.pilulka.sk/oral-b-elektricka-kefka-pro-3500-white']]),
       shop('profimed_eu', [['Oral-B Professional Care 3000 oscilačno-rotačná kefka - Profimed.eu', 'https://www.profimed.eu/oral-b-professional-care-3000-oscilacno-rotacna-kefka-p2543']]),
+      shop('nazuby_eu', [['Braun Oral-B TriZone 3000 zubná kefka - Nazuby.eu', 'https://www.nazuby.eu/braun-oral-b-trizone-3000-zubna-kefka']]),
     ];
     const { models, total } = nearbyModels(pq, r);
-    assert.equal(total, 10);
+    assert.equal(total, 9);
     assert.equal(models.length, NEARBY_LIMIT);
     assert.ok(!models.some((m) => m.query === 'Oral B PRO Series 1'), 'the farthest are cut');
+  });
+});
+
+describe('the same model written two ways', () => {
+  const PRO3500_SHORT = [
+    shop('pilulka_sk', [['Oral-B Elektrická kefka Pro 3500 White | Pilulka.sk', 'https://www.pilulka.sk/oral-b-elektricka-kefka-pro-3500-white']]),
+    shop('nazuby_eu', [['Oral-B PRO 3500 Black oscilačná kefka - Nazuby.eu', 'https://www.nazuby.eu/oral-b-pro-3500-black-oscilacna-kefka']]),
+  ];
+
+  test('"Pro 3500" joins "Pro 3 3500": one entry with the fuller name, the shops of both, the closest distance', () => {
+    assert.deepEqual(names(PRO3500_SHORT), ['Oral-B Pro 3500'], 'alone it stays as the shops write it');
+    const { models, total } = nearbyModels(pq, [...PRO3500, ...PRO3500_SHORT]);
+    assert.equal(total, 1);
+    const m = models[0];
+    assert.equal(m.query, 'Oral-B Pro 3 3500');
+    assert.deepEqual(m.shops.map((s) => s.shopName), ['Planeo Elektro', 'MojaLekáreň.sk', 'Datart.cz', 'NAY', 'Pilulka.sk', 'Nazuby.eu']);
+    assert.equal(m.distance, 1);
+    assert.equal(m.differs, 'has "3500", lacks "3000"');
+  });
+
+  test('a name with the brand written as two words and the words in another order is one model', () => {
+    const r = [
+      shop('planeo_sk', [['Oscilačná zubná kefka Oral B Pro Kids 3+ Lion King | Planeo', 'https://www.planeo.sk/oral-b-pro-kids-3plus-lion-king']]),
+      shop('teta_sk', [['Oral B elektrická zubná kefka PRO Kids 3+ Frozen | Teta drogérie eshop',
+        'https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160504-Oral-B-elektricka-zubna-kefka-PRO-Kids-3a-Frozen/']]),
+      shop('nay_sk', [['Zubná kefka Oral-B PRO 3 Kids Lion King', 'https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king']]),
+    ];
+    assert.deepEqual(nearbyModels(pq, r).models.map((m) => [m.query, m.shops.length]), [['Oral-B Pro Kids 3+', 3]]);
+  });
+
+  test('a shorter name joins a fuller one that also names its listing ("Pro 3 Junior" in "Pro 3 Junior - Frozen")', () => {
+    const r = [
+      shop('mojalekaren_sk', [['ORAL-B Pro 3 Frozen junior elektrická zubná kefka - MojaLekáreň.sk', 'https://www.mojalekaren.sk/oral-b-pro-3-frozen-junior-elektricka-zubna-kefka/']]),
+      shop('planeo_sk', [['Zubná kefka Oral B Pro 3 Junior - Frozen | Planeo', 'https://www.planeo.sk/oral-b-pro-3-junior-frozen']]),
+    ];
+    assert.deepEqual(nearbyModels(pq, r).models.map((m) => [m.query, m.shops.length]), [['Oral-B Pro 3 Frozen junior', 2]]);
+  });
+
+  test('neighbours stay apart: another number, a package word, a model code, another edition', () => {
+    const r = [
+      ...PRO3500,
+      shop('planeo_sk', [['Zubná kefka Oral B PRO 3 3900 CROSS ACTION | Planeo', 'https://planeo.sk/katalog/1317999-oral-b-pro-3-3900-cross-action-zubna-kefka.html']]),
+      shop('teta_sk', [
+        ['Oral B elektrická zubná kefka iO Series 3 bledá modrá | Teta drogérie eshop', 'https://www.tetadrogerie.sk/produkty/x/D160500-Oral-B-iO-Series-3-bleda-modra/'],
+        ['Oral B elektrická zubná kefka iO Series 3 duo čierna a bledá modrá | Teta drogérie eshop', 'https://www.tetadrogerie.sk/produkty/x/D160809-Oral-B-iO-Series-3-duo/'],
+      ]),
+      shop('mironet_cz', [['Oral-B Vitality Pro fialový / Elektrický zubní kartáček / oscilační / 3 režimy / časovač',
+        'https://www.mironet.cz/oralb-vitality-pro-fialovy-elektricky-zubni-kartacek-oscilacni-3-rezimy-casovac+dp646615/']]),
+      shop('andreashop_sk', [['ORAL-B Vitality PRO D103+Vitality Kids D100 Frozen ORAL-B Vitality PRO D103+Vitality Kids D100 Frozen',
+        'https://www.andreashop.sk/oral-b-vitality-pro-d103-vitality-kids-d100-frozen-p296145']]),
+      shop('nay_sk', [
+        ['Zubná kefka Oral-B Pro Kids Spiderman 3+ Zubná kefka Oral-B Pro Kids Spiderman 3+', 'https://www.nay.sk/zubna-kefka-oral-b-pro-kids-spiderman-3'],
+        ['Zubná kefka Oral-B PRO 3 Kids Lion King', 'https://www.nay.sk/zubna-kefka-oral-b-pro-3-kids-lion-king'],
+      ]),
+    ];
+    assert.deepEqual(names(r).sort(), [
+      'Oral-B Pro 3 3500', 'Oral-B Pro 3 3900', 'Oral-B Pro 3 Kids', 'Oral-B Pro Kids Spiderman 3+', 'Oral-B Vitality Pro',
+      'Oral-B Vitality Pro D103+Vitality Kids D100', 'Oral-B iO Series 3', 'Oral-B iO Series 3 duo',
+    ]);
+  });
+});
+
+describe('capitals in a name', () => {
+  test('query words as the query writes them, long all-capital words with one capital, short words and codes as the shop writes them', () => {
+    const r = [
+      shop('teta_sk', [['Oral B elektrická zubná kefka PRO Series 1 Caribbean blue | Teta drogérie eshop',
+        'https://www.tetadrogerie.sk/produkty/Elek-a-bater-zubne-kefky-a-sprchy/D160496-Oral-B-elektricka-zubna-kefka-PRO-Series-1-Caribbean-blue/']]),
+      shop('andreashop_sk', [['ORAL-B IO Series 3 PINK + Cashback 10€ pri nákupe min. za 70€ ORAL-B IO Series 3 PINK + Cashback 10€ pri nákupe min. za 70€',
+        'https://www.andreashop.sk/oral-b-io-series-3-pink-p318647']]),
+      // hand-written, in the form of the shop titles above
+      shop('h', [['ORAL-B VITALITY PRO D103 FROZEN', 'https://h.test/p/vitality-d103']]),
+      shop('m', [['ORAL B PRO SERIES 3 BLACK', 'https://m.test/p/pro-series-3']]),
+    ];
+    assert.deepEqual(names(r).sort(), ['Oral-B IO Series 3', 'Oral-B Pro Series 1', 'Oral-B Pro Series 3', 'Oral-B Vitality Pro D103']);
+  });
+
+  test('the query decides the capitals of its own words', () => {
+    const lower = parseQuery('oral-b pro 3 3000');
+    const r = [shop('planeo_sk', [['Zubná kefka Oral B PRO 3 3500 CROSS ACTION | Planeo', 'https://www.planeo.sk/oral-b-pro-3-3500-cross-action']])];
+    assert.deepEqual(nearbyModels(lower, r).models.map((m) => m.query), ['oral-b pro 3 3500']);
   });
 });
 

@@ -4,6 +4,7 @@
 // split into variants by GTIN or colour so colour variants appear side by side.
 
 import { displayGtin } from './gtin.ts';
+import { displayTitle } from './matcher.ts';
 import { headline, reachable, sortOffers } from './totals.ts';
 import type { MatchLevel, Offer, ProductGroup, ProductVariant } from './types.ts';
 
@@ -130,7 +131,8 @@ export function groupOffers(offers: Offer[]): ProductGroup[] {
     if (members.some((m) => !m.gtin)) notes.push(gtins.length ? 'some offers grouped by name only (no GTIN)' : 'grouped by name only (no GTIN)');
     groups.push({
       id: hash(signature + '|' + gtins.join(',')),
-      title: named.title,
+      // The product's name without the shop's suffix, promotion or doubled text; the offer rows keep the shop's own title.
+      title: displayTitle(named.title, named.shopName),
       level: best.match.level,
       score: best.match.score,
       condition: best.match.condition,

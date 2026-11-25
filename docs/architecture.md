@@ -97,6 +97,7 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 | `tools/probe_shops.py` | Python feasibility probe (deps in `requirements.txt`). Fetches pages with the same politeness rules and caches them under `.cache/probe/`; writes `data/probe_results.json`. Not used by the app at runtime. |
 | `test/` | `node:test` unit tests, one file per area, plus `helpers.ts` and `fixtures/`. |
 | `data/shops.yaml` | The curated shop list, read at start-up by `loadShops()`. |
+| `tools/render_probe.py` | Python measurement tool (needs `playwright` and its Chromium, which it never downloads itself). For a page it reports what one plain request sees next to what headless Chromium sees: whether a JSON-LD `Product` is there, how many requests the page made and how close together. Same robots.txt check, 3 seconds between page loads, default browser identity plus `price-compare/0.1`, no stealth settings. Not used by the app at runtime. |
 | `data/known_product_urls.yaml`, `data/probe_results.json` | Inputs and output of `tools/probe_shops.py` only. No TypeScript reads them. |
 
 ## 3. Data types and how they relate
@@ -298,10 +299,16 @@ Step by step:
     The name must add a token the query lacks, and must match its own product part again as `exact`
     or `possible` (self-check); otherwise the listing is left out. Listings cluster by the name's
     tokens run together in order or as a sorted set (a token that repeats two others, "iO3" after
-    "iO" and "3", is ignored). A cluster's name is one from a title rather than a slug that finds
-    most of its listings again, in the form most shops write, with the fewest words in capitals; when
-    it starts with the query's brand, the brand is written as the query writes it ("Oral-B PRO 3
-    3900" for "Oral B PRO 3 3900"). `distance` is `nearbyDistance()` over the closest listing's
+    "iO" and "3", is ignored; a brand written as two words, "Oral B", is one token). Then the same
+    model written shorter is merged (`mergeShorterForms()`): cluster B joins cluster A when every
+    name of B uses only tokens of A's name and A's name, parsed as a query, matches every listing of
+    B as `exact` or `possible` with nothing missing but a number ("Pro 3500" joins "Pro 3 3500").
+    A cluster's name (`chooseName()`) is one from a title rather than a slug that finds most of its
+    listings again, not a shorter form that was merged in, in the form most shops write, with the
+    fewest words in capitals. It is then written the query's way (`inQueryWriting()`): the brand and
+    any word the query also has as the query writes them, and a word of five or more letters in
+    capitals with one capital ("Oral-B Pro 3 3900" for "ORAL B PRO 3 3900"), provided the name
+    still finds a listing. `distance` is `nearbyDistance()` over the closest listing's
     missing and distinguishing tokens: a missing number paired with an extra number is one step, a
     missing or extra tier or package word two, anything else one each. Order, closest first: the same
     line with another number (distance 1), by number of shops, then a local branch; then the models
@@ -392,6 +399,9 @@ the user typed. `matchTitle(query, input)` goes through these stages:
    promotion ("+ Cashback 10€ pri nákupe ...") and bracketed part codes. A title of the form
    "Name / spec / spec" is split: only the first segment is the name. Pharmacy pack notation is
    read as a count: "1×1 ks", "1×1 set" and "1×150 ml" are one item, "1×2 ks" is `2pc`.
+   `displayTitle()` uses the same suffix and promotion step, plus `nameOnly()` (a leading
+   specification list removed, a doubled title taken once), for the product name shown in "Which one
+   do you mean?" (`group.ts`); it keeps bundle contents after " + " and bracketed codes.
 3. **Cover the query tokens.** Every query token must appear in the title, in the brand, in a joined
    form ("iphone" + "16" is `iphone16`), or in the spec segments. A missing token with a digit is
    `missing`, except a line digit left out in front of a model number that starts with it and

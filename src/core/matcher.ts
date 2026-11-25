@@ -11,7 +11,7 @@
 // 4. Colour is recorded but does not change the model signature (colour variants sit side by side).
 // 5. Words the matcher does not understand make the match "possible" (check it), never "exact".
 
-import { tokenize, hasDigit, isAlpha, editDistance } from './text.ts';
+import { tokenize, hasDigit, isAlpha, editDistance, fold } from './text.ts';
 import {
   ACCESSORY_WORDS, colourOf, conditionOfToken, inClass, MODEL_WORDS, NEUTRAL, NEUTRAL_UNITS, PACKAGE_WORDS, VARIANT_UNITS,
 } from './vocab.ts';
@@ -33,8 +33,8 @@ const PACK_RE =
 const TIMES_RE =
   /(?:^|[^a-z0-9.])(\d+)\s*x(?![a-z0-9])|(?:^|[^a-z0-9])x\s*(\d+)(?![a-z0-9.])|(?:^|[^a-z0-9.])([2-9])\s*x\s*(?=\d+(?:[.,]\d+)?\s*(?:ah|mah|wh)\b)/g;
 
-/** Remove page-title suffixes ("... | iStores - Apple Premium Partner") and bracketed part codes. */
-export function cleanTitle(title: string, shopName?: string | null): string {
+/** Remove page-title suffixes ("... | iStores - Apple Premium Partner") and an appended cashback promotion. */
+function withoutSuffix(title: string, shopName?: string | null): string {
   let t = (title ?? '').replace(/\s+/g, ' ').trim();
   const pipe = t.split(/\s[|]\s/);
   if (pipe.length > 1) t = pipe[0];
@@ -44,10 +44,41 @@ export function cleanTitle(title: string, shopName?: string | null): string {
   }
   // A promotion appended to the name ("+ Cashback 10€ pri nákupe min. za 70€", "+ CASHBACK AŽ 60€") is
   // not part of the product; its amounts must not count as model numbers.
-  t = t.replace(/\s*\+\s*cashback\b.*$/i, '');
+  return t.replace(/\s*\+\s*cashback\b.*$/i, '').trim();
+}
+
+/** Remove page-title suffixes, an appended cashback promotion and bracketed part codes. */
+export function cleanTitle(title: string, shopName?: string | null): string {
   // "(MYED3SX/A)", "(MYE73)": uppercase codes in brackets are part numbers.
-  t = t.replace(/\(\s*[A-Z0-9][A-Z0-9/\-.]{3,}\s*\)/g, ' ');
-  return t.trim();
+  return withoutSuffix(title, shopName).replace(/\(\s*[A-Z0-9][A-Z0-9/\-.]{3,}\s*\)/g, ' ').trim();
+}
+
+/**
+ * Two steps that turn a cleaned title into the name a shop gives the product: a specification
+ * list in front of the name ("Typ: Zubná kefka • Použitie: … • Počet rýchlostí: 3 ORAL-B Series iO 2")
+ * is removed, the name following the last "label: number" pair; and a title the shop wrote twice in
+ * a row is taken once.
+ */
+export function nameOnly(text: string): string {
+  let t = text;
+  const bullets = t.split(/\s•\s/);
+  if (bullets.length >= 2 && bullets[0].includes(':')) t = (bullets.at(-1) ?? t).replace(/^\p{L}[\p{L} .]{0,40}:\s*\d+\s+(?=\S)/u, '');
+  const words = t.split(/\s+/).filter(Boolean);
+  const n = words.length;
+  if (n >= 4 && n % 2 === 0) {
+    const half = n / 2;
+    if (fold(words.slice(0, half).join(' ')) === fold(words.slice(half).join(' '))) return words.slice(0, half).join(' ');
+  }
+  return words.join(' ');
+}
+
+/**
+ * The product name to show for a title: shop suffix and appended cashback promotion removed, a
+ * leading specification list removed, a doubled title taken once. What follows " + " otherwise
+ * stays (a travel case or a second handle is part of the product), and so do part codes in brackets.
+ */
+export function displayTitle(title: string, shopName?: string | null): string {
+  return nameOnly(withoutSuffix(title, shopName)) || (title ?? '').trim();
 }
 
 // Pharmacy notation "packages × units": "1×1 ks" (one piece), "1×1 set", "1×2 ks" (two pieces).

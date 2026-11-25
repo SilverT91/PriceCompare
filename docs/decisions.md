@@ -115,6 +115,19 @@ networks. Those are built for publishers with a public website and review each s
 tool does not qualify (see [research.md](research.md), section 10). This is revisited only if the
 app is ever hosted as a public site, or when Alza releases the partner API it has announced.
 
+## No browser engine in the app for now (2026-11-25)
+
+A browser engine would make one more shop readable today (dm, whose product data appears only after
+JavaScript runs). Against that stand a large dependency and a request rule that cannot hold in the
+same way: the 3 seconds between requests can govern page loads, but a page's own scripts and data
+calls go out when the page makes them. The owner decided to leave it out until another use for it
+turns up.
+
+What is prepared: the design of the route (see [architecture.md](architecture.md), "Add a new route
+for reading a shop") and a measurement tool, `tools/render_probe.py`, that shows for any page what a
+browser engine would add over a plain request. A shop that looks unreadable can be measured with it
+before this decision is reopened.
+
 ## Only ask shops in the query's category (2026-11-24)
 
 A toothbrush query does not go to a furniture shop. Categories are guessed from the query with a

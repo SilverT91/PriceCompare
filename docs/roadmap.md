@@ -2,10 +2,26 @@
 
 Where the project stands and what comes next. Update this file when a round of work finishes.
 
-## State on 2026-11-25 (after the third round)
+## State on 2026-11-25 (after the fourth round)
 
 The app works end to end: web page, command line, unit tests passing. The database has 39 non-food
 shops in scope.
+
+What the fourth round did (a short one, the same day):
+
+- **Similar models, tidied.** The same model written two ways is one entry: "Pro 3500" at two shops
+  joins "Pro 3 3500" at four, so for "Oral-B Pro 3 3000" the list starts with "Oral-B Pro 3 3500"
+  at 6 shops. The rule: a shorter name joins a fuller one when it uses only the fuller name's words
+  and the fuller name, searched for, finds the shorter listing with nothing missing but a line
+  digit. Names are written as the query writes its own words ("Pro", not "PRO"), and a long word in
+  capitals gets one capital ("SERIES" becomes "Series").
+- **Product names in "Which one do you mean?"** no longer carry the shop's suffix, an appended
+  cashback promotion, a doubled title or a leading specification list. Bundle contents after "+"
+  stay. The offer rows keep the shop's own title.
+- **Browser engine: decided, not in the app for now** (see [decisions.md](decisions.md)). A
+  measurement tool, `tools/render_probe.py`, is written for the day the question comes back. It has
+  not loaded a page yet: Playwright is installed in Python on the owner's machine, its Chromium is
+  not downloaded.
 
 What the third round did:
 
@@ -63,29 +79,27 @@ not be read without a browser, 2 have no automatic route, 7 had nothing matching
 
 A product search costs about 5 to 7 web queries with nothing cached (3 to 4 before the second
 route). Search quota used so far: Brave 59 requests (of about 1,000 per month), Serper 45 (of 2,500
-in total). The third round used 7 Brave requests, for one live search.
+in total). The third round used 7 Brave requests, for one live search; the fourth used none (it
+worked from the cache).
 
 ## Next round
 
 In this order.
 
-1. **Decide on a browser engine for dm (mojadm.sk).** The hand check showed it would work: the
-   rendered product page has price, GTIN and stock. It would add one shop (Pilulka is not a second
-   case) at the price of a large dependency (Playwright with its own Chromium) and about 200
-   requests per rendered page unless images, fonts and third-party scripts are switched off. The
-   recommendation after the check is to leave it out until dm matters for the products actually
-   searched; the owner has not decided yet. If it is built:
+1. **Test with the exact model the first user was looking for**, once known.
+2. **A price in the similar-models list.** Consider reading one page of the closest model (one shop
+   request, no search quota) so the list shows a price before the user spends a new search on it.
+3. **Work through "Code issues found in review"** below; none blocks use.
+4. **Measure with `tools/render_probe.py`** once Chromium for Playwright is downloaded
+   (`python -m playwright install chromium`, the owner's step): dm's product page and any shop
+   that reads as `needs_js`. This only informs the decision; it adds nothing to the app. If a
+   browser engine is ever built:
    - Make it optional: the app runs without it, and `needs_js` shops keep their manual link.
-   - Same request rules: robots.txt, 3 seconds per host, a plain honest identity, no stealth
-     settings. A challenge page means `blocked`.
+   - Same request rules: robots.txt, 3 seconds between page loads, a plain honest identity, no
+     stealth settings. A challenge page means `blocked`.
    - It is Node-only, so it belongs outside `src/core/`, behind an interface the pipeline calls.
-   - The README's request rules currently say "no headless browser"; update that section when this
-     lands, keeping the ban on using one to get around protection.
-2. **Test with the exact model the first user was looking for**, once known.
-3. **Similar models, second pass** (see known problems): merge "Pro 3500" with "Pro 3 3500", clean
-   product names shown in the list of products ("+ CASHBACK 10 €"), and consider reading one page
-   of the closest model so the list can show a price.
-4. **Work through "Code issues found in review"** below; none blocks use.
+   - The README's request rules say "no headless browser"; update that section when this lands,
+     keeping the ban on using one to get around protection.
 
 ## Known problems
 
@@ -124,16 +138,24 @@ In this order.
 - **Out-of-credit handling** for Brave (402) and Serper is tested with mocks only, never seen live.
 - **An HTTP 503 from an unknown vendor** is treated as `blocked`.
 - **Similar models:**
-  - The same model written two ways stays two entries ("Pro 3500" at two shops, "Pro 3 3500" at
-    four).
-  - A name keeps the shop's capitals ("Oral-B PRO 3 3500").
+  - A shorter form with an extra word of its own is not merged ("Elktrická Pro 3500", a shop's
+    spelling; "EK Pro Kids 3+").
+  - "Pro 3 Kids" and "Pro Kids 3+" count as one model because they have the same words; the "3"
+    may mean the line in one title and the age in the other.
+  - A merged model can carry an edition name ("Oral-B Pro 3 Frozen junior").
+  - Short words in capitals stay as the shop writes them (so "OLED" is safe, and "IO" for "iO"
+    stays too).
   - Replacement heads whose title has no accessory word ("Precision Clean Pro") appear as a model.
+    The two listings give no sign (no piece count, no category word). Other shops' titles for the
+    same heads do say "náhradné hlavice", but they fall outside the 10 candidates kept per shop,
+    and a rule built on them would also hit a brush sold with spare heads.
   - Titles that are a specification list without bullets fail the name check and are left out.
   - Only the 10 best candidates per shop are kept, so a neighbour further down a shop's results is
     not seen.
   - The list shows no price unless a page of that model happened to be read.
-- **Product names** in "Which one do you mean?" are the shop's raw title, promotions included
-  ("... + CASHBACK 10 €").
+- **Product names** in "Which one do you mean?" are tidied, but only a promotion written as
+  "+ cashback ..." is removed. Other promotion wording ("+ darček", "zdarma", "akcia") stays in the
+  name.
 
 ## Code issues found in review
 

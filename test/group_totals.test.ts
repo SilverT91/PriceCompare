@@ -212,6 +212,18 @@ describe('grouping into distinct products', () => {
     assert.deepEqual(g.map((x) => [x.level, x.bestItemEur === null]), [['possible', false], ['possible', true]]);
     assert.equal(g[0].title, nazuby.title);
   });
+  test('the product name is the tidied title; the offer keeps the shop title and the product id does not change', () => {
+    // a shop search result title of 2026-11-25, used here as an offer title
+    const q4 = 'Oral-B iO Series 3';
+    const shopTitle = 'ORAL-B IO Series 3 Ice Blue + Cashback 10€ pri nákupe min. za 70€ ORAL-B IO Series 3 Ice Blue + Cashback 10€ pri nákupe min. za 70€';
+    const g = groupOffers([offer(q4, { title: shopTitle, price: 69.9 }, 'andreashop')]);
+    assert.equal(g[0].title, 'ORAL-B IO Series 3 Ice Blue');
+    assert.equal(g[0].variants[0].offers[0].title, shopTitle);
+    assert.equal(g[0].id, groupOffers([offer(q4, { title: 'ORAL-B IO Series 3 Ice Blue', price: 69.9 }, 'andreashop')])[0].id);
+    // bundle contents are part of the product name
+    const datart = offer('Oral-B Pro 3 3500', { title: 'Zubní kartáček Oral-B PRO 3 3500 Cross Action Black + cestovní pouzdro', price: 1299, currency: 'CZK' }, 'datart');
+    assert.equal(groupOffers([datart])[0].title, 'Zubní kartáček Oral-B PRO 3 3500 Cross Action Black + cestovní pouzdro');
+  });
   test('used and new offers with the same GTIN are not merged', () => {
     const g = groupOffers([
       offer('Oral-B Pro 3 3000', { title: 'Oral-B Pro 3 3000', price: 60, gtin: '08006540759790' }, 'a'),
