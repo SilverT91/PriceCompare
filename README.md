@@ -38,8 +38,8 @@ Status: first working version (2026-11). Coverage is partial on purpose; see "Co
 1. **Finds candidate product pages** at each shop that is asked, in parallel:
    - the shop's own search page, when it has a search URL template and robots.txt allows it
      (candidates from a JSON-LD `ItemList`, otherwise from product links in the HTML);
-   - otherwise a web search restricted to the shop's domain (`site:`), through Brave Search or
-     Serper.dev, when a key is set;
+   - otherwise a web search restricted to the shop's domain (`site:`), through Brave Search,
+     Serper.dev or Tavily, when a key is set;
    - otherwise nothing, and the shop says so.
    - **Once more without the package word:** when a shop's own search returns no products and the
      query has a package word ("doublepack", "set"), the shop's search is asked one more time
@@ -228,6 +228,7 @@ change, so check the page before relying on them.
 | No key | none | no | none needed | unlimited, but only at the shops whose own search may be read (see below) |
 | [Serper.dev](https://serper.dev/) | name, email, password | no | 2,500 queries (the page does not say whether they expire) | about 350 to 500 in total |
 | [Brave Search API](https://brave.com/search/api/) | email, or a Google or GitHub login | yes, asked for at sign-up | 5 USD of credit every month, about 1,000 queries | about 140 to 200 a month |
+| [Tavily](https://tavily.com/) | an account on its site | no | 1,000 credits every month, one per query | about 140 to 200 a month |
 
 **Without a key** the app still asks every shop whose own search page may be read. Measured on
 2026-11-25 with a toothbrush query: of the 32 shops that sell such goods, 10 ended as
@@ -243,8 +244,24 @@ An example from the same day, the query "Iral b io9 doublepack" (an Oral-B iO 9 
 | No key | 1 | NAY in Košice, 297.90 € |
 | With a key (8 queries) | 5 | also MojaLekáreň 299.96 € delivered and Profimed 450.90 € (out of stock); Datart.cz and Morele.net list it but do not deliver to Slovakia |
 
-**For the least effort, use Serper**: no card, and the app supports it as it is. When its queries
-are used up the app says so in the shop statuses and carries on as without a key.
+**For the least effort, use Serper**: no card, and in the measurement of 2026-11-24 it found
+product pages at as many shops as Brave. When its queries are used up the app says so in the shop
+statuses and carries on as without a key.
+
+**Tavily** needs no card either and its allowance comes back every month, but in the measurement
+of 2026-11-25 it returned pages at fewer of these shops than Brave did on the same four searches
+(table below). It is useful as a free monthly fallback, less so as the only provider.
+
+| Search (19 shops on the web-search route) | Brave: shops with a matching offer | Tavily: shops with a matching offer |
+|---|---|---|
+| Oral-B io9 doublepack | 4 | 0 (no page returned on any of the domains) |
+| Oral-B Pro 3 3000 | 1 (possible match) | 1 (possible match) |
+| iPhone 16 128GB | 4 | 3 |
+| Bosch GSR 12V-15 | 1 | 1 |
+| Queries used | 13 (some results were cached) | 18 |
+
+Small sample: four searches on one day. Tavily was asked the same way as the others, several shop
+domains in one query; one query per shop was not tried.
 
 The free allowances are small on purpose, and the app is careful with them: several shops share
 one query, results are kept for 6 hours, and the command line prints what a search cost on its
@@ -252,8 +269,8 @@ last line.
 
 Other providers were looked at on the same day (the details are in
 [docs/research.md](docs/research.md), section 11). Tavily and Exa have a free monthly allowance
-without a card, but filter by domain through their own parameter, so the app would need a small
-adapter for them; it has none yet. Google's Custom Search JSON API is closed to new customers and
+without a card, but filter by domain through their own parameter, so each needs its own small
+adapter; Tavily has one now, Exa has none. Google's Custom Search JSON API is closed to new customers and
 Bing's Web Search API was retired in 2025. The app only uses documented APIs, so it does not read
 a search engine's result pages itself.
 
@@ -265,15 +282,17 @@ in Notepad and set one or both keys:
 ```
 SERPER_API_KEY=...      # https://serper.dev/            (2,500 free queries, no card)
 BRAVE_API_KEY=...       # https://brave.com/search/api/  (monthly free credit, card needed, about 1 request/s)
-SEARCH_PROVIDERS=brave,serper
+TAVILY_API_KEY=...      # https://tavily.com/            (1,000 free credits a month, no card)
+SEARCH_PROVIDERS=brave,serper,tavily
 ```
 
 Then start the app again. A key belongs only in `.env`: do not paste it into chats, issues or
 commits.
 
-The first provider in `SEARCH_PROVIDERS` (default `brave,serper`) is used; when it reports used-up
-credit (Brave: HTTP 402) or a rejected key, it is marked unusable (Brave until the next month,
-Serper for 30 days; the mark lives in the SQLite cache) and the next one takes over. If none is
+The first provider in `SEARCH_PROVIDERS` (default `brave,serper,tavily`) that has a key is used;
+when it reports used-up credit (Brave: HTTP 402; Tavily: HTTP 432 or 433) or a rejected key, it is
+marked unusable (Brave and Tavily until the next month, Serper for 30 days; the mark lives in the
+SQLite cache) and the next one takes over. If none is
 usable, the affected shops get `needs_search_key` with the reason. Key values are never printed or
 logged.
 
@@ -382,7 +401,7 @@ src/core/          portable core: only fetch, URL, AbortSignal, TextDecoder (+ c
   group.ts           distinct products and their variants
   nearby.ts          similar models the shops list (from what a search collected, no requests)
   totals.ts, rates.ts  shipping, EUR conversion (Frankfurter, ECB)
-  search/            web search providers (Brave, Serper), fallback chain, site: batching
+  search/            web search providers (Brave, Serper, Tavily), fallback chain, site: batching
   categories.ts      which shops to ask (category guess from the query)
   report.ts          status summary line and the "open these yourself" list
   pipeline.ts        the search: relevant shops in parallel, events as they finish

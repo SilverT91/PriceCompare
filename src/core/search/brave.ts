@@ -7,17 +7,11 @@
 // monthly credit is used up (until the next month).
 
 import type { FetchLike } from '../http.ts';
-import { ProviderUnavailableError, type Locale, type SearchHit, type SearchProvider } from './provider.ts';
+import { ProviderUnavailableError, searchText, untilNextMonth, type Locale, type SearchHit, type SearchProvider, type SiteSearch } from './provider.ts';
 
 export const BRAVE_URL = 'https://api.search.brave.com/res/v1/web/search';
 const BRAVE_COUNTRIES = new Set(['ar', 'au', 'at', 'be', 'br', 'ca', 'cl', 'dk', 'fi', 'fr', 'de', 'gr', 'hk', 'in', 'id', 'it', 'jp', 'kr', 'my', 'mx', 'nl', 'nz', 'no', 'cn', 'pl', 'pt', 'ph', 'ru', 'sa', 'za', 'es', 'se', 'ch', 'tw', 'tr', 'gb', 'us']);
 const BRAVE_LANGS = new Set(['sk', 'cs', 'de', 'pl', 'en', 'hu', 'uk']);
-
-/** Seconds until the first day of next month (UTC), when Brave's monthly credit renews. */
-function untilNextMonth(now = new Date()): number {
-  const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
-  return Math.max(3600, Math.ceil((next - now.getTime()) / 1000));
-}
 
 export class BraveProvider implements SearchProvider {
   readonly id = 'brave';
@@ -31,6 +25,7 @@ export class BraveProvider implements SearchProvider {
   }
 
   exhaustedTtlSeconds(kind: 'quota' | 'auth'): number {
+    // The monthly credit renews on the first of the month (UTC assumed).
     return kind === 'quota' ? untilNextMonth() : 86400;
   }
 
@@ -44,8 +39,8 @@ export class BraveProvider implements SearchProvider {
     return u.href;
   }
 
-  async search(q: string, locale: Locale, fetchImpl: FetchLike = fetch): Promise<{ hits: SearchHit[]; credits: number }> {
-    const res = await fetchImpl(this.buildUrl(q, locale), {
+  async search(s: SiteSearch, locale: Locale, fetchImpl: FetchLike = fetch): Promise<{ hits: SearchHit[]; credits: number }> {
+    const res = await fetchImpl(this.buildUrl(searchText(s), locale), {
       headers: { 'X-Subscription-Token': this.key, Accept: 'application/json' },
       signal: AbortSignal.timeout(15_000),
     });

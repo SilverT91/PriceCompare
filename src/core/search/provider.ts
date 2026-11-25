@@ -1,6 +1,7 @@
 // Web search providers, used to find product pages at shops whose own search page is disallowed by
-// robots.txt (or that have no search template). Few queries: several `site:` domains go into one
-// query, grouped by shop country so the country/language parameters fit every domain in it.
+// robots.txt (or that have no search template). Few queries: several shop domains go into one
+// search (as `site:` terms for Brave and Serper, as a domain list for Tavily), grouped by shop
+// country so the country/language parameters fit every domain in it.
 // Providers are tried in a configurable order; one that reports exhausted credits or a rejected key
 // is marked unusable (persisted in the cache) and the next one is used. If none is usable, the
 // affected shops get status needs_search_key with the reason.
@@ -42,15 +43,31 @@ export class ProviderUnavailableError extends Error {
   }
 }
 
+/**
+ * One domain-restricted search: the user's query text and the shop domains, as data. Each provider
+ * builds its own request from it: Brave and Serper put `site:a OR site:b` into the query text
+ * (siteQuery), Tavily sends the text with an `include_domains` list.
+ */
+export interface SiteSearch {
+  query: string;
+  domains: string[];
+}
+
 export interface SearchProvider {
   readonly id: string;
   /** Results requested per query; also decides the credit cost. */
   readonly resultsPerQuery: number;
   /** Minimum gap between two calls (provider rate limit). */
   readonly minIntervalMs: number;
-  search(q: string, locale: Locale, fetchImpl?: FetchLike): Promise<{ hits: SearchHit[]; credits: number }>;
-  /** How long an exhaustion mark lasts (Brave credit renews monthly, Serper's free credit is one-time). */
+  search(s: SiteSearch, locale: Locale, fetchImpl?: FetchLike): Promise<{ hits: SearchHit[]; credits: number }>;
+  /** How long an exhaustion mark lasts (Brave and Tavily credit renews monthly, Serper's free credit is one-time). */
   exhaustedTtlSeconds(kind: 'quota' | 'auth'): number;
+}
+
+/** Seconds until the first day of next month (UTC), when a monthly credit renews. */
+export function untilNextMonth(now = new Date()): number {
+  const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
+  return Math.max(3600, Math.ceil((next - now.getTime()) / 1000));
 }
 
 export const LOCALE_BY_COUNTRY: Record<string, Locale> = {
@@ -67,6 +84,15 @@ export function localeFor(shopCountry: string): Locale {
 
 export function siteQuery(query: string, domains: string[]): string {
   return `${query} ${domains.map((d) => `site:${d}`).join(' OR ')}`;
+}
+
+/**
+ * A search as one line of text: the `site:` query string (the query alone when there are no
+ * domains). Brave and Serper send exactly this; for every provider it is the cache key's query part
+ * and the query in the call log, so the domain set always tells cached results apart.
+ */
+export function searchText(s: SiteSearch): string {
+  return s.domains.length ? siteQuery(s.query, s.domains) : s.query;
 }
 
 export type SiteSearchMode = 'combined' | 'per_shop';
@@ -117,17 +143,18 @@ export class ProviderChain {
    * from the first usable provider. `unavailable` is set when no provider could be used.
    */
   /** Cached results only (first provider in order that has them); never calls an API. */
-  async cached(q: string, locale: Locale): Promise<{ hits: SearchHit[]; provider: string } | undefined> {
+  async cached(s: SiteSearch, locale: Locale): Promise<{ hits: SearchHit[]; provider: string } | undefined> {
     for (const p of this.providers) {
-      const hit = await this.cache.get<SearchHit[]>('provider', cacheKey(p, locale, q));
+      const hit = await this.cache.get<SearchHit[]>('provider', cacheKey(p, locale, searchText(s)));
       if (hit) return { hits: hit, provider: p.id };
     }
     return undefined;
   }
 
-  async search(q: string, locale: Locale): Promise<{ hits: SearchHit[]; provider?: string; error?: string; unavailable?: string }> {
-    const cached = await this.cached(q, locale);
+  async search(s: SiteSearch, locale: Locale): Promise<{ hits: SearchHit[]; provider?: string; error?: string; unavailable?: string }> {
+    const cached = await this.cached(s, locale);
     if (cached) return cached;
+    const q = searchText(s);
     const reasons: string[] = [];
     let lastError: string | undefined;
     for (const p of this.providers) {
@@ -138,7 +165,7 @@ export class ProviderChain {
       }
       await this.pace(p);
       try {
-        const r = await p.search(q, locale, this.fetchImpl);
+        const r = await p.search(s, locale, this.fetchImpl);
         await this.cache.set('provider', cacheKey(p, locale, q), r.hits, CACHE_TTL.providerResults);
         this.record({ provider: p.id, query: q, locale, results: r.hits.length, credits: r.credits, ok: true });
         return { hits: r.hits, provider: p.id };
@@ -165,6 +192,7 @@ export class ProviderChain {
   }
 }
 
+/** Unchanged since the search became data: `q` is the same `site:` string Brave and Serper always sent. */
 function cacheKey(p: SearchProvider, locale: Locale, q: string): string {
   return `${p.id}|${p.resultsPerQuery}|${locale.country}|${locale.lang}|${q}`;
 }
@@ -247,14 +275,15 @@ export class SiteSearchBatcher {
   private async run(country: string, chunk: SiteSearchBatcher['pending']) {
     const locale = localeFor(country);
     this.queriesNeeded++;
-    const q = siteQuery(this.opts.query, chunk.map((c) => c.domain));
-    let r: Awaited<ReturnType<ProviderChain['search']>> | undefined = await this.opts.chain.cached(q, locale);
+    const s: SiteSearch = { query: this.opts.query, domains: chunk.map((c) => c.domain) };
+    const q = searchText(s);
+    let r: Awaited<ReturnType<ProviderChain['search']>> | undefined = await this.opts.chain.cached(s, locale);
     if (!r && chunk.length > 1) {
       // No cached combined result: if every domain has a cached single-domain result, use those.
-      const parts = await Promise.all(chunk.map((c) => this.opts.chain.cached(siteQuery(this.opts.query, [c.domain]), locale)));
+      const parts = await Promise.all(chunk.map((c) => this.opts.chain.cached({ query: this.opts.query, domains: [c.domain] }, locale)));
       if (parts.every(Boolean)) r = { hits: parts.flatMap((p) => p?.hits ?? []), provider: parts[0]?.provider };
     }
-    r = r ?? (await this.opts.chain.search(q, locale));
+    r = r ?? (await this.opts.chain.search(s, locale));
     for (const c of chunk) {
       const mine = r.hits.filter((h) => {
         try {

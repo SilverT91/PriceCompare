@@ -64,6 +64,11 @@ Both found the right pages equally often in the measurement. Brave's free credit
 (about 1,000 requests); Serper's 2,500 are one time. Several shop domains go into one query, which
 costs 3 to 5 queries per product search. The order is a setting (`SEARCH_PROVIDERS`).
 
+Amended 2026-11-25: Tavily is a third provider, last in the default order. It was added because it
+needs no payment card and its free allowance renews monthly, which suits a second user. In the
+measurement that day it returned pages at fewer shops than Brave on the same four searches (5
+shop results against 10), so it stays a fallback and is not recommended as the only provider.
+
 ## Read prices from schema.org JSON-LD only (2026-11-24)
 
 Every readable shop in the probe published JSON-LD `Product` data. There are no per-shop CSS

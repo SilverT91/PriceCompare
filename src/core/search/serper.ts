@@ -7,7 +7,7 @@
 // HTTP 400/403 whose body mentions credits; other 401/403 = key rejected.
 
 import type { FetchLike } from '../http.ts';
-import { ProviderUnavailableError, type Locale, type SearchHit, type SearchProvider } from './provider.ts';
+import { ProviderUnavailableError, searchText, type Locale, type SearchHit, type SearchProvider, type SiteSearch } from './provider.ts';
 
 export const SERPER_URL = 'https://google.serper.dev/search';
 
@@ -27,7 +27,8 @@ export class SerperProvider implements SearchProvider {
     return kind === 'quota' ? 30 * 86400 : 86400;
   }
 
-  async search(q: string, locale: Locale, fetchImpl: FetchLike = fetch): Promise<{ hits: SearchHit[]; credits: number }> {
+  async search(s: SiteSearch, locale: Locale, fetchImpl: FetchLike = fetch): Promise<{ hits: SearchHit[]; credits: number }> {
+    const q = searchText(s);
     // Measured 2026-11-24: on a free account num > 10 is refused with HTTP 400 "Query pattern not
     // allowed for free accounts", so a combined site: query gets 10 results for all its domains.
     const num = this.resultsPerQuery;

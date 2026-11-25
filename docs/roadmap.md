@@ -22,6 +22,9 @@ What the fifth round did (the same day):
 - **Search providers for a second user** were researched ([research.md](research.md), section
   11). Without a key the app still works at the shops whose own search may be read. The least
   effort with a key is Serper: no payment card, 2,500 queries.
+- **Tavily is a third provider** (no card, 1,000 credits a month), last in the default order. On
+  the same four searches it gave a matching offer at 5 shops where Brave gave 10, so it is a
+  fallback.
 
 What the fourth round did (a short one, the same day):
 
@@ -100,18 +103,18 @@ not be read without a browser, 2 have no automatic route, 7 had nothing matching
 (wrong category).
 
 A product search costs about 5 to 7 web queries with nothing cached (3 to 4 before the second
-route). Search quota used so far: Brave 67 requests (of about 1,000 per month), Serper 45 (of 2,500
-in total). The third round used 7 Brave requests, for one live search; the fourth used none (it
-worked from the cache); the fifth used 8, for one live search of the first user's sentence.
+route). Search quota used so far: Brave 80 requests (of about 1,000 per month), Serper 45 (of 2,500
+in total), Tavily 18 (of 1,000 per month). The third round used 7 Brave requests, for one live
+search; the fourth none (it worked from the cache); the fifth 8 for the first user's sentence,
+then 13 Brave and 18 Tavily for the measurement of Tavily.
 
 ## Next round
 
 In this order.
 
-1. **Decide on a search provider with a monthly allowance and no card** (owner's decision). Tavily
-   and Exa each have one; each needs an adapter that sends the shop domains as a parameter, and a
-   measurement against the current providers before it becomes a default
-   ([research.md](research.md), section 11).
+1. **Tavily, second look** (only if it is to be more than a fallback). It is in as the third
+   provider and measured weaker than Brave ([research.md](research.md), section 11). Untried: one
+   query per shop (about 14 credits per product search instead of 5), its `language` parameter.
 2. **Read Brave's terms on keeping results.** Its FAQ says storing results needs a plan with
    storage rights; the app keeps web search results for 6 hours. If the terms do not allow that,
    shorten or drop the cache for Brave.

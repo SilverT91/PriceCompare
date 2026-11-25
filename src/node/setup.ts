@@ -7,6 +7,7 @@ import { HostScheduler } from '../core/http.ts';
 import { BraveProvider } from '../core/search/brave.ts';
 import type { SearchProvider } from '../core/search/provider.ts';
 import { SerperProvider } from '../core/search/serper.ts';
+import { TavilyProvider } from '../core/search/tavily.ts';
 import { validateShops } from '../core/shops.ts';
 import type { Shop } from '../core/types.ts';
 import { Store } from './db.ts';
@@ -27,13 +28,15 @@ export function loadShops(path = `${ROOT}data/shops.yaml`): Shop[] {
 /** Default provider order; chosen from the measurement in the README ("Web search providers"). */
 // Measured 2026-11-24 (3 products x 12 robots-disallowed shops): Brave found a correct or possible
 // product page at as many shops as Serper (7 of 36 shop-searches each), and its credit renews monthly,
-// so Brave goes first and Serper (one-time free credit) is the fallback.
-export const DEFAULT_PROVIDER_ORDER = 'brave,serper';
+// so Brave goes first and Serper (one-time free credit) is the fallback. Tavily (added 2026-11-25,
+// not measured yet) comes last, so behaviour with a Brave or Serper key does not change, and a
+// Tavily key alone is enough.
+export const DEFAULT_PROVIDER_ORDER = 'brave,serper,tavily';
 
 /**
  * Web search providers in order of preference: the `order` argument (CLI --providers), else
  * SEARCH_PROVIDERS from .env, else DEFAULT_PROVIDER_ORDER. A provider is only used when its key
- * (SERPER_API_KEY / BRAVE_API_KEY) is set. "none" disables web search. Keys are never logged.
+ * (SERPER_API_KEY / BRAVE_API_KEY / TAVILY_API_KEY) is set. "none" disables web search. Keys are never logged.
  */
 export function providersFromEnv(order?: string): SearchProvider[] {
   const spec = (order ?? process.env.SEARCH_PROVIDERS ?? DEFAULT_PROVIDER_ORDER).toLowerCase();
@@ -44,6 +47,8 @@ export function providersFromEnv(order?: string): SearchProvider[] {
       out.push(new SerperProvider(process.env.SERPER_API_KEY.trim(), Number(process.env.SERPER_RESULTS) || 10));
     } else if (id === 'brave' && process.env.BRAVE_API_KEY?.trim()) {
       out.push(new BraveProvider(process.env.BRAVE_API_KEY.trim(), Number(process.env.BRAVE_RESULTS) || 20));
+    } else if (id === 'tavily' && process.env.TAVILY_API_KEY?.trim()) {
+      out.push(new TavilyProvider(process.env.TAVILY_API_KEY.trim(), Number(process.env.TAVILY_RESULTS) || 20));
     }
   }
   return out;

@@ -315,3 +315,20 @@ What follows from it:
   that sends the shop domains as a parameter, and a measurement like the one in the README before
   it becomes a default. Whether their indexes cover small Slovak and Czech shops is not stated
   anywhere.
+
+Tavily, added and measured the same day (adapter in `src/core/search/tavily.ts`; request shape,
+credit cost and status codes are from <https://docs.tavily.com/documentation/api-reference/endpoint/search>,
+<https://docs.tavily.com/documentation/api-credits> and <https://docs.tavily.com/faq/faq.md>):
+
+| Search | Brave: shops with a matching offer | Tavily: shops with a matching offer |
+|---|---|---|
+| Oral-B io9 doublepack | 4 (Datart.cz, Morele.net, MojaLekáreň, Profimed) | 0; no page returned on any of the 13 domains asked |
+| Oral-B Pro 3 3000 | 1 (Morele.net, possible) | 1 (Morele.net, possible) |
+| iPhone 16 128GB | 4 (Datart.cz, iStores, Planeo, Morele.net) | 3 (Datart.cz, iStores, Planeo) |
+| Bosch GSR 12V-15 | 1 (Morele.net) | 1 (Morele.net) |
+
+19 shops take the web-search route. Tavily returned at most 6 pages for a domain and none for most
+domains; Brave returned up to 10 for many. Queries used: Tavily 18, Brave 13 new. Not tried: one
+Tavily query per shop, Tavily's `language` parameter, and a query worded for Tavily (the first
+search has an unusual pack word). Which status code Tavily sends when the free credits are used up
+is not stated in its documentation; the adapter treats 432 ("plan limit exceeded") as that.

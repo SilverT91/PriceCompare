@@ -63,7 +63,7 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 | `robots.ts` | robots.txt parsing and matching (RFC 9309), `RobotsRecord`, `robotsFromResponse()`. |
 | `botwall.ts` | `detectBotWall()`: recognises challenge pages and returns a vendor name. |
 | `search/provider.ts` | The `SearchProvider` interface, `ProviderChain` (order, fallback, pacing, exhausted marks, result cache), `SiteSearchBatcher` (combines `site:` queries for several shops into one query), `Locale` per shop country. |
-| `search/brave.ts`, `search/serper.ts` | The two provider adapters. |
+| `search/brave.ts`, `search/serper.ts`, `search/tavily.ts` | The three provider adapters. |
 | `jsonld.ts` | JSON-LD extraction with a regex (no DOM): `extractOffers()` for product pages, `extractListCandidates()` for search pages (`ItemList`), `parsePrice()`, `offerUrl()` (an offer whose declared URL is the site root links to the page it was read from). |
 | `links.ts` | `extractLinkCandidates()`: product links from a search page that has no `ItemList` (uses cheerio). `stripTrackingParams()`: removes click-tracking parameters from candidate URLs. `pageKey()`: one key per page (tracking parameters and fragment removed). |
 | `gtin.ts` | `normaliseGtin()` maps UPC/EAN/GTIN-14/ISBN to one 14-digit form; `displayGtin()`. |
@@ -542,9 +542,13 @@ reported, at most 2 requests) and writes the same trimmed form, stamped with the
 
 1. Create `src/core/search/<name>.ts` with a class implementing `SearchProvider`
    (`search/provider.ts`): `id`, `resultsPerQuery`, `minIntervalMs`, `exhaustedTtlSeconds(kind)`, and
-   `search(q, locale, fetchImpl = fetch)` returning `{ hits, credits }`. Use the `fetchImpl`
-   argument, not a hard-wired `fetch`, so tests can mock it. Map `Locale` (`country`, `lang`) to the
-   provider's parameters; `brave.ts` and `serper.ts` show two different mappings.
+   `search(s, locale, fetchImpl = fetch)` returning `{ hits, credits }`. `s` is a `SiteSearch`
+   `{ query, domains }`: the provider builds its own request from it. Brave and Serper send
+   `searchText(s)`, the `query site:a OR site:b` string; Tavily sends the plain query and the
+   domains in its `include_domains` parameter. Use the `fetchImpl` argument, not a hard-wired
+   `fetch`, so tests can mock it. Map `Locale` (`country`, `lang`) to the provider's parameters;
+   the three adapters show three different mappings. The cache key and the call log use
+   `searchText(s)` for every provider.
 2. Throw `ProviderUnavailableError('quota' | 'auth', status, message)` when the provider cannot be
    used until something changes. `ProviderChain` then stores a `provider_exhausted` mark and moves to
    the next provider. Throw a plain `Error` for transient failures (the chain tries the next provider
