@@ -136,6 +136,33 @@ then 13 Brave and 27 Tavily for the measurement of Tavily. The search from a pas
 
 In this order.
 
+**First: from the workstation test of 2026-11-27 (documented only, nothing built yet).** The owner
+asked whether the app can find "the same or a better computer" than one HP Z2 Tower G1i
+configuration. What the test showed, without a search key:
+
+- *The same machine is found by its part number.* "HP Z2 Tower G1i A40SRET" gave NAY 4,699 € (on
+  order) and Datacomp 4,750 € (in stock). Typing the line name alone, or the whole title with its
+  specifications, does not single out the configuration.
+- *Fault: a link without a name is searched as "Default".* A pasted link whose path is only
+  `default.asp` (the product is in the query string) must be answered with the "no name in this
+  link" message. Generic file names (default, index, product, item, detail) are not names.
+- *Fault: configurations merged into one product.* Three Datacomp offers that differ only by part
+  number ("HP Z2 Tower G1i, EE7H6ES", "..., A40MKET", "..., D06G8ET", 3,007 € to 5,307 €) were
+  grouped as one product. Different part numbers of one line are different products.
+- *Fault: titles with a full specification list are rejected.* ABCOM's "HP PC Z2 Tower G1i 1200W,
+  Intel Core U9 285K (24C/5.7GHz), RTX 5080 16GB GDDR7, 2×32GB DDR5, 1TB, ..." does not match the
+  query "HP Z2 Tower G1i": processor and graphics card names read as model numbers. The same
+  fault keeps some laptops out (see known problems).
+- *A pasted title with all specifications* finds nothing, because the shops' own searches get the
+  whole long text. The shorter query should be tried.
+- *"Better" is outside what the app does.* It compares one named product; it has no notion of one
+  specification being more than another.
+- *Proposed: a configuration view for computers.* When a search hits a computer line, read
+  processor, graphics card (with its memory), RAM and disk from each title and show the
+  configurations side by side with their prices, so a person can judge. Shops that name a
+  configuration only by its part number (Datacomp, NAY) would need the product page read for the
+  specifications, or the view shows the part number and price alone. Not decided by the owner yet.
+
 1. **More real queries from the first user**, typed as he types them, in several categories.
    Run each without a key first (no quota), then with a key where it matters. His first two
    inputs each showed something the tidy test queries had not.
