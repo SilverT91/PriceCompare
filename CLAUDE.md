@@ -12,6 +12,7 @@ no build step. The repository is public.
 - `docs/decisions.md`: choices already made and why. Do not reopen them without new information.
 - `docs/research.md`: market research, data sources, the shop probe, delivery facts.
 - `docs/architecture.md`: how the code is organised and how a search flows through it.
+- `docs/plan-parameters.md`: the planned parameters, filters and local catalogue (not built yet).
 
 ## Commands
 

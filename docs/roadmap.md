@@ -191,7 +191,10 @@ round, see the state above):
   processor, graphics card (with its memory), RAM and disk from each title and show the
   configurations side by side with their prices, so a person can judge. Shops that name a
   configuration only by its part number (Datacomp, NAY) would need the product page read for the
-  specifications, or the view shows the part number and price alone. Not decided by the owner yet.
+  specifications, or the view shows the part number and price alone. Planned on 2026-11-28 as
+  parameters and filters for computers and phones with a local catalogue, in phases:
+  [plan-parameters.md](plan-parameters.md). Phase 1 can start; four questions for the owner are at
+  the end of the plan.
 
 1. **More real queries from the first user**, typed as he types them, in several categories.
    Run each without a key first (no quota), then with a key where it matters. His first two
