@@ -385,3 +385,26 @@ number), read the same day on Icecat's own pages and blog: registration is free 
 address; automated access to the free Open Icecat content through its documented API is allowed
 for registered users; the free part covers the brands that sponsor Icecat, and the full catalogue
 is paid. Which brands sponsor it (HP, Lenovo, Samsung, Apple?) was not checked. Not used.
+
+## 14. What the web search providers' terms say about keeping results (read 2026-11-28)
+
+Read on the providers' own pages, to decide what the local database may keep.
+
+| Provider | Terms, as dated on the page | Keeping results |
+|---|---|---|
+| Brave Search API | [Terms of Use](https://api-dashboard.search.brave.com/terms-of-service), last updated 1 Sep 2026 | Forbidden beyond transient use. Section 3(b)(i): the customer shall not "store, cache, or create a database of Search Results, in whole or in part, other than transient storage required for operation of Customer Applications". Section 1(j): "Search Results" are "any outputs from calls made to the API". Section 3(b)(xiv) and 13(c): nothing kept after the agreement ends. "Transient" is not defined and has no time limit. Brave's FAQ says keeping results needs a plan that grants storage rights. |
+| Serper | [Terms of Service](https://serper.dev/terms), updated 29 May 2024 | Not addressed. The "Data License" forbids misrepresenting the source and removing notices; the website materials may not be mirrored "as-is with no-value-added". Nothing on storing or caching API results, and no time limit. |
+| Tavily | [Terms of Service](https://tavily.com/terms), last updated 4 May 2026 | Not addressed in the part read word for word (the first 40,000 of 72,000 characters); the rest was only skimmed by a summariser and is unverified. "Output" (results, links) is defined apart from the "Services", whose restrictions do not obviously reach it. The separate Search API Agreement (tavily.com/policy) answered 404. |
+
+Consequences, applied the same day:
+
+- **Brave:** the local database keeps no link from a query to a page Brave led to, and no date of
+  a Brave web search, so a later search asks Brave again (`NO_KEEP_PROVIDERS` in pipeline.ts). The
+  shop's own page, which the app reads from the shop, is the shop's data and is kept. Rows stored
+  earlier that day from Brave answers (3 page links, 12 dates) were removed.
+- **Serper and Tavily:** their terms do not forbid it, so the 14-day reuse stays for them. Not
+  forbidden is not the same as allowed; if either adds such a clause, add it to `NO_KEEP_PROVIDERS`.
+- **Open:** the 6-hour cache of web search answers (all providers, Brave included). Whether six
+  hours counts as "transient storage required for operation" is a reading of Brave's terms, not a
+  fact; it is left for the owner to decide (roadmap).
+

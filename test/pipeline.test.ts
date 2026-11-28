@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { HostScheduler, type FetchLike } from '../src/core/http.ts';
 import { dedupeOffers, runSearch, type SearchEvent } from '../src/core/pipeline.ts';
 import { SerperProvider } from '../src/core/search/serper.ts';
+import type { SearchProvider } from '../src/core/search/provider.ts';
 import { buildSearchUrl, DEFAULT_LOCATION, validateShops } from '../src/core/shops.ts';
 import type { ShopResult } from '../src/core/types.ts';
 import { MemoryCache } from './helpers.ts';
@@ -764,5 +765,38 @@ test('the local database: an online search stores; a local one asks nothing; the
   const refreshed = await run({ refreshWeb: true });
   assert.equal(refreshed.serper, 1);
   assert.equal(refreshed.shop('f').storedAt, undefined);
+  history.close();
+});
+
+test('Brave\'s results are not kept: its pages are not linked to the query, so the next search asks it again (terms, section 3(b)(i))', async () => {
+  const history = new Store(':memory:');
+  let braveCalls = 0;
+  const brave: SearchProvider = {
+    id: 'brave', resultsPerQuery: 20, minIntervalMs: 0,
+    async search() {
+      braveCalls++;
+      return { hits: [{ url: 'https://f.test/oral-b-pro-3-3000', title: 'Oral-B Pro 3 3000 černá', snippet: '' }], credits: 1 };
+    },
+    exhaustedTtlSeconds: () => 3600,
+  };
+  const run = async (mode: 'local' | 'online' = 'online') => {
+    const { f } = site();
+    const events = await collect(runSearch('Oral-B Pro 3 3000', {
+      shops: shops.filter((s) => s.id === 'f'), cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }),
+      location: DEFAULT_LOCATION, providers: [brave], fetch: f, category: 'all', history, mode,
+    }));
+    return (events.find((e) => e.type === 'shop') as Extract<SearchEvent, { type: 'shop' }>).result;
+  };
+  const first = await run();
+  assert.equal(first.status, 'ok');
+  assert.equal(first.webProvider, 'brave');
+  assert.equal(braveCalls, 1);
+  assert.equal((await history.lastRun('oral-b pro 3 3000', 'f'))?.webAt, undefined);
+  assert.deepEqual(await history.pagesFor('oral-b pro 3 3000', 'f'), []);
+  // The shop's own page, read by the app, is kept; the link from the query to it is not.
+  assert.ok(await history.page('https://f.test/oral-b-pro-3-3000'));
+  assert.equal((await run('local')).status, 'no_match');
+  await run();
+  assert.equal(braveCalls, 2, 'asked again: nothing of Brave\'s answer was kept');
   history.close();
 });

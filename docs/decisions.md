@@ -259,8 +259,11 @@ credit, with two buttons: load from the local database, and check online.
   is not asked again either. "Search the web again too" asks it anyway. A product that a shop has
   newly listed can therefore be missed for up to 14 days at a shop reached only through the web
   search; the page says when shops were answered this way.
-- What is kept is the app's own reading of the shops' pages and their addresses. Whether keeping
-  addresses that a web search returned for 14 days fits each provider's terms is not checked yet
-  (roadmap, "Read Brave's terms on keeping results"); if it does not, the reuse is shortened or
-  limited to the other providers.
+- What is kept is the app's own reading of the shops' pages and their addresses.
+
+Amended the same day, after reading the providers' terms ([research.md](research.md), section 14):
+Brave's terms forbid storing or caching its results beyond transient use, links included. So
+nothing of a Brave answer goes into the local database: a shop reached through Brave is asked
+through the web search again next time, and "Load saved" does not list what only Brave found.
+Serper's and Tavily's terms say nothing about keeping results, so the reuse stays for them.
 

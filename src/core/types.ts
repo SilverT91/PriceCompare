@@ -97,6 +97,8 @@ export interface RawOffer {
   url: string;
   /** The product page the offer was read from, when it differs from `url` or for the local database. */
   pageUrl?: string;
+  /** How that page was found: the shop's own search, or a web search (its candidate's `from`). */
+  via?: 'itemlist' | 'html_link' | 'search_provider';
   title: string;
   brand: string | null;
   gtin: string | null;
@@ -225,6 +227,8 @@ export interface ShopResult {
    * search), or known product pages re-read instead of a web search (the date they were found).
    */
   storedAt?: string;
+  /** The web search provider that answered for this shop in this search, if one was asked. */
+  webProvider?: string;
 }
 
 export interface ProductVariant {

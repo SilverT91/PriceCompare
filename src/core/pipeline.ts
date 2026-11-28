@@ -63,6 +63,18 @@ export interface SearchOptions {
  */
 export const REUSE_DAYS = 14;
 
+/**
+ * Providers whose terms forbid keeping their results beyond what operation needs. Brave's Search API
+ * terms (updated 1 Sep 2026, section 3(b)(i)): the customer shall not "store, cache, or create a
+ * database of Search Results, in whole or in part, other than transient storage required for
+ * operation", and "Search Results" are any outputs of the API, links included. So a page Brave led
+ * to is not linked to the query in the local database, and Brave's "found nothing" is not kept:
+ * such a shop is asked through the web search again next time. The shop's own page, read by the
+ * app, is the shop's data and is kept. Serper's and Tavily's terms say nothing about keeping
+ * results (read on 2026-11-28; docs/research.md, section 14).
+ */
+export const NO_KEEP_PROVIDERS: ReadonlySet<string> = new Set(['brave']);
+
 /** One shop's single chance to join the second-route (fallback) web search batch. */
 interface FallbackSlot {
   find(domain: string, country: string): Promise<SiteSearchResult>;
@@ -379,11 +391,14 @@ async function storedShop(shop: Shop, pq: ParsedQuery, qk: string, opts: SearchO
 async function remember(history: History | undefined, qk: string, r: ShopResult): Promise<void> {
   if (!history || r.status === 'not_relevant' || r.status === 'not_stored') return;
   const web = (r.route === 'search_provider' || r.route === 'both') && !r.storedAt;
+  // A provider whose terms forbid keeping its results: neither its date nor the pages it led to.
+  const keepWeb = !(r.webProvider && NO_KEEP_PROVIDERS.has(r.webProvider));
   const prev = await history.lastRun(qk, r.shopId);
-  const webAt = web ? new Date().toISOString() : prev?.webAt;
+  const webAt = web && keepWeb ? new Date().toISOString() : web ? undefined : prev?.webAt;
   const found = new Map<string, { url: string; title: string; route: ShopResult['route'] }>();
   for (const o of r.offers) {
     if (o.match.level === 'different') continue;
+    if (!keepWeb && o.via === 'search_provider') continue;
     const url = o.pageUrl ?? o.url;
     if (!found.has(url)) found.set(url, { url, title: o.title, route: r.route });
   }
@@ -653,7 +668,7 @@ async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidat
     }
     pagesFetched++;
     if (!page.productNodes) pagesWithoutData++;
-    raw.push(...page.offers);
+    raw.push(...page.offers.map((o) => ({ ...o, via: c.from })));
   }
   if (budgetHit) notes.push(t(lang, 'budgetReached', { max: MAX_REQUESTS_PER_SHOP }));
   if (alreadyRead) notes.push(t(lang, 'alreadyReadPages', { n: alreadyRead }));
@@ -701,11 +716,13 @@ async function searchShop(
   };
   /** Set when the web search's answer came from the local database (its date). */
   let storedAt: string | undefined;
+  /** The web search provider that answered in this search. */
+  let webProvider: string | undefined;
   const finish = (status: ShopStatus, detail: string, extra: Partial<ShopResult> = {}): ShopResult => {
     decline();
     return {
       ...base, status, detail, route: 'none', offers: [], candidates: [], requestsUsed: session.used,
-      fromCache: session.used === 0, ms: Date.now() - t0, ...(storedAt ? { storedAt } : {}), ...extra,
+      fromCache: session.used === 0, ms: Date.now() - t0, ...(storedAt ? { storedAt } : {}), ...(webProvider ? { webProvider } : {}), ...extra,
     };
   };
   // A web search for this shop and query answered within REUSE_DAYS: its pages, or "nothing found".
@@ -784,6 +801,7 @@ async function searchShop(
         const why = notes.length ? `${notes.join('; ')}; ` : '';
         if (r.unavailable) return finish('needs_search_key', t(lang, 'noProvider', { why, reason: techNote(lang, r.unavailable) }), { route });
         if (r.error) return finish('error', t(lang, 'webFailed', { error: techNote(lang, r.error) }), { route });
+        webProvider = r.provider;
         candidates = providerCandidates(r.hits);
         notes.push(t(lang, 'foundVia', { provider: String(r.provider) }));
       }
@@ -855,6 +873,7 @@ async function searchShop(
     return result(first, route, t(lang, 'webCouldNotTry', { first: firstText, reason: techNote(lang, (r.unavailable ?? r.error) as string) }));
   }
   const notes2: string[] = [];
+  if (r?.provider) webProvider = r.provider;
   if (reuse) {
     storedAt = reuse.webAt;
     notes2.push(t(lang, 'webReused', { n: reuse.pages.length, date: day(lang, reuse.webAt) }));
