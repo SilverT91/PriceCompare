@@ -621,3 +621,25 @@ describe('workstation configurations (test of 2026-11-27, HP Z2 Tower G1i)', () 
     assert.equal(m(q, 'Herný počítač HP Z2 Tower G1i (EE6J3ET#BCM) čierny').level, 'exact');
   });
 });
+
+describe('a gaming PC sold under two names (search of 2026-11-28, HP OMEN 45L GT22-3582nc)', () => {
+  const q = 'HP OMEN 45L GT22-3582nc';
+  const nay = 'Herný počítač HP OMEN MAX by HP 45L GT22-3582nc + Game Pass predplatné na 2 mesiace čierny';
+  test('a subscription length is not a model number, and a tier word next to the same model code is only a doubt', () => {
+    const r = m(q, nay, { brand: 'HP' });
+    assert.equal(r.level, 'possible');
+    assert.ok(!r.distinguishing.includes('2'));
+    assert.ok(r.unknownExtras.includes('max'));
+  });
+  test('another model code of the line stays another product, with or without the tier word', () => {
+    assert.equal(m(q, 'Herný počítač HP OMEN MAX by HP 45L GT23-0580nc + Game Pass predplatné na 2 mesiace čierny', { brand: 'HP' }).level, 'different');
+    // without a long model code in the query a tier word still decides
+    assert.equal(m('HP OMEN 45L', 'HP OMEN MAX 45L').level, 'different');
+    assert.equal(m('iPhone 16 128GB', 'Apple iPhone 16 Pro 128GB').level, 'different');
+  });
+  test('durations in other languages', () => {
+    for (const t of ['HP OMEN 45L GT22-3582nc + Game Pass 3 months', 'HP OMEN 45L GT22-3582nc + Game Pass na 3 měsíce', 'HP OMEN 45L GT22-3582nc + Game Pass 6 Monate']) {
+      assert.ok(!m(q, t).distinguishing.some((x) => /^\d+$/.test(x)), t);
+    }
+  });
+});

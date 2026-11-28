@@ -27,11 +27,16 @@ HP Z2 Tower G1i configuration).
   is no longer rated another product for a word its title explains. Before, ABCOM's real product
   link lost to the "add to favourites" and "compare" links next to it, which robots.txt does not
   allow, and the shop ended as `robots_disallowed`.
+- **A subscription length is not a model number** ("+ Game Pass predplatné na 2 mesiace"), and a
+  tier word next to the query's own long model code is a doubt, not another product: NAY sells
+  the "HP OMEN 45L GT22-3582nc" as "OMEN MAX by HP 45L GT22-3582nc", and it now joins Datacomp's
+  offer of the same part number.
 
 Live check: the pasted ASBIS title at NAY, ABCOM and Datacomp without a web search key (12 shop
 requests); then on the page with the key, in English and in Slovak: 6 Brave queries. A price
 search for the configuration the owner chose (part number CF1Q7ET) used 7 more: no shop the app
-reads lists that part number. 107 Brave queries are used this month.
+reads lists that part number. A search for an HP OMEN 45L used 6 more: 113 Brave queries are
+used this month.
 
 What the sixth round did (2026-11-25):
 
@@ -253,6 +258,12 @@ round, see the state above):
 - **Switching the language after a search** rewrites what the page writes, but sentences the
   search built (delivery notes, "pickup in the branch: free") stay in the first language until the
   next search. Seen on 2026-11-28; a search started in Slovak is all Slovak.
+- **One machine named two ways is two products.** A shop that names a configuration by its part
+  number (Datacomp: "HP OMEN 45L GT22-3582nc, D8QT8EA") and one that lists its specifications
+  (ABCOM: "HP PC OMEN 45L GT22-3582nc, Ultra 9-285K, 64GB DDR5, ...") end up as two products,
+  because they share neither a code nor a signature. Joining them would need the model code
+  ("GT22-3582nc") treated as identifying, or the specifications read from the part-number shop's
+  page. Seen 2026-11-28.
 - **A model number with letters glued to it** ("RTX Pro 4000Bl") does not meet the query "4000",
   so that ABCOM configuration is only a similar model for "HP Z2 Tower G1i RTX PRO 4000". "4000 BL"
   written apart matches. Seen 2026-11-28.

@@ -173,6 +173,8 @@ const HZ_RE = /(?<![a-z0-9.])(\d+)\s*hz(?![a-z])/g;
 const RATE_RE = /(?<![a-z0-9.])(\d+(?:[.,]\d+)?)\s*(mb\/s|mbps|gb\/s|gbps)(?![a-z])/g;
 const BITS_RE = /(?<![a-z0-9.])(\d+)\s*-?\s*bit(?:s|ov|u|y)?(?![a-z])/g;
 const DRIVE_RE = /(?<![a-z0-9.])(\d{3,4})\s*(ssd|hdd)(?![a-z])/g;
+// A length of time is not a model number: "+ Game Pass predplatné na 2 mesiace", "3 months", "6 Monate".
+const DURATION_RE = /(?<![a-z0-9.])\d+\s*-?\s*(?:mesiac\w*|mesic\w*|month\w*|monat\w*|miesiac\w*|miesiec\w*)(?![a-z])/g;
 
 function specificationText(folded: string): string {
   const num = (n: string) => n.replace(',', '.');
@@ -183,7 +185,8 @@ function specificationText(folded: string): string {
     .replace(HZ_RE, (_m, n: string) => ` ${n}hz `)
     .replace(RATE_RE, (_m, n: string, unit: string) => ` ${num(n)}${unit.startsWith('g') ? 'gbps' : 'mbps'} `)
     .replace(BITS_RE, (_m, n: string) => ` ${n}bit `)
-    .replace(DRIVE_RE, (_m, n: string, kind: string) => ` ${n}gb ${kind} `);
+    .replace(DRIVE_RE, (_m, n: string, kind: string) => ` ${n}gb ${kind} `)
+    .replace(DURATION_RE, ' ');
 }
 
 /**
@@ -450,6 +453,10 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   /** Model numbers and amounts in a specification list after the name (listedConfiguration). */
   const listSpecs: string[] = [];
   let colour: string | null = null;
+  // A long model code of the query found in the title ("GT22-3582nc") names one exact machine. A tier
+  // word next to it is then a doubt, not another product: HP sells the same "OMEN 45L GT22-3582nc"
+  // as "OMEN MAX by HP 45L GT22-3582nc" (NAY, 2026-11-28).
+  const codeNamesIt = q.tokens.some((x) => /[a-z]/.test(x) && /\d/.test(x) && x.length >= 8 && at.has(x));
   // "Súprava zubných kefiek ... Duo Pack": with the two-pack word in the title, a generic set word says nothing more.
   const twoPackTitle = titleTokens.includes('duo') || specTokens.includes('duo');
   const setSaysNothing = (t: string) => twoPackTitle && GENERIC_SET_WORDS.has(t);
@@ -472,6 +479,10 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     if (brandTokens.has(t)) continue;
     if (t === 'pro' && i + 1 < titleTokens.length && (inClass(titleTokens[i + 1], NEUTRAL) || /^(det|dosp|muz|zen|psy|kock|kluk|holk)/.test(titleTokens[i + 1]))) {
       continue; // Czech "pro" = "for"
+    }
+    if (codeNamesIt && inClass(t, MODEL_WORDS) && !inClass(t, PACKAGE_WORDS) && !inClass(t, ACCESSORY_WORDS)) {
+      unknownExtras.push(t);
+      continue;
     }
     if (inClass(t, MODEL_WORDS) || inClass(t, PACKAGE_WORDS) || inClass(t, ACCESSORY_WORDS)) {
       distinguishing.push(t);
