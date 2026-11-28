@@ -403,11 +403,19 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
       }
       // A number of one or two digits that starts a configuration code ("16" in "16IMH10", "16ARP10": a
       // number, two or more letters, digits) is only possible; "16e", "9N" and "3000" are no such code.
-      const code = t.length <= 2 ? titleTokens.findIndex((tt, i) => !consumed.has(i) && new RegExp(`^${t}[a-z]{2,}\\d+[a-z]*$`).test(tt)) : -1;
+      const code = titleTokens.findIndex((tt, i) => !consumed.has(i)
+        && (t.length <= 2 ? new RegExp(`^${t}[a-z]{2,}\\d+[a-z]*$`).test(tt) : gluedLetters(t, tt)));
       if (code >= 0) {
         found(t, code);
         codeStarts.push(t);
         say({ code: 'codeStart', params: { token: t, title: titleTokens[code] } });
+        continue;
+      }
+      const inList = listTokens.find((tt) => gluedLetters(t, tt));
+      if (inList) {
+        matched.push(t);
+        codeStarts.push(t);
+        say({ code: 'codeStart', params: { token: t, title: inList } });
         continue;
       }
     }
@@ -610,6 +618,15 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   };
 }
 
+/**
+ * A query number of three or more digits with two or three letters glued to it in the title ("4000"
+ * in "RTX Pro 4000Bl"): the same model as a doubt. One letter ("4070S", "3000x") is another model,
+ * and a unit ("3000mah") is a specification.
+ */
+function gluedLetters(t: string, tt: string): boolean {
+  return /^\d{3,}$/.test(t) && new RegExp(`^${t}[a-z]{2,3}$`).test(tt) && !VARIANT_UNITS.test(tt) && !NEUTRAL_UNITS.test(tt);
+}
+
 /** Words in a specification list that say something is left out ("bez OS", "no Kb+mouse"). */
 const LEFT_OUT = new Set(['bez', 'ohne', 'no', 'without', 'solo', 'bare', 'body']);
 
@@ -626,7 +643,8 @@ function listedConfiguration(q: ParsedQuery, list: { name: string; specs: string
   const inName = (t: string) => Boolean(coverIndices(t, nameTokens) ?? gluedCover(t, nameTokens) ?? coverIndices(t, brandList))
     || (/^\d{1,2}$/.test(t) && nameTokens.some((n) => new RegExp(`^${t}[a-z]{2,}\\d+[a-z]*$`).test(n)));
   const optional = (t: string) => inClass(t, NEUTRAL) || colourOf(t) !== null;
-  if (!q.tokens.every((t) => inName(t) || optional(t) || coverIndices(t, listTokens))) return null;
+  const inList = (t: string) => Boolean(coverIndices(t, listTokens)) || listTokens.some((tt) => gluedLetters(t, tt));
+  if (!q.tokens.every((t) => inName(t) || optional(t) || inList(t))) return null;
   const nameHolds = q.tokens.some(hasDigit) ? q.tokens.some((t) => hasDigit(t) && inName(t)) : q.tokens.every((t) => inName(t) || optional(t));
   return nameHolds ? list : null;
 }

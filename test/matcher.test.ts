@@ -643,3 +643,13 @@ describe('a gaming PC sold under two names (search of 2026-11-28, HP OMEN 45L GT
     }
   });
 });
+
+describe('a model number with letters glued to it (ABCOM, 2026-11-28)', () => {
+  test('"4000" meets "4000Bl" as possible, with the reason; one glued letter is another model', () => {
+    const r = m('HP Z2 Tower G1i RTX PRO 4000', 'HP PC Z2 Tower G1i 700W, Intel Core U9 285K vPro, RTX Pro 4000Bl 24GB,2×16GB DDR5,1TB,WiFi 7+BT,no Kb+mouse,Win11Pro,3yo', { brand: 'HP' });
+    assert.equal(r.level, 'possible');
+    assert.ok(r.reasonCodes.some((c) => c.code === 'codeStart'));
+    assert.equal(m('RTX 4070', 'MSI GeForce RTX 4070S Ventus').level, 'different');
+    assert.equal(m('Oral-B Pro 3 3000', 'Oral-B Pro 3 3000x').level, 'different');
+  });
+});

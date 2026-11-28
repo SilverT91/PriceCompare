@@ -31,6 +31,11 @@ HP Z2 Tower G1i configuration).
   tier word next to the query's own long model code is a doubt, not another product: NAY sells
   the "HP OMEN 45L GT22-3582nc" as "OMEN MAX by HP 45L GT22-3582nc", and it now joins Datacomp's
   offer of the same part number.
+- **"4000" meets "4000Bl"** (a number of three or more digits with two or three letters glued to
+  it) as a possible match with the reason named; one glued letter ("4070S") is still another model.
+- **Switching the language after a search** runs the search again in the new language, so the
+  sentences the search built (delivery notes, shop details) change too. Within the 6-hour cache
+  this asks no shop and no web search; the chosen product stays chosen.
 
 Live check: the pasted ASBIS title at NAY, ABCOM and Datacomp without a web search key (12 shop
 requests); then on the page with the key, in English and in Slovak: 6 Brave queries. A price
@@ -255,9 +260,6 @@ round, see the state above):
 - **Category words the matcher does not know** leave a correct offer as "possible" ("Robotický
   vysávač Roborock Qrevo Edge 2 Pro biely").
 - **A kit counted by its modules.** "64GB (2x32GB)" is offered as a possible match for "32gb".
-- **Switching the language after a search** rewrites what the page writes, but sentences the
-  search built (delivery notes, "pickup in the branch: free") stay in the first language until the
-  next search. Seen on 2026-11-28; a search started in Slovak is all Slovak.
 - **Tier words inside a processor's name** before the specification list ("HP Z2 Mini G1a AMD Ryzen
   AI Max PRO 395 APU, 128GB ...") count as the product's, so the query "HP Z2 Mini G1a 395 128GB"
   rejects it; typed with "Max PRO" it matches. Seen 2026-11-28.
@@ -267,9 +269,6 @@ round, see the state above):
   because they share neither a code nor a signature. Joining them would need the model code
   ("GT22-3582nc") treated as identifying, or the specifications read from the part-number shop's
   page. Seen 2026-11-28.
-- **A model number with letters glued to it** ("RTX Pro 4000Bl") does not meet the query "4000",
-  so that ABCOM configuration is only a similar model for "HP Z2 Tower G1i RTX PRO 4000". "4000 BL"
-  written apart matches. Seen 2026-11-28.
 - **A specification list is read from its wording.** A title counts as "name, then a list" when
   three or more comma-separated parts follow the name and two of them state an amount with a unit.
   A list written another way (only " / ", or without units) is read as before; its listed tokens

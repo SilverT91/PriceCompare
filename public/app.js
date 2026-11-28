@@ -173,10 +173,15 @@ function switchLang(l) {
   }
   renderCategoryOptions();
   renderUsage();
-  if (state) {
+  if (state && !state.rejected) {
+    // Sentences the search built (delivery notes, shop details, match reasons) come from the server in
+    // the search's language, so the search runs again in the new one. Within the 6-hour cache it asks
+    // no shop and no web search again. The chosen product stays chosen.
+    const { selected, picked } = state;
+    start(state.q, state.loc, state.cat, state.asTyped);
+    Object.assign(state, { selected, picked });
+  } else if (state) {
     renderStart();
-    renderRates();
-    renderAll();
   }
 }
 
@@ -194,7 +199,7 @@ function go(q, loc, cat, asTyped = false) {
 function start(q, loc, cat, asTyped = false) {
   if (source) source.close();
   state = {
-    q, loc, cat, shops: new Map(), groups: [], nearby: { models: [], total: 0 }, nearbyOpenFor: null, selected: null, done: false, heureka: null,
+    q, loc, cat, asTyped, shops: new Map(), groups: [], nearby: { models: [], total: 0 }, nearbyOpenFor: null, selected: null, done: false, heureka: null,
     locName: $('#location').selectedOptions[0]?.textContent || 'Košice', start: null, rates: null, rejected: false, lost: false,
   };
   for (const id of ['#products', '#comparison', '#manual', '#shops']) $(id).hidden = true;
