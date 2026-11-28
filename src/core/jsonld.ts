@@ -2,6 +2,7 @@
 // ItemList. Works on the HTML string with a regex, so it needs no DOM.
 
 import { GTIN_KEYS, normaliseGtin } from './gtin.ts';
+import { isPhone, mergeParams, paramsFromProperties, paramsFromText, type NamedValue, type Params } from './params.ts';
 import type { Candidate, RawOffer, ShippingOption } from './types.ts';
 
 type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
@@ -264,12 +265,33 @@ export function offerUrl(declared: string | null | undefined, pageUrl: string): 
   return root && !pageIsRoot && !u.search ? page.href : u.href;
 }
 
+/**
+ * The parameters a product page states about the product (params.ts): its named values
+ * (`additionalProperty`: NAY) and its description (TPD's "Label: value" pairs, Mironet's list).
+ * Only the parameters are kept, not the text. Undefined when the page states none.
+ */
+function pageParams(node: Node, name: string, byId: Map<string, Node>): Params | undefined {
+  const props: NamedValue[] = [];
+  for (const raw of asList(node.additionalProperty)) {
+    const x = resolve(raw, byId);
+    if (!isObj(x)) continue;
+    const label = str(x.name ?? null) ?? str(x.propertyID ?? null);
+    const value = typeof x.value === 'number' ? String(x.value) : str(x.value ?? null);
+    const unit = str(x.unitText ?? null);
+    if (label && value) props.push({ name: label, value: unit ? `${value} ${unit}` : value });
+  }
+  const description = str(node.description ?? null);
+  const params = mergeParams(paramsFromProperties(props), description ? paramsFromText(description, 'description', isPhone(name)) : undefined);
+  return Object.keys(params).length ? params : undefined;
+}
+
 function productOffers(node: Node, ctx: { shopId: string; pageUrl: string; byId: Map<string, Node> },
   inherited: { name?: string | null; brand?: string | null; source: string; currency?: string | null }): RawOffer[] {
   const name = str(node.name ?? null) ?? inherited.name ?? null;
   if (!name) return [];
   const brand = brandOf(node) ?? inherited.brand ?? null;
   const gtin = gtinOf(node);
+  const params = pageParams(node, name, ctx.byId);
   const out: RawOffer[] = [];
   for (const raw of asList(node.offers)) {
     const o = resolve(raw, ctx.byId);
@@ -285,6 +307,7 @@ function productOffers(node: Node, ctx: { shopId: string; pageUrl: string; byId:
         itemCondition: b.itemCondition ?? lastSegment(str(node.itemCondition ?? null)), seller: b.seller,
         shipping: b.shipping.length ? b.shipping : shippingOf(node.shippingDetails, ctx.byId),
         source: inherited.source + (b.source === 'Offer' ? '' : ` / ${b.source}`) + (b.listPrice !== null ? ` (sale price; regular ${b.listPrice})` : ''),
+        ...(params ? { params } : {}),
       });
     }
   }

@@ -1,6 +1,8 @@
 // Shared data types of the core. This folder (src/core) uses only standard web APIs (fetch, URL,
 // AbortSignal, TextDecoder) and pure-JS libraries, so it can run on Node and on Cloudflare Workers.
 
+import type { GroupParams, Params } from './params.ts';
+
 export type TriState = true | false | 'unknown';
 
 /** A physical branch. Not filled in version 1; kept so per-branch data can be added later. */
@@ -105,6 +107,11 @@ export interface RawOffer {
   shipping: ShippingOption[];
   /** 'Product' | 'ProductGroup variant' | 'AggregateOffer (lowest)' ... */
   source: string;
+  /**
+   * Parameters (params.ts): on a raw offer those its page states (named values, description); on a
+   * matched offer merged with those its title states.
+   */
+  params?: Params;
 }
 
 export type MatchLevel = 'exact' | 'possible' | 'different';
@@ -249,6 +256,8 @@ export interface ProductGroup {
   /** What the notes state, so a page can write them in another language. */
   noteFacts: { noDelivery: number; gtins: number; mixed: boolean; noGtin: boolean };
   variants: ProductVariant[];
+  /** Parameters the shops state for this product (params.ts, groupParams); a parameter no shop states is absent. */
+  params: GroupParams;
 }
 
 /** One shop that lists a nearby model: the page and the title as the shop wrote it. */

@@ -16,6 +16,7 @@ import { parseArgs } from 'node:util';
 import { CATEGORY_GROUPS } from '../core/categories.ts';
 import { displayGtin } from '../core/gtin.ts';
 import { parseLang, reasonText } from '../core/i18n.ts';
+import { PARAM_KEYS, type GroupParams } from '../core/params.ts';
 import { runSearch, type SearchEvent } from '../core/pipeline.ts';
 import { notCheckedList, statusSummary } from '../core/report.ts';
 import { locationById } from '../core/shops.ts';
@@ -167,6 +168,7 @@ if (!chosen) {
   if (chosen.gtins.length) console.log(`GTIN: ${chosen.gtins.map(displayGtin).join(', ')}   ${chosen.notes.join('; ')}`);
   else console.log(chosen.notes.join('; '));
   console.log(`Variants: ${chosen.variants.map((v) => `${v.label.replace(/,? ?GTIN \d+$/, '')} ${v.bestItemEur === null ? '(no SK delivery)' : `${eur(v.bestItemEur)}${v.bestItemTotalKnown ? '' : '+ship?'}`}`).join(' | ')}`);
+  if (Object.keys(chosen.params ?? {}).length) console.log(`Parameters (as the shops state them): ${paramLine(chosen.params)}`);
   const offers: (Offer & { variant: string })[] = chosen.variants.flatMap((v) => v.offers.map((o) => ({ ...o, variant: v.label.replace(/,? ?GTIN \d+$/, '') || '-' })));
   for (const section of ['local', 'online'] as const) {
     const list = sortOffers(offers.filter((o) => o.section === section));
@@ -227,3 +229,13 @@ if (credit.length) {
   console.log(`Web search credit: ${credit.map((u) => `${u.provider} ${u.used}/${u.limit} ${u.period === 'total' ? 'in total' : 'this month'}${u.source === 'provider' ? ' (as reported by the provider)' : ''}${u.exhausted ? ' (used up)' : ''}`).join(', ')}`);
 }
 store.close();
+
+/** "cpu Intel Core Ultra 9 285K (NAY, product data) · ram 64 GB (title) ..."; parameters no shop states are left out. */
+function paramLine(p: GroupParams): string {
+  const unit: Record<string, string> = { vram_gb: ' GB', ram_gb: ' GB', storage_gb: ' GB', screen_in: '"', psu_w: ' W' };
+  return PARAM_KEYS.filter((k) => p[k]).map((k) => {
+    const v = p[k]!;
+    const others = v.others.length ? `; also stated: ${v.others.join(', ')}` : '';
+    return `${k.replace(/_(gb|in|w)$/, '')} ${v.value}${unit[k] ?? ''} (${v.shop}, ${v.source}${others})`;
+  }).join(' · ');
+}

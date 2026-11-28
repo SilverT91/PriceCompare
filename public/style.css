@@ -150,3 +150,16 @@ footer p { margin: 8px 0 0; }
 .usage li.usage-full .ubar > span { background: var(--bad); }
 .usage li.usage-warn .ucount { color: var(--warn); }
 .usage li.usage-full .ucount { color: var(--bad); }
+
+/* Parameters side by side: filter fields in a row, the table like the offer tables. */
+.params-filters { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: end; margin: 8px 0 12px; }
+.params-filters label { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); }
+.params-filters input { width: 9ch; padding: 4px 6px; font: inherit; color: var(--text, inherit); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+table.params td { white-space: normal; }
+table.params tbody td:last-child { white-space: normal; }
+table.params tr.selected td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+table.params .conflict { color: var(--warn); font-weight: 600; cursor: help; }
+#params-unknown { margin-top: 12px; }
+/* Parameter cells break between words only; the product's name (long shop titles without spaces) may break anywhere. */
+table.params td { overflow-wrap: normal; }
+table.params td:first-child { overflow-wrap: anywhere; min-width: 16ch; }

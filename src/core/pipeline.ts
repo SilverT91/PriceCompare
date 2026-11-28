@@ -10,6 +10,7 @@ import { extractListCandidates, extractOffers, offerUrl } from './jsonld.ts';
 import { extractLinkCandidates, pageKey, stripTrackingParams } from './links.ts';
 import { coreQuery, linkInput, matchTitle, namesSomething, parseQuery, scoreCandidate, specList, withoutPackageWords, type ParsedQuery } from './matcher.ts';
 import { nearbyModels } from './nearby.ts';
+import { offerParams } from './params.ts';
 import { getRates } from './rates.ts';
 import {
   ProviderChain, SiteSearchBatcher, type ProviderCall, type SearchHit, type SearchProvider, type SiteSearchMode, type SiteSearchResult,
@@ -108,7 +109,14 @@ export interface SearchSummary {
   categories: CategoryChoice;
 }
 
+/**
+ * What a product page gave, cached by URL. `v` is the extraction version: an entry from an older
+ * version is read again once instead of used. Raise it when what is read from a page changes
+ * (params.ts included), so no search shows parameters read by older rules.
+ */
+const PAGE_VERSION = 3;
 interface CachedPage {
+  v?: number;
   offers: RawOffer[];
   productNodes: number;
   status: number | null;
@@ -437,7 +445,8 @@ type PageRead =
 async function readPage(ctx: ShopCtx, url: string): Promise<PageRead> {
   const { shop, opts, session } = ctx;
   const lang = opts.lang ?? 'en';
-  const hit = await opts.cache.get<CachedPage>('offers', url);
+  const cached = await opts.cache.get<CachedPage>('offers', url);
+  const hit = cached && cached.v === PAGE_VERSION ? cached : null;
   if (hit && (hit.status === 404 || hit.status === 410)) {
     ctx.read.add(pageKey(url));
     return { kind: 'failed', note: t(lang, 'pageFailedCached', { url, status: hit.status }) };
@@ -461,13 +470,13 @@ async function readPage(ctx: ShopCtx, url: string): Promise<PageRead> {
   if (!page.ok) {
     // A page that is gone (404/410) is remembered like any extraction, so it is not asked again for 6 h.
     if (page.status === 404 || page.status === 410) {
-      await opts.cache.set('offers', url, { offers: [], productNodes: 0, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
+      await opts.cache.set('offers', url, { v: PAGE_VERSION, offers: [], productNodes: 0, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
     }
     return { kind: 'failed', note: `${url}: ${page.error ? techNote(lang, page.error) : `HTTP ${page.status}`}` };
   }
   const ex = extractOffers(page.text, page.finalUrl, shop.id);
   if (ex.productNodes) await rememberStructuredData(ctx);
-  await opts.cache.set('offers', url, { offers: ex.offers, productNodes: ex.productNodes, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
+  await opts.cache.set('offers', url, { v: PAGE_VERSION, offers: ex.offers, productNodes: ex.productNodes, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
   return { kind: 'offers', offers: ex.offers, productNodes: ex.productNodes };
 }
 
@@ -477,6 +486,7 @@ async function toOffers(ctx: ShopCtx, raw: RawOffer[], pq: ParsedQuery): Promise
   const rates = await ctx.ratesP;
   return dedupeOffers(raw.filter((x) => x.price > 0)).map((r) => ({
     ...r, shopName: shop.name, section, shipsToSk: shop.ships_to_sk, branchKnown: shop[opts.location.branchField],
+    params: offerParams(r.title, r.params),
     match: matchTitle(pq, { title: r.title, brand: r.brand, sku: r.sku, mpn: r.mpn, color: r.color, itemCondition: r.itemCondition, url: r.url, shopName: shop.name }),
     totals: computeTotals(r, shop, rates, opts.location.country, { local: section === 'local', lang: opts.lang }),
   }));

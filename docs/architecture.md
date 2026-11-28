@@ -72,6 +72,7 @@ calls. On Workers that state would be per isolate, which matters if you rely on 
 | `vocab.ts` | Word lists for the matcher: colours, neutral words, tier/package/accessory words, condition words, unit patterns. `NEUTRAL` is built from sub-lists; `BRANDS` and `CATEGORY_WORDS` (category and shop words) are exported for `nearby.ts`. |
 | `matcher.ts` | `parseQuery()`, `matchTitle()` (query vs title: exact / possible / different, condition, colour, signature, codes, matched query tokens), `scoreCandidate()` (cheap pre-fetch score), `isArticlePage()` and `urlSlug()` (used by `scoreCandidate` and `nearby.ts`). |
 | `group.ts` | `groupOffers()`: links offers into distinct products and variants. |
+| `params.ts` | Product parameters for computers and phones (processor, graphics card and its memory, RAM, storage, screen, power supply, system): from a page's JSON-LD named values and description, and from titles; `groupParams()` per product. |
 | `nearby.ts` | `nearbyModels()`: similar models the shops list, from the candidates and offers rated `different` (section 4, step 11a). `productPart()` and `deriveName()` make a model name from a title. Pure: no requests. |
 | `totals.ts` | `computeTotals()` (EUR conversion, delivery, pickup), `sortOffers()`, `headline()`/`headlineText()`, `reachable()`. |
 | `rates.ts` | `getRates()`: ECB rates from the Frankfurter API, cached. |
@@ -727,3 +728,21 @@ that literal type.
   case is stored as a 1-hour `blocked` mark by the pipeline.
 - **Tools and data.** The README's layout section does not mention `data/known_product_urls.yaml`,
   `data/probe_results.json` or `requirements.txt`; they belong to the Python probe only.
+
+## 8c. Parameters
+
+`src/core/params.ts` reads parameters only from what a shop publishes, in this order of trust: the
+page's JSON-LD `additionalProperty` (NAY), the offer's title, the page's JSON-LD `description`
+(TPD's "label: value" pairs, Mironet's and Datacomp's lists). `jsonld.ts` keeps the page's
+parameters on each raw offer (`params`; the description text itself is not kept), `toOffers()`
+merges them with the title's, and `groupOffers()` gives each product `params`: per parameter the
+value most offers state (two spellings of one value count as one: `sameKey()`), the shop and source
+it came from, and other values stated. The page shows them in "Parameters side by side" with
+filters; a parameter no shop states is "not stated", and a filtered parameter that is not stated
+puts the product in a separate list, never out of sight. The command line prints one line under the
+comparison.
+
+Product pages are cached with a version (`PAGE_VERSION` in `pipeline.ts`). Raise it whenever what
+is read from a page changes, params.ts included: older entries are then read again once instead of
+showing values read by older rules.
+

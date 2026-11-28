@@ -49,6 +49,12 @@ shops). A correction in one of them needs no other change.
      not type it. "6000" finds "6000MHz", and "16" finds the model code "16IMH10" as a possible
      match. A word that stands in for one you typed ("MX Anywhere 3S" for "mx master 3s") means
      another product.
+   - **Parameters side by side.** When a search finds several configurations of a computer or
+     a phone, a table shows processor, graphics card and its memory, RAM, storage, screen, power
+     supply and system for each, with filters ("graphics memory at least 24 GB", "price at most
+     6,000 €"). The app relies on the shops' data: it reads only what a shop publishes in the
+     title and the product data on its page, invents nothing, and shows "not stated" where no
+     shop gives a value.
    - **Computers come in configurations.** A title that lists the configuration after the name
      ("HP PC Z2 Tower G1i 700W, Intel Core U9 285K vPro, RTX Pro 4000Bl 24GB, 2×16GB DDR5, 1TB,
      ...") matches the name as a possible match, and each configuration, or each part number

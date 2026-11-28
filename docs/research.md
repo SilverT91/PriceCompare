@@ -361,3 +361,27 @@ Checked with the project's own tools, at most a handful of requests each.
 
 The shops that answered computer searches that day were NAY, Datacomp, ABCOM Košice, Mironet.cz,
 Andreashop and TPD Euronics.
+
+## 13. Which shops publish product parameters (phase 0 of the parameter plan, 2026-11-28)
+
+`tools/measure_params.ts` read 9 computer product pages the cache knew (5 shops, 9 requests under
+the request rules) and listed what each page's JSON-LD `Product` node says beyond name and price.
+
+| Shop | `additionalProperty` | `description` | What the parameters look like |
+|---|---|---|---|
+| NAY | 37–38 named values | a bullet list (300–350 characters) | "Veľkosť pamäte RAM = 64,00 GB", "Veľkosť pamäte VGA = 16 384 MB", "Označenie grafickej karty = GeForce RTX 5080", "Kapacita úložiska = 2 048 GB" |
+| TPD Euronics | none | "label: value" pairs | "Pamäť RAM: DDR5 16 GB • Úložný priestor: SSD: 512 GB" |
+| Mironet | none | a short list | "Intel Core Ultra 5 245, 16GB, 512GB SSD, RTX A400 4GB, W11P" |
+| Datacomp | none | a short list | "128 GB RAM, DDR5 (PC5), 1TB SSD, Wi-Fi 7, ..., Linux" |
+| ABCOM | none | long marketing text | the configuration is in the title instead |
+
+So the parameters are in data the app already reads, in three forms (named values, labelled pairs,
+lists), and no per-shop rule is needed. Phones were not in the cache; they were measured only
+through titles (storage, and "8GB/256GB" for memory and storage). A Polish shop (Morele) also
+publishes named values; its "Chipset" is the board's, not the processor.
+
+**Open Icecat** (an open product catalogue, for shops that name a configuration only by part
+number), read the same day on Icecat's own pages and blog: registration is free with an email
+address; automated access to the free Open Icecat content through its documented API is allowed
+for registered users; the free part covers the brands that sponsor Icecat, and the full catalogue
+is paid. Which brands sponsor it (HP, Lenovo, Samsung, Apple?) was not checked. Not used.

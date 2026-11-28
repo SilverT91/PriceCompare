@@ -41,6 +41,12 @@ HP Z2 Tower G1i configuration).
   model number tells configurations apart. "HP Z2 Mini G1a 395 128GB" now finds ABCOM's 7,427 €
   machine. When the query names the processor family itself, the processor is the product and its
   tier words count as before.
+- **Parameters side by side** (phases 0 and 1 of [plan-parameters.md](plan-parameters.md)):
+  processor, graphics card and its memory, RAM, storage, screen, power supply and system per
+  product, read from what shops publish, with filters and "not stated" where no shop says. For
+  "HP Z2 Tower G1i" eleven configurations get their parameters, and "graphics memory at least 24 GB"
+  leaves NAY's EE6J8ET (RTX PRO 4000, 64 GB, 5,469 €). Product pages are now cached with a version,
+  so a change in what is read from them takes effect at once.
 - **One machine named two ways is one product** when both titles hold the query's own long model
   code (eight or more letters and digits, such as "GT22-3582nc"): Datacomp's part-number title,
   ABCOM's specification list and NAY's "OMEN MAX" title of the HP OMEN 45L are now one product at
@@ -193,8 +199,9 @@ round, see the state above):
   configuration only by its part number (Datacomp, NAY) would need the product page read for the
   specifications, or the view shows the part number and price alone. Planned on 2026-11-28 as
   parameters and filters for computers and phones with a local catalogue, in phases:
-  [plan-parameters.md](plan-parameters.md). Phase 1 can start; four questions for the owner are at
-  the end of the plan.
+  [plan-parameters.md](plan-parameters.md). Phases 0 and 1 were built the same day: "Parameters
+  side by side" with filters, from NAY's named values, titles and descriptions. Next: phase 2 (a
+  stored catalogue) and the owner's decision on Open Icecat.
 
 1. **More real queries from the first user**, typed as he types them, in several categories.
    Run each without a key first (no quota), then with a key where it matters. His first two

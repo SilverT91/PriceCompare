@@ -1,7 +1,15 @@
 # Plan: parameters and filters (computers, phones, later other categories)
 
-Status: proposed on 2026-11-28, not built. Four questions for the owner are at the end; phase 1
-needs none of them answered.
+Status on 2026-11-28: phases 0 and 1 are built (results in [research.md](research.md), section 13;
+code in `src/core/params.ts`, the page's "Parameters side by side"). Phase 2 (the stored catalogue)
+and later are not. The owner's answers are at the end.
+
+What phase 1 does, in short: one set of parameters for computers and phones (processor or chip,
+graphics card, graphics memory, RAM, storage, screen, power supply, system), read from NAY's named
+values, from titles and from descriptions; a table with filters for the products of one search; a
+notice that the app relies on the shops' data and invents nothing; "not stated" in a cell no shop
+fills. The graphics card reference table in `data/` is not written yet: the shops' own text gave
+the graphics memory in every case measured where they name the card with it.
 
 ## What it should do
 
@@ -116,3 +124,20 @@ by part number.
 3. **An open product catalogue** needs an account with its provider. Should phase 0 look into one?
 4. **Unknown values in a filter:** shown in a separate group below the matches (proposed), or
    hidden?
+
+## The owner's answers (2026-11-28)
+
+1. **Categories:** computers and phones first, with one set of parameters for both (a phone simply
+   has no graphics card or power supply). Done that way in phase 1.
+2. **Finding products:** the expected use is that a person finds candidates elsewhere (Heureka's
+   parameter filters, for example) and brings names or links here. Heureka can filter a whole
+   category by parameters because shops send it their product feeds; this app gets no feeds, never
+   fetches Heureka, and can only read what each shop's pages publish. So the app compares what it
+   is given and what the shops it asks list; it does not search a whole category by parameters.
+   Phase 3 stays open.
+3. **Open product catalogue:** the owner asked what account it needs. Open Icecat: a free
+   registration with an email address at Icecat; the API is then used with the account's user
+   name, which would live in `.env` like the search keys. Waiting for the owner's decision.
+4. **Unknown values:** the cell says "not stated", a product whose filtered parameter no shop states
+   is listed apart, and the table starts with a notice that the app relies on the shops' data.
+   Done that way.

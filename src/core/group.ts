@@ -6,6 +6,7 @@
 import { displayGtin } from './gtin.ts';
 import { colourName, t, type Lang } from './i18n.ts';
 import { displayTitle } from './matcher.ts';
+import { groupParams } from './params.ts';
 import { headline, reachable, sortOffers } from './totals.ts';
 import type { MatchLevel, Offer, ProductGroup, ProductVariant } from './types.ts';
 import { NEUTRAL_UNITS, VARIANT_UNITS } from './vocab.ts';
@@ -195,6 +196,7 @@ export function groupOffers(offers: Offer[], lang: Lang = 'en'): ProductGroup[] 
       notes,
       noteFacts,
       variants: variantList.sort((a, b) => (a.bestItemEur ?? Infinity) - (b.bestItemEur ?? Infinity)),
+      params: groupParams(matching.length ? matching : members),
     });
   }
   return groups.sort((a, b) =>

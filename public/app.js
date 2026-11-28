@@ -177,9 +177,9 @@ function switchLang(l) {
     // Sentences the search built (delivery notes, shop details, match reasons) come from the server in
     // the search's language, so the search runs again in the new one. Within the 6-hour cache it asks
     // no shop and no web search again. The chosen product stays chosen.
-    const { selected, picked } = state;
+    const { selected, picked, filters } = state;
     start(state.q, state.loc, state.cat, state.asTyped);
-    Object.assign(state, { selected, picked });
+    Object.assign(state, { selected, picked, filters });
   } else if (state) {
     renderStart();
   }
@@ -202,7 +202,8 @@ function start(q, loc, cat, asTyped = false) {
     q, loc, cat, asTyped, shops: new Map(), groups: [], nearby: { models: [], total: 0 }, nearbyOpenFor: null, selected: null, done: false, heureka: null,
     locName: $('#location').selectedOptions[0]?.textContent || 'Košice', start: null, rates: null, rejected: false, lost: false,
   };
-  for (const id of ['#products', '#comparison', '#manual', '#shops']) $(id).hidden = true;
+  for (const id of ['#products', '#params', '#comparison', '#manual', '#shops']) $(id).hidden = true;
+  $('#params-filters').dataset.sig = '';
   $('#scope').hidden = true;
   $('#corrected').hidden = true;
   $('#progress').hidden = false;
@@ -392,6 +393,7 @@ function renderProducts() {
   renderNearby(near, !exact);
   $('#other-products').hidden = !other.length;
   $('#other-list').replaceChildren(...other.map(productItem));
+  renderParams(main);
   if (!groups.length) {
     $('#comparison').hidden = true;
     return;
@@ -399,6 +401,98 @@ function renderProducts() {
   // Until the user picks a product, the comparison follows the first one as results arrive.
   if (!state.picked || !groups.some((g) => groupKey(g) === state.selected)) state.selected = main[0] ? groupKey(main[0]) : null;
   renderComparison(groups.find((g) => groupKey(g) === state.selected));
+}
+
+// ---- Parameters side by side (src/core/params.ts): what the shops state, filtered on the page ----
+
+const PARAM_KEYS = ['cpu', 'gpu', 'vram_gb', 'ram_gb', 'storage_gb', 'screen_in', 'psu_w', 'os'];
+const PARAM_UNIT = { vram_gb: 'GB', ram_gb: 'GB', storage_gb: 'GB', screen_in: '"', psu_w: 'W' };
+
+function fmtNum(n) {
+  return n.toLocaleString(window.I18N.getLang() === 'sk' ? 'sk-SK' : 'en-US', { maximumFractionDigits: 2 });
+}
+
+/** "64 GB", "2 TB" (a disk of 1,000 GB or more), "6.1"", "1,200 W"; names as the shop wrote them. */
+function paramText(k, v) {
+  if (typeof v !== 'number') return String(v);
+  if (k === 'storage_gb' && v >= 1000) return `${fmtNum(Math.round(v / 100) / 10)} TB`;
+  if (k === 'screen_in') return `${fmtNum(v)}"`;
+  return `${fmtNum(v)} ${PARAM_UNIT[k]}`;
+}
+
+function mainGroups() {
+  return (state?.groups || []).filter((g) => g.level !== 'different');
+}
+
+/**
+ * The table appears when two or more products match and the shops state parameters for any of them.
+ * A filter keeps a product when every filtered parameter is stated and meets it (an amount within 3 %
+ * counts: shops write 2 TB as 2,000 or 2,048 GB). A product whose filtered parameter no shop states
+ * is listed apart, never dropped silently.
+ */
+function renderParams(main) {
+  const box = $('#params');
+  if (main.length < 2 || !main.some((g) => g.params && Object.keys(g.params).length)) {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  const keys = PARAM_KEYS.filter((k) => main.some((g) => g.params?.[k]));
+  renderParamFilters(keys);
+  const active = Object.entries(state.filters || {}).filter(([, v]) => v !== '' && Number.isFinite(Number(v)));
+  const pass = [];
+  const unknown = [];
+  let hidden = 0;
+  for (const g of main) {
+    let ok = true;
+    let unk = false;
+    for (const [k, v] of active) {
+      const have = k === 'price_max' ? g.bestItemEur : g.params?.[k]?.value;
+      if (have === null || have === undefined) unk = true;
+      else if (k === 'price_max' ? have > Number(v) : Number(have) < Number(v) * 0.97) ok = false;
+    }
+    if (!ok) hidden++;
+    else (unk ? unknown : pass).push(g);
+  }
+  const byPrice = (a, b) => (a.bestItemEur ?? Infinity) - (b.bestItemEur ?? Infinity);
+  $('#params-table').replaceChildren(paramTable(pass.sort(byPrice), keys));
+  $('#params-hidden').hidden = !hidden;
+  $('#params-hidden').textContent = hidden ? t('paramHidden', { n: hidden }) : '';
+  $('#params-unknown').hidden = !unknown.length;
+  $('#params-unknown-table').replaceChildren(unknown.length ? paramTable(unknown.sort(byPrice), keys) : '');
+}
+
+function paramTable(groups, keys) {
+  const head = el('tr', {}, el('th', {}, t('paramProduct')), el('th', { class: 'num' }, t('paramPrice')), ...keys.map((k) => el('th', {}, lookup('param', k))));
+  const rows = groups.map((g) => el('tr', { class: state.selected === groupKey(g) ? 'selected' : null },
+    el('td', { class: 'shop' }, el('button', { type: 'button', class: 'link', onclick: () => { state.selected = groupKey(g); state.picked = true; renderProducts(); $('#comparison').scrollIntoView({ behavior: 'smooth' }); } }, g.title)),
+    el('td', { class: 'num', 'data-label': t('paramPrice') }, g.bestItemEur === null ? '?' : eur(g.bestItemEur)),
+    ...keys.map((k) => {
+      const p = g.params?.[k];
+      const label = lookup('param', k);
+      if (!p) return el('td', { class: 'muted', 'data-label': label }, t('paramNotStated'));
+      const tip = [t('paramFrom', { shop: p.shop, source: lookup('paramSource', p.source) }),
+        p.others.length ? t('paramAlso', { list: p.others.map((o) => paramText(k, o)).join(', ') }) : null].filter(Boolean).join('. ');
+      return el('td', { title: tip, 'data-label': label }, paramText(k, p.value), p.others.length ? el('span', { class: 'conflict', 'aria-label': tip }, ' ≠') : null);
+    })));
+  return el('table', { class: 'params' }, el('thead', {}, head), el('tbody', {}, ...rows));
+}
+
+/** The filter fields, built again only when the parameters on offer or the language change (typing keeps its focus). */
+function renderParamFilters(keys) {
+  const numeric = keys.filter((k) => PARAM_UNIT[k]);
+  const box = $('#params-filters');
+  const sig = `${window.I18N.getLang()}|${numeric.join(',')}`;
+  if (box.dataset.sig === sig) return;
+  box.dataset.sig = sig;
+  state.filters = state.filters || {};
+  const field = (key, label) => el('label', {}, el('span', {}, label),
+    el('input', { type: 'number', min: '0', step: 'any', inputmode: 'decimal', value: state.filters[key] ?? '',
+      oninput: (e) => { state.filters[key] = e.target.value; renderParams(mainGroups()); } }));
+  box.replaceChildren(
+    ...numeric.map((k) => field(k, `${t('paramAtLeast', { name: lookup('param', k) })} (${PARAM_UNIT[k] === '"' ? '″' : PARAM_UNIT[k]})`)),
+    field('price_max', t('paramPriceMax')),
+    el('button', { type: 'button', class: 'link', onclick: () => { state.filters = {}; box.dataset.sig = ''; renderParams(mainGroups()); } }, t('paramClear')));
 }
 
 // Similar models the shops list (computed on the server, src/core/nearby.ts): open when no product
