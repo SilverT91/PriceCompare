@@ -77,7 +77,9 @@ export type ShopStatus =
   | 'no_route'
   | 'error'
   /** Left out because its categories do not fit the query; no request, not a failure. */
-  | 'not_relevant';
+  | 'not_relevant'
+  /** A search from the local database only: nothing is stored for this shop and query. */
+  | 'not_stored';
 
 export type Condition = 'new' | 'used' | 'refurbished' | 'damaged' | 'unknown_used';
 
@@ -93,6 +95,8 @@ export interface ShippingOption {
 export interface RawOffer {
   shopId: string;
   url: string;
+  /** The product page the offer was read from, when it differs from `url` or for the local database. */
+  pageUrl?: string;
   title: string;
   brand: string | null;
   gtin: string | null;
@@ -216,6 +220,11 @@ export interface ShopResult {
   requestsUsed: number;
   fromCache: boolean;
   ms: number;
+  /**
+   * When the shown data was read, if it is older than this search: from the local database (a local
+   * search), or known product pages re-read instead of a web search (the date they were found).
+   */
+  storedAt?: string;
 }
 
 export interface ProductVariant {
@@ -309,6 +318,51 @@ export interface NearbyList {
 }
 
 /** Small key-value cache with TTL; the Node side implements it on SQLite. */
+/** What a page gave: its offers, how many Product nodes it had, and where it ended. */
+export interface StoredPage {
+  v?: number;
+  offers: RawOffer[];
+  productNodes: number;
+  status: number | null;
+  finalUrl: string;
+}
+
+/** A product page that matched a query at a shop: its title, the route that found it, when it was first found. */
+export interface FoundPage {
+  url: string;
+  title: string;
+  route: ShopResult['route'];
+  at: string;
+}
+
+/** The last result of one shop for one query, kept in the local database. */
+export interface StoredRun {
+  status: ShopStatus;
+  route: ShopResult['route'];
+  at: string;
+  /** When the web search was last really asked for this shop and query (not answered from the database). */
+  webAt?: string;
+}
+
+/**
+ * The local database of what searches found, kept without an expiry (src/node/db.ts implements it).
+ * Keys are the searched query, normalised. It holds the shops' own data the app read (product pages
+ * and their offers) and, per shop and query, which product pages matched and the last result. A
+ * search from the local database reads only this; an online search uses it to skip a web search
+ * for a shop whose matching pages are known (see pipeline.ts, REUSE_DAYS).
+ */
+export interface History {
+  /** Product pages that matched the query at the shop, newest first, with the route that found them. */
+  pagesFor(query: string, shopId: string): Promise<FoundPage[]>;
+  page(url: string): Promise<{ page: StoredPage; at: string } | null>;
+  lastRun(query: string, shopId: string): Promise<StoredRun | null>;
+  savePage(url: string, shopId: string, page: StoredPage): Promise<void>;
+  saveRun(query: string, shopId: string, run: StoredRun, found: Omit<FoundPage, 'at'>[]): Promise<void>;
+  /** Exchange rates as last read, for a search that asks nothing. */
+  saveRates(value: unknown): Promise<void>;
+  lastRates(): Promise<{ value: unknown; at: string } | null>;
+}
+
 export interface Cache {
   get<T>(namespace: string, key: string): Promise<T | undefined>;
   set<T>(namespace: string, key: string, value: T, ttlSeconds: number): Promise<void>;

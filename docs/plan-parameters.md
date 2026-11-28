@@ -1,8 +1,10 @@
 # Plan: parameters and filters (computers, phones, later other categories)
 
 Status on 2026-11-28: phases 0 and 1 are built (results in [research.md](research.md), section 13;
-code in `src/core/params.ts`, the page's "Parameters side by side"). Phase 2 (the stored catalogue)
-and later are not. The owner's answers are at the end.
+code in `src/core/params.ts`, the page's "Parameters side by side"). Phase 2 is built in part, in the
+form the owner asked for: a local database of what searches found ("Load saved", no request) and
+web searches not repeated for 14 days ([architecture.md](architecture.md), section 8d). Not built
+yet: a filter page over everything ever seen, across queries. The owner's answers are at the end.
 
 What phase 1 does, in short: one set of parameters for computers and phones (processor or chip,
 graphics card, graphics memory, RAM, storage, screen, power supply, system), read from NAY's named

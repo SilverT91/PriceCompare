@@ -7,6 +7,7 @@ import { SerperProvider } from '../src/core/search/serper.ts';
 import { buildSearchUrl, DEFAULT_LOCATION, validateShops } from '../src/core/shops.ts';
 import type { ShopResult } from '../src/core/types.ts';
 import { MemoryCache } from './helpers.ts';
+import { Store } from '../src/node/db.ts';
 
 const product = (name: string, price: number, gtin: string, extra = '', currency = 'EUR') =>
   `<html><script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"${name}","gtin13":"${gtin}","brand":"Oral-B",
@@ -714,4 +715,54 @@ test('similar-model prices: nothing is read when a product matches exactly', asy
   assert.equal(model('Oral-B Pro 3 3500')?.seenPrice, null, 'the model is listed, without a price');
   assert.ok(!calls.includes('https://a2.test/p/3500'));
   assert.equal(done.nearbyPrices, 0);
+});
+
+// ---- the local database ------------------------------------------------------------------------------
+
+test('the local database: an online search stores; a local one asks nothing; the next online one reuses the web answer; "search the web again" asks again', async () => {
+  const history = new Store(':memory:');
+  const run = async (extra: { mode?: 'local' | 'online'; refreshWeb?: boolean } = {}) => {
+    const { f, calls } = site();
+    const events = await collect(runSearch('Oral-B Pro 3 3000', {
+      shops: shops.filter((s) => s.id === 'f' || s.id === 'a'), cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }),
+      location: DEFAULT_LOCATION, providers: [new SerperProvider('test')], fetch: f, category: 'all', history, ...extra,
+    }));
+    const shop = (id: string) => (events.find((e) => e.type === 'shop' && e.result.shopId === id) as Extract<SearchEvent, { type: 'shop' }>).result;
+    return { events, calls, shop, serper: calls.filter((u) => u.includes('serper')).length };
+  };
+
+  const online = await run();
+  assert.equal(online.serper, 1);
+  assert.equal(online.shop('f').status, 'ok');
+
+  // Local: no request of any kind; the same offers, the price in EUR from the rates stored online.
+  const local = await run({ mode: 'local' });
+  assert.deepEqual(local.calls, []);
+  assert.equal((local.events[0] as Extract<SearchEvent, { type: 'start' }>).mode, 'local');
+  const f = local.shop('f');
+  assert.equal(f.status, 'ok');
+  assert.ok(f.storedAt);
+  assert.match(f.detail, /from the local database: 1 product page, read /);
+  assert.equal(f.offers[0].totals.itemEur, 52.81);
+  assert.equal(local.shop('a').status, 'ok');
+  // A query never searched online is not stored anywhere.
+  const other = await collect(runSearch('Oral-B iO 9', {
+    shops: shops.filter((s) => s.id === 'a'), cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }),
+    location: DEFAULT_LOCATION, providers: [], category: 'all', history, mode: 'local', fetch: async () => { throw new Error('no request expected'); },
+  }));
+  assert.equal((other.find((e) => e.type === 'shop') as Extract<SearchEvent, { type: 'shop' }>).result.status, 'not_stored');
+
+  // Online again: the web search's answer is reused (no credit), its page read again for the current price.
+  const again = await run();
+  assert.equal(again.serper, 0);
+  assert.equal(again.shop('f').status, 'ok');
+  assert.ok(again.shop('f').storedAt);
+  assert.match(again.shop('f').detail, /the web search of \d{4}-\d{2}-\d{2} found 1 matching page; read again now/);
+  assert.ok(again.calls.some((u) => u.startsWith('https://f.test/')), 'the product page itself is read again');
+
+  // "Search the web again" asks it.
+  const refreshed = await run({ refreshWeb: true });
+  assert.equal(refreshed.serper, 1);
+  assert.equal(refreshed.shop('f').storedAt, undefined);
+  history.close();
 });

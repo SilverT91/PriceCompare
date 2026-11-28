@@ -1,9 +1,11 @@
 // HTTP API (Hono). Portable: it only uses web-standard APIs and gets storage, shops and providers
 // injected, so it can run on Node (src/node/server.ts) or, later, on Cloudflare Workers.
 //
-//   GET /api/search?q=...&location=kosice&cat=auto[&as_typed=1][&lang=sk]   Server-Sent Events: start (with the
-//        searched and the typed query), rates, shop (one per shop as it finishes), products (regrouped
-//        after each shop), done. lang=sk: the sentences in the events in Slovak (default English).
+//   GET /api/search?q=...&location=kosice&cat=auto[&as_typed=1][&lang=sk][&mode=local][&refresh_web=1]
+//        Server-Sent Events: start (with the searched and the typed query), rates, shop (one per shop as
+//        it finishes), products (regrouped after each shop), done. lang=sk: the sentences in the events in
+//        Slovak (default English). mode=local: only the local database, no request at all. refresh_web=1:
+//        ask the web search again even where the local database has its answer.
 //   GET /api/shops   GET /api/locations   GET /api/categories   GET /api/history
 //   GET /api/usage   web search credit used per provider with a key (for the bars on the page)
 
@@ -15,7 +17,7 @@ import type { ProviderCall, SearchProvider } from './core/search/provider.ts';
 import { CATEGORY_GROUPS } from './core/categories.ts';
 import { parseLang, type ShopTexts } from './core/i18n.ts';
 import { LOCATIONS, locationById, sectionFor } from './core/shops.ts';
-import type { Cache, Shop } from './core/types.ts';
+import type { Cache, History, Shop } from './core/types.ts';
 import type { ProviderUsage } from './core/usage.ts';
 
 export interface AppDeps {
@@ -30,6 +32,8 @@ export interface AppDeps {
   shopTexts?: () => ShopTexts;
   /** Credit usage of the providers that have a key (core/usage.ts, providerUsage); never key material. */
   usage?: () => Promise<ProviderUsage[]>;
+  /** The local database of what searches found (src/node/db.ts); without it nothing is kept. */
+  stored?: History;
 }
 
 export function createApp(deps: AppDeps) {
@@ -68,6 +72,8 @@ export function createApp(deps: AppDeps) {
     // as_typed=1: no brand correction for this search (the page's "search exactly as typed" link).
     const asTyped = c.req.query('as_typed') === '1';
     const lang = parseLang(c.req.query('lang'));
+    const mode = c.req.query('mode') === 'local' ? 'local' : 'online';
+    const refreshWeb = c.req.query('refresh_web') === '1';
     const startedAt = new Date().toISOString();
     return streamSSE(c, async (stream) => {
       let aborted = false;
@@ -77,7 +83,7 @@ export function createApp(deps: AppDeps) {
       let id = 0;
       for await (const ev of runSearch(q, {
         shops: deps.shops(), cache: deps.cache, scheduler: deps.scheduler, location, providers: deps.providers(), category, asTyped,
-        lang, shopTexts: deps.shopTexts?.(), onProviderCall: deps.onProviderCall,
+        lang, shopTexts: deps.shopTexts?.(), onProviderCall: deps.onProviderCall, history: deps.stored, mode, refreshWeb,
       })) {
         if (aborted) break;
         await stream.writeSSE({ event: ev.type, data: JSON.stringify(ev), id: String(id++) });

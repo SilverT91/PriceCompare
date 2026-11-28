@@ -4,7 +4,7 @@
 import { chooseCategories, shopIsRelevant, type CategoryChoice } from './categories.ts';
 import { correctQuery } from './correct.ts';
 import { groupOffers } from './group.ts';
-import { categoryLabel, categoryName, localizeShop, t, techNote, type Lang, type ShopTexts } from './i18n.ts';
+import { categoryLabel, categoryName, date, localizeShop, t, techNote, type Lang, type ShopTexts } from './i18n.ts';
 import { HostScheduler, MAX_REQUESTS_PER_SHOP, ShopSession, type FetchLike } from './http.ts';
 import { extractListCandidates, extractOffers, offerUrl } from './jsonld.ts';
 import { extractLinkCandidates, pageKey, stripTrackingParams } from './links.ts';
@@ -18,7 +18,7 @@ import {
 import { buildSearchUrl, heurekaUrl, sectionFor, type Location } from './shops.ts';
 import { computeTotals, type Rates } from './totals.ts';
 import {
-  CACHE_TTL, type Cache, type Candidate, type NearbyList, type NearbyShop, type Offer, type ProductGroup, type RawOffer, type SeenPrice, type Shop,
+  CACHE_TTL, type Cache, type Candidate, type History, type NearbyList, type NearbyShop, type Offer, type ProductGroup, type RawOffer, type SeenPrice, type Shop,
   type ShopResult, type ShopStatus,
 } from './types.ts';
 
@@ -48,7 +48,20 @@ export interface SearchOptions {
   lang?: Lang;
   /** Translated free-text notes of the shops (data/shops.sk.yaml); a missing one falls back to English. */
   shopTexts?: ShopTexts;
+  /** "online" (default): ask the shops. "local": only the local database (`history`), no request at all. */
+  mode?: 'online' | 'local';
+  /** The local database (src/node/db.ts). Without it nothing is stored, and a local search finds nothing. */
+  history?: History;
+  /** Ask the web search again even where the local database already has its answer (REUSE_DAYS). */
+  refreshWeb?: boolean;
 }
+
+/**
+ * How long a web search's answer for one shop and query is reused from the local database in an
+ * online search: the pages it found are read again for current prices (shop requests, no web search
+ * credit), and "found nothing" is not asked again. "Search the web again" (refreshWeb) overrides it.
+ */
+export const REUSE_DAYS = 14;
 
 /** One shop's single chance to join the second-route (fallback) web search batch. */
 interface FallbackSlot {
@@ -72,6 +85,8 @@ export type SearchEvent =
   | {
     type: 'start'; query: string; typed: string; corrected: boolean; fromLink: boolean; linkShop: string | null; fromList: boolean; location: string;
     shops: ShopInfo[];
+    /** "local": the results come from the local database only; nothing was asked. */
+    mode: 'online' | 'local';
     heurekaUrl: string; providers: string[]; categories: CategoryChoice;
   }
   /** Nothing was searched: a pasted link without the product's name. The only event of such a search. */
@@ -182,7 +197,7 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
   const pq = parseQuery(query);
   const texts = searchTexts(query, opts.location.country);
   yield {
-    type: 'start', query, typed: fix.typed, corrected: fix.corrected, fromLink: Boolean(link), linkShop, fromList: Boolean(listName),
+    type: 'start', query, typed: fix.typed, corrected: fix.corrected, fromLink: Boolean(link), linkShop, fromList: Boolean(listName), mode: opts.mode ?? 'online',
     location: opts.location.id, heurekaUrl: heurekaUrl(query), providers: opts.providers.map((p) => p.id),
     categories: choice,
     shops: inScope.map((s) => ({ id: s.id, name: s.name, domain: s.domain, section: sectionFor(s, opts.location), branchKnown: s[opts.location.branchField] })),
@@ -196,9 +211,10 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
   for (const r of notRelevant) yield { type: 'shop', result: r };
 
   const currencies = [...new Set(opts.shops.map((s) => s.currency))];
-  const ratesP = getRates(currencies, opts.cache, opts.fetch);
+  const local = opts.mode === 'local';
+  const ratesP = exchangeRates(currencies, opts, local);
 
-  const chain = opts.providers.length ? new ProviderChain(opts.providers, opts.cache, { fetch: opts.fetch, onCall: opts.onProviderCall }) : null;
+  const chain = !local && opts.providers.length ? new ProviderChain(opts.providers, opts.cache, { fetch: opts.fetch, onCall: opts.onProviderCall }) : null;
   // The web query for shops of one country uses the text those shops' own search gets (searchTexts).
   const batchOpts = {
     query, queryFor: texts.sentFor, expected: shops.length, mode: opts.siteSearchMode ?? 'combined', domainsPerQuery: opts.domainsPerQuery ?? 6,
@@ -224,7 +240,16 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
     push({ type: 'rates', rates: r.rates, error: r.error });
   });
   let fallbackShops = 0;
-  for (const shop of shops) {
+  const qk = normQuery(query);
+  const record = (r: ShopResult) => {
+    results.push(r);
+    remaining--;
+    push({ type: 'shop', result: r });
+    push({ type: 'products', groups: groupOffers(results.flatMap((x) => x.offers), lang), nearby: nearbyModels(pq, results) });
+  };
+  // A search from the local database: each shop's stored result, no request and no web search.
+  if (local) for (const shop of shops) void storedShop(shop, pq, qk, opts, ratesP.then((r) => r.rates), texts.sentFor(shop.country)).then(record);
+  for (const shop of local ? [] : shops) {
     let fallbackDecided = false;
     const slot: FallbackSlot | null = fallback
       ? {
@@ -236,7 +261,7 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
       }
       : null;
     const sent = texts.sentFor(shop.country);
-    searchShop(shop, pq, opts, batcher, slot, ratesP.then((r) => r.rates), contexts, { sent, retry: texts.retryFor(sent) })
+    searchShop(shop, pq, opts, batcher, slot, ratesP.then((r) => r.rates), contexts, { sent, retry: texts.retryFor(sent), qk })
       .finally(() => {
         if (fallback && !fallbackDecided) fallback.decline();
       })
@@ -246,11 +271,9 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
         manualUrl: shop.search_url_template ? buildSearchUrl(shop.search_url_template, sent) : null,
         offers: [], candidates: [], requestsUsed: 0, fromCache: false, ms: 0,
       }))
-      .then((r) => {
-        results.push(r);
-        remaining--;
-        push({ type: 'shop', result: r });
-        push({ type: 'products', groups: groupOffers(results.flatMap((x) => x.offers), lang), nearby: nearbyModels(pq, results) });
+      .then(async (r) => {
+        await remember(opts.history, qk, r);
+        record(r);
       });
   }
   while (remaining > 0 || queue.length) {
@@ -264,7 +287,7 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
   const groups = groupOffers(allOffers, lang);
   const nearby = nearbyModels(pq, results);
   // No exact match: a price for the first similar models, then the list once more with it.
-  const priced = !groups.some((g) => g.level === 'exact') && nearby.models.length
+  const priced = !local && !groups.some((g) => g.level === 'exact') && nearby.models.length
     ? await priceNearbyModels(nearby, results, contexts)
     : { list: nearby, prices: 0, requests: 0 };
   if (priced.prices) yield { type: 'products', groups, nearby: priced.list };
@@ -283,6 +306,88 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
       categories: choice,
     },
   };
+}
+
+// ---- the local database (History) ------------------------------------------------------------------
+
+/** "2026-11-28" from an ISO time, written in the search's language. */
+const day = (lang: Lang, iso: string) => date(lang, iso.slice(0, 10));
+
+/**
+ * Exchange rates. A local search asks nothing: the cache, else the rates last stored. An online
+ * search stores what it got, for a later local one.
+ */
+async function exchangeRates(currencies: string[], opts: SearchOptions, local: boolean): Promise<{ rates: Rates | null; error?: string }> {
+  const noFetch: FetchLike = async () => {
+    throw new Error('a search from the local database asks nothing');
+  };
+  const r = await getRates(currencies, opts.cache, local ? noFetch : opts.fetch);
+  if (r.rates) {
+    if (!local && Object.keys(r.rates.rates).length) await opts.history?.saveRates(r.rates);
+    return r;
+  }
+  const last = await opts.history?.lastRates();
+  return last ? { rates: last.value as Rates } : r;
+}
+
+/**
+ * One shop's result from the local database: the stored pages that matched this query at the shop,
+ * matched again with today's rules, and the date they were read. With no page stored, the last
+ * result (nothing matching, blocked ...) with its date, or "not stored". No request.
+ */
+async function storedShop(shop: Shop, pq: ParsedQuery, qk: string, opts: SearchOptions, ratesP: Promise<Rates | null>, sent: string): Promise<ShopResult> {
+  const lang = opts.lang ?? 'en';
+  const section = sectionFor(shop, opts.location);
+  const base = {
+    shopId: shop.id, shopName: shop.name, domain: shop.domain, section, route: 'none' as const,
+    manualUrl: shop.search_url_template ? buildSearchUrl(shop.search_url_template, sent) : null,
+    offers: [], candidates: [], requestsUsed: 0, fromCache: true, ms: 0,
+  };
+  const h = opts.history;
+  if (!h) return { ...base, status: 'not_stored', detail: t(lang, 'notStored') };
+  const run = await h.lastRun(qk, shop.id);
+  const raw: RawOffer[] = [];
+  let oldest: string | null = null;
+  let pages = 0;
+  for (const f of await h.pagesFor(qk, shop.id)) {
+    const p = await h.page(f.url);
+    if (!p) continue;
+    pages++;
+    raw.push(...p.page.offers.map((o) => ({ ...o, pageUrl: f.url })));
+    if (!oldest || p.at < oldest) oldest = p.at;
+  }
+  if (raw.length && oldest) {
+    const offers = await toOffers({ shop, opts, section, ratesP }, raw, pq);
+    const matching = offers.some((o) => o.match.level !== 'different');
+    return {
+      ...base, status: matching ? 'ok' : 'no_match', route: run?.route ?? 'none', offers, storedAt: oldest,
+      detail: t(lang, 'fromLocal', { n: pages, date: day(lang, oldest) }),
+    };
+  }
+  if (!run) return { ...base, status: 'not_stored', detail: t(lang, 'notStored') };
+  const nothing = run.status === 'ok' || run.status === 'no_match';
+  return {
+    ...base, status: nothing ? 'no_match' : run.status, route: run.route, storedAt: run.at,
+    detail: nothing ? t(lang, 'storedNothing', { date: day(lang, run.at) }) : t(lang, 'storedStatus', { date: day(lang, run.at) }),
+  };
+}
+
+/**
+ * After an online search: the shop's result goes into the local database, with the pages that
+ * matched. `webAt` moves only when the web search was really asked (not reused from the database).
+ */
+async function remember(history: History | undefined, qk: string, r: ShopResult): Promise<void> {
+  if (!history || r.status === 'not_relevant' || r.status === 'not_stored') return;
+  const web = (r.route === 'search_provider' || r.route === 'both') && !r.storedAt;
+  const prev = await history.lastRun(qk, r.shopId);
+  const webAt = web ? new Date().toISOString() : prev?.webAt;
+  const found = new Map<string, { url: string; title: string; route: ShopResult['route'] }>();
+  for (const o of r.offers) {
+    if (o.match.level === 'different') continue;
+    const url = o.pageUrl ?? o.url;
+    if (!found.has(url)) found.set(url, { url, title: o.title, route: r.route });
+  }
+  await history.saveRun(qk, r.shopId, { status: r.status, route: r.route, at: new Date().toISOString(), ...(webAt ? { webAt } : {}) }, [...found.values()]);
 }
 
 /** How many models of the similar-models list get a price read after the search. */
@@ -454,8 +559,10 @@ async function readPage(ctx: ShopCtx, url: string): Promise<PageRead> {
   if (hit) {
     ctx.read.add(pageKey(url));
     if (hit.productNodes) await rememberStructuredData(ctx);
+    // A page read before the local database existed goes into it now, so a local search finds it.
+    if (opts.history && !(await opts.history.page(url))) await opts.history.savePage(url, shop.id, hit);
     // Entries cached before offerUrl existed may still hold a site-root URL.
-    return { kind: 'offers', offers: hit.offers.map((o) => ({ ...o, url: offerUrl(o.url, hit.finalUrl) })), productNodes: hit.productNodes };
+    return { kind: 'offers', offers: hit.offers.map((o) => ({ ...o, url: offerUrl(o.url, hit.finalUrl), pageUrl: url })), productNodes: hit.productNodes };
   }
   if (session.remaining() <= 0) return { kind: 'budget', requested: false };
   const page = await session.get(url, 'product');
@@ -476,12 +583,14 @@ async function readPage(ctx: ShopCtx, url: string): Promise<PageRead> {
   }
   const ex = extractOffers(page.text, page.finalUrl, shop.id);
   if (ex.productNodes) await rememberStructuredData(ctx);
-  await opts.cache.set('offers', url, { v: PAGE_VERSION, offers: ex.offers, productNodes: ex.productNodes, status: page.status, finalUrl: page.finalUrl } satisfies CachedPage, CACHE_TTL.offers);
-  return { kind: 'offers', offers: ex.offers, productNodes: ex.productNodes };
+  const stored: CachedPage = { v: PAGE_VERSION, offers: ex.offers, productNodes: ex.productNodes, status: page.status, finalUrl: page.finalUrl };
+  await opts.cache.set('offers', url, stored, CACHE_TTL.offers);
+  await opts.history?.savePage(url, shop.id, stored);
+  return { kind: 'offers', offers: ex.offers.map((o) => ({ ...o, pageUrl: url })), productNodes: ex.productNodes };
 }
 
 /** Offers with a price, one per page and price, matched against the query and with their totals. */
-async function toOffers(ctx: ShopCtx, raw: RawOffer[], pq: ParsedQuery): Promise<Offer[]> {
+async function toOffers(ctx: Pick<ShopCtx, 'shop' | 'opts' | 'section' | 'ratesP'>, raw: RawOffer[], pq: ParsedQuery): Promise<Offer[]> {
   const { shop, opts, section } = ctx;
   const rates = await ctx.ratesP;
   return dedupeOffers(raw.filter((x) => x.price > 0)).map((r) => ({
@@ -575,7 +684,7 @@ async function readCandidates(ctx: ShopCtx, route: ShopResult['route'], candidat
 
 async function searchShop(
   shop: Shop, pq: ParsedQuery, opts: SearchOptions, batcher: SiteSearchBatcher | null, fallback: FallbackSlot | null, ratesP: Promise<Rates | null>,
-  contexts: Map<string, ShopCtx>, texts: { sent: string; retry: string | null },
+  contexts: Map<string, ShopCtx>, texts: { sent: string; retry: string | null; qk: string },
 ): Promise<ShopResult> {
   const t0 = Date.now();
   const lang = opts.lang ?? 'en';
@@ -590,12 +699,22 @@ async function searchShop(
     if (!declined && batcher) batcher.decline();
     declined = true;
   };
+  /** Set when the web search's answer came from the local database (its date). */
+  let storedAt: string | undefined;
   const finish = (status: ShopStatus, detail: string, extra: Partial<ShopResult> = {}): ShopResult => {
     decline();
     return {
       ...base, status, detail, route: 'none', offers: [], candidates: [], requestsUsed: session.used,
-      fromCache: session.used === 0, ms: Date.now() - t0, ...extra,
+      fromCache: session.used === 0, ms: Date.now() - t0, ...(storedAt ? { storedAt } : {}), ...extra,
     };
+  };
+  // A web search for this shop and query answered within REUSE_DAYS: its pages, or "nothing found".
+  const known = async (): Promise<{ pages: Candidate[]; webAt: string } | null> => {
+    if (opts.refreshWeb || !opts.history) return null;
+    const run = await opts.history.lastRun(texts.qk, shop.id);
+    if (!run?.webAt || Date.now() - Date.parse(run.webAt) > REUSE_DAYS * 86_400_000) return null;
+    const pages = (await opts.history.pagesFor(texts.qk, shop.id)).map((p) => ({ url: p.url, title: p.title, from: 'search_provider' as const }));
+    return { pages, webAt: run.webAt };
   };
   const markBlocked = async (vendor: string) => {
     await opts.cache.set('blocked', shop.id, { at: new Date().toISOString(), vendor }, CACHE_TTL.blocked);
@@ -651,19 +770,29 @@ async function searchShop(
       if (!fromList.length) notes.push(t(lang, 'noItemList'));
     } else if (batcher) {
       route = 'search_provider';
-      declined = true;
-      const r = await batcher.find(shop.domain, shop.country);
-      const why = notes.length ? `${notes.join('; ')}; ` : '';
-      if (r.unavailable) return finish('needs_search_key', t(lang, 'noProvider', { why, reason: techNote(lang, r.unavailable) }), { route });
-      if (r.error) return finish('error', t(lang, 'webFailed', { error: techNote(lang, r.error) }), { route });
-      candidates = providerCandidates(r.hits);
-      notes.push(t(lang, 'foundVia', { provider: String(r.provider) }));
+      const reuse = await known();
+      if (reuse) {
+        // Answered before: no web search, no credit. Its pages are read again for current prices.
+        decline();
+        storedAt = reuse.webAt;
+        if (!reuse.pages.length) return finish('no_match', t(lang, 'webNothingReused', { date: day(lang, reuse.webAt) }), { route });
+        candidates = reuse.pages;
+        notes.push(t(lang, 'webReused', { n: reuse.pages.length, date: day(lang, reuse.webAt) }));
+      } else {
+        declined = true;
+        const r = await batcher.find(shop.domain, shop.country);
+        const why = notes.length ? `${notes.join('; ')}; ` : '';
+        if (r.unavailable) return finish('needs_search_key', t(lang, 'noProvider', { why, reason: techNote(lang, r.unavailable) }), { route });
+        if (r.error) return finish('error', t(lang, 'webFailed', { error: techNote(lang, r.error) }), { route });
+        candidates = providerCandidates(r.hits);
+        notes.push(t(lang, 'foundVia', { provider: String(r.provider) }));
+      }
     } else if (manualUrl) {
       return finish('needs_search_key', t(lang, 'setKey', { notes: notes.join('; ') }));
     } else {
       return finish('no_route', t(lang, 'noRoute', { reason: shop.no_route_reason ?? t(lang, 'defaultNoSearchUrl') }));
     }
-    await opts.cache.set('candidates', candKey, { route, candidates } satisfies CachedCandidates, CACHE_TTL.candidates);
+    if (!storedAt) await opts.cache.set('candidates', candKey, { route, candidates } satisfies CachedCandidates, CACHE_TTL.candidates);
   } else {
     decline();
     notes.push(t(lang, 'candidatesFromCache'));
@@ -716,18 +845,27 @@ async function searchShop(
   if (session.remaining() <= 0) {
     return result(first, route, t(lang, 'webNotTried', { first: firstText, max: MAX_REQUESTS_PER_SHOP }));
   }
-  const r = await fallback.find(shop.domain, shop.country);
-  if (r.unavailable || r.error) {
+  const reuse = await known();
+  if (reuse && !reuse.pages.length) {
+    storedAt = reuse.webAt;
+    return result(first, 'both', `${firstText}; ${t(lang, 'webNothingReused', { date: day(lang, reuse.webAt) })}`);
+  }
+  const r = reuse ? null : await fallback.find(shop.domain, shop.country);
+  if (r && (r.unavailable || r.error)) {
     return result(first, route, t(lang, 'webCouldNotTry', { first: firstText, reason: techNote(lang, (r.unavailable ?? r.error) as string) }));
   }
   const notes2: string[] = [];
-  const second = await readCandidates(ctx, 'search_provider', providerCandidates(r.hits), notes2);
+  if (reuse) {
+    storedAt = reuse.webAt;
+    notes2.push(t(lang, 'webReused', { n: reuse.pages.length, date: day(lang, reuse.webAt) }));
+  }
+  const second = await readCandidates(ctx, 'search_provider', reuse ? reuse.pages : providerCandidates(r ? r.hits : []), notes2);
   const merged: RouteOutcome = {
     ...second,
     offers: [...first.offers, ...second.offers],
     candidates: [...second.candidates.slice(0, 6), ...first.candidates].slice(0, 10),
   };
-  const webText = t(lang, 'webSearchPrefix', { provider: String(r.provider), detail: `${second.detail}${tail(notes2)}` });
+  const webText = t(lang, 'webSearchPrefix', { provider: r ? String(r.provider) : t(lang, 'localDatabase'), detail: `${second.detail}${tail(notes2)}` });
   if (second.status === 'ok') {
     return result(merged, 'both', t(lang, 'foundBySecond', { detail: second.detail, first: firstText, web: webText }));
   }

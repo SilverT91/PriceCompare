@@ -13,6 +13,7 @@ const PHRASES: [ShopStatus, MessageKey][] = [
   ['no_route', 'sumNoRoute'],
   ['error', 'sumError'],
   ['not_relevant', 'sumNotRelevant'],
+  ['not_stored', 'sumNotStored'],
 ];
 
 /** "6 found, 10 no match, 9 blocked, 2 need a browser, ..., 7 not asked (not relevant)" */

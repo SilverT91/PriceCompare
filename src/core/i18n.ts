@@ -231,6 +231,15 @@ const en = {
   sumNoRoute: (p: { n: number }) => `${p.n} no automatic route`,
   sumError: (p: { n: number }) => `${p.n} error${p.n === 1 ? '' : 's'}`,
   sumNotRelevant: (p: { n: number }) => `${p.n} not asked (not relevant)`,
+  sumNotStored: (p: { n: number }) => `${p.n} not stored`,
+  // The local database (History)
+  notStored: () => 'nothing stored for this search yet; check online to ask this shop',
+  fromLocal: (p: { n: number; date: string }) => `from the local database: ${p.n} product page${p.n === 1 ? '' : 's'}, read ${p.date}`,
+  storedNothing: (p: { date: string }) => `last checked ${p.date}: nothing matching was found`,
+  storedStatus: (p: { date: string }) => `last checked ${p.date}`,
+  localDatabase: () => 'local database',
+  webReused: (p: { n: number; date: string }) => `the web search of ${p.date} found ${p.n} matching page${p.n === 1 ? '' : 's'}; read again now for current prices, without a new web search`,
+  webNothingReused: (p: { date: string }) => `the web search of ${p.date} found nothing matching; not repeated (search the web again to repeat it)`,
 };
 
 export type MessageKey = keyof typeof en;
@@ -330,6 +339,14 @@ const sk: Catalogue = {
   sumNoRoute: (p) => `${p.n} bez automatického hľadania`,
   sumError: (p) => `${p.n} ${pluralSk(p.n, 'chyba', 'chyby', 'chýb')}`,
   sumNotRelevant: (p) => `${p.n} mimo výberu (iný sortiment)`,
+  sumNotStored: (p) => `${p.n} ${pluralSk(p.n, 'neuložený', 'neuložené', 'neuložených')}`,
+  notStored: () => 'pre toto hľadanie zatiaľ nie je nič uložené; tento obchod sa opýta pri overení online',
+  fromLocal: (p) => `z lokálnej databázy: ${p.n} ${pluralSk(p.n, 'stránka produktu', 'stránky produktu', 'stránok produktu')}, načítané ${p.date}`,
+  storedNothing: (p) => `naposledy overené ${p.date}: nič zodpovedajúce sa nenašlo`,
+  storedStatus: (p) => `naposledy overené ${p.date}`,
+  localDatabase: () => 'lokálna databáza',
+  webReused: (p) => `webové vyhľadávanie z ${p.date} našlo ${p.n} ${pluralSk(p.n, 'zodpovedajúcu stránku', 'zodpovedajúce stránky', 'zodpovedajúcich stránok')}; teraz znova načítané kvôli aktuálnym cenám, bez nového webového vyhľadávania`,
+  webNothingReused: (p) => `webové vyhľadávanie z ${p.date} nenašlo nič zodpovedajúce; neopakuje sa (opakujete ho voľbou „Hľadať znova aj na webe“)`,
 };
 
 const CATALOGUES: Record<Lang, Catalogue> = { en, sk };

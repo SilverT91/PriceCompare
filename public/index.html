@@ -22,12 +22,14 @@
       <div class="opts">
         <label><span data-i18n="near">Near</span> <select id="location" name="location"></select></label>
         <label><span data-i18n="shopsLabel">Shops</span> <select id="cat" name="cat"></select></label>
-        <button type="submit" data-i18n="compare">Compare</button>
+        <button type="submit" data-i18n="compare">Check online</button>
+        <button type="button" id="load-local" class="secondary" data-i18n="loadLocal" data-i18n-title="loadLocalTitle">Load saved</button>
       </div>
     </form>
     <p id="corrected" class="corrected" hidden></p>
     <p id="scope" class="muted small" hidden></p>
     <p id="progress" class="muted small" hidden></p>
+    <p id="mode-note" class="corrected" hidden></p>
   </header>
 
   <main>

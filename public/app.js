@@ -10,7 +10,7 @@
 const $ = (sel) => document.querySelector(sel);
 const { t, lookup } = window.I18N;
 const UNCHECKED = ['blocked', 'needs_js', 'needs_search_key', 'robots_disallowed', 'no_route', 'error'];
-const STATUS_ORDER = ['ok', 'no_match', 'blocked', 'needs_js', 'needs_search_key', 'robots_disallowed', 'no_route', 'error', 'not_relevant'];
+const STATUS_ORDER = ['ok', 'no_match', 'blocked', 'needs_js', 'needs_search_key', 'robots_disallowed', 'no_route', 'error', 'not_stored', 'not_relevant'];
 
 let source = null;
 let state = null;
@@ -147,12 +147,20 @@ async function init() {
   if (params.get('cat')) $('#cat').value = params.get('cat');
   if (params.get('q')) {
     $('#q').value = params.get('q');
-    start(params.get('q'), params.get('location') || 'kosice', params.get('cat') || 'auto', params.get('as_typed') === '1');
+    start(params.get('q'), params.get('location') || 'kosice', params.get('cat') || 'auto', params.get('as_typed') === '1',
+      { local: params.get('mode') === 'local', refreshWeb: params.get('refresh_web') === '1' });
   }
+  // "Check online" asks the shops (and the web search only where the local database has no recent
+  // answer); "Load saved" shows what earlier searches stored and asks nothing.
   $('#search').addEventListener('submit', (ev) => {
     ev.preventDefault();
     const q = $('#q').value.trim();
     if (q) go(q, $('#location').value || 'kosice', $('#cat').value || 'auto');
+  });
+  $('#load-local').addEventListener('click', () => {
+    const q = $('#q').value.trim();
+    if (q) go(q, $('#location').value || 'kosice', $('#cat').value || 'auto', false, { local: true });
+    else $('#q').reportValidity();
   });
 }
 
@@ -178,7 +186,7 @@ function switchLang(l) {
     // the search's language, so the search runs again in the new one. Within the 6-hour cache it asks
     // no shop and no web search again. The chosen product stays chosen.
     const { selected, picked, filters } = state;
-    start(state.q, state.loc, state.cat, state.asTyped);
+    start(state.q, state.loc, state.cat, state.asTyped, { local: state.local });
     Object.assign(state, { selected, picked, filters });
   } else if (state) {
     renderStart();
@@ -186,20 +194,22 @@ function switchLang(l) {
 }
 
 // asTyped: search the query exactly as typed, without the brand correction (the server's as_typed=1).
-function searchParams(q, loc, cat, asTyped) {
-  return `q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&cat=${encodeURIComponent(cat)}${asTyped ? '&as_typed=1' : ''}&lang=${window.I18N.getLang()}`;
+// how.local: only the local database (mode=local); how.refreshWeb: ask the web search again (refresh_web=1).
+function searchParams(q, loc, cat, asTyped, how = {}) {
+  return `q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}&cat=${encodeURIComponent(cat)}${asTyped ? '&as_typed=1' : ''}`
+    + `${how.local ? '&mode=local' : ''}${how.refreshWeb ? '&refresh_web=1' : ''}&lang=${window.I18N.getLang()}`;
 }
 
-function go(q, loc, cat, asTyped = false) {
-  history.replaceState(null, '', `?${searchParams(q, loc, cat, asTyped)}`);
+function go(q, loc, cat, asTyped = false, how = {}) {
+  history.replaceState(null, '', `?${searchParams(q, loc, cat, asTyped, how)}`);
   $('#cat').value = cat;
-  start(q, loc, cat, asTyped);
+  start(q, loc, cat, asTyped, how);
 }
 
-function start(q, loc, cat, asTyped = false) {
+function start(q, loc, cat, asTyped = false, how = {}) {
   if (source) source.close();
   state = {
-    q, loc, cat, asTyped, shops: new Map(), groups: [], nearby: { models: [], total: 0 }, nearbyOpenFor: null, selected: null, done: false, heureka: null,
+    q, loc, cat, asTyped, local: Boolean(how.local), shops: new Map(), groups: [], nearby: { models: [], total: 0 }, nearbyOpenFor: null, selected: null, done: false, heureka: null,
     locName: $('#location').selectedOptions[0]?.textContent || 'Košice', start: null, rates: null, rejected: false, lost: false,
   };
   for (const id of ['#products', '#params', '#comparison', '#manual', '#shops']) $(id).hidden = true;
@@ -211,7 +221,7 @@ function start(q, loc, cat, asTyped = false) {
   $('#rates-note').textContent = '';
   $('#local-title').textContent = t('localTitle', where());
   $('#search button').disabled = true;
-  source = new EventSource(`/api/search?${searchParams(q, loc, cat, asTyped)}`);
+  source = new EventSource(`/api/search?${searchParams(q, loc, cat, asTyped, how)}`);
   source.addEventListener('start', (m) => {
     const ev = JSON.parse(m.data);
     state.start = ev;
@@ -310,6 +320,30 @@ function renderAll() {
   renderProducts();
 }
 
+// What this search asked: from the local database only (nothing asked), or online with some shops'
+// web search answered from the database (no credit used), with a way to ask the web again.
+function renderModeNote() {
+  const box = $('#mode-note');
+  const { q, loc, cat } = state;
+  if (state.local) {
+    box.replaceChildren(t('localNote'), ' ', el('button', { type: 'button', class: 'link', onclick: () => go(q, loc, cat, state.asTyped) }, t('checkOnline')));
+    box.hidden = false;
+    return;
+  }
+  const reused = results().filter((r) => r.storedAt && (r.route === 'search_provider' || r.route === 'both')).length;
+  box.hidden = !(reused && state.done);
+  if (!box.hidden) {
+    box.replaceChildren(t('reusedNote', { n: reused }), ' ',
+      el('button', { type: 'button', class: 'link', onclick: () => go(q, loc, cat, state.asTyped, { refreshWeb: true }) }, t('refreshWeb')));
+  }
+}
+
+// In a search from the local database: the date the shop's data was read, under the stock.
+function readDate(o) {
+  const at = state.local ? state.shops.get(o.shopId)?.result?.storedAt : null;
+  return at ? el('span', { class: 'sub muted small' }, t('readOn', { date: window.I18N.date(at.slice(0, 10)) })) : null;
+}
+
 function results() {
   return [...state.shops.values()].map((e) => e.result).filter(Boolean);
 }
@@ -320,16 +354,17 @@ function renderShops() {
   const asked = all.filter((e) => !e.result || e.result.status !== 'not_relevant');
   const finished = asked.filter((e) => e.result).length;
   if (!state.lost) {
-    $('#progress').textContent = state.done ? t('done', { n: asked.length }) : t('checking', { finished, n: asked.length });
+    $('#progress').textContent = state.done ? t(state.local ? 'doneLocal' : 'done', { n: asked.length }) : t('checking', { finished, n: asked.length });
   } else $('#progress').textContent = t('connectionLost');
 
+  renderModeNote();
   const counts = {};
   for (const r of results()) counts[r.status] = (counts[r.status] || 0) + 1;
   const list = STATUS_ORDER.filter((s) => counts[s]).map((s) => lookup('summary', s)(counts[s])).join(', ');
   $('#shops-summary').textContent = t('shopsSummary', { list, done: state.done });
   $('#shops').hidden = false;
 
-  const order = { ok: 0, no_match: 1, needs_search_key: 2, robots_disallowed: 3, needs_js: 4, blocked: 5, no_route: 6, error: 7, not_relevant: 8 };
+  const order = { ok: 0, no_match: 1, needs_search_key: 2, robots_disallowed: 3, needs_js: 4, blocked: 5, no_route: 6, error: 7, not_stored: 8, not_relevant: 9 };
   const lists = { local: [], online: [] };
   const sorted = all.sort((a, b) => (a.result ? order[a.result.status] : -1) - (b.result ? order[b.result.status] : -1));
   for (const { info, result } of sorted) {
@@ -575,7 +610,7 @@ function offerRow(o, local) {
     );
   }
   cells.push(
-    td(H('stock'), {}, stockText(o.availability)),
+    td(H('stock'), {}, stockText(o.availability), readDate(o)),
     td(H('match'), {}, el('span', { class: `badge ${o.match.level}` }, lookup('fit', o.match.level)),
       o.match.reasons.length ? el('span', { class: 'sub' }, matchReasons(o.match).join('; ')) : null),
     td('', {}, link(o.url, t('open'))),

@@ -746,3 +746,23 @@ Product pages are cached with a version (`PAGE_VERSION` in `pipeline.ts`). Raise
 is read from a page changes, params.ts included: older entries are then read again once instead of
 showing values read by older rules.
 
+## 8d. The local database and the two modes
+
+`History` (types.ts) is the local database; `Store` (src/node/db.ts) implements it with four tables
+that never expire: `stored_pages` (each product page read: offers and parameters), `found_pages`
+(which pages matched a query at a shop, with the title, the route and when first found),
+`shop_runs` (each shop's last result for a query, with `web_at`, the last time the web search was
+really asked for it) and `kv` (the last exchange rates). The query key is the searched query,
+normalised.
+
+- `mode: 'local'` (`/api/search?mode=local`, `--local`): `storedShop()` builds each shop's result
+  from the database (pages matched again with today's rules; `storedAt` is the oldest read date),
+  else the last result with its date, else the status `not_stored`. No request of any kind; the
+  rates come from the cache or the stored ones. No price reads for similar models.
+- `mode: 'online'` (default): as before, plus `remember()` stores every shop's result. Before a web
+  search for a shop (first or second route), `known()` checks `shop_runs.web_at`: within
+  `REUSE_DAYS` (14) the found pages are read again (shop requests only) or "found nothing" is
+  answered, and the result carries `storedAt`. `refreshWeb` (`refresh_web=1`, `--refresh-web`)
+  skips this. A product page served from the 6-hour cache but missing in the database is stored
+  then too.
+

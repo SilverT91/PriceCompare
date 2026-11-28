@@ -41,6 +41,10 @@ HP Z2 Tower G1i configuration).
   model number tells configurations apart. "HP Z2 Mini G1a 395 128GB" now finds ABCOM's 7,427 €
   machine. When the query names the processor family itself, the processor is the product and its
   tier words count as before.
+- **A local database and two buttons.** "Load saved" shows what earlier searches found and asks
+  nothing; "Check online" does not repeat a shop's web search answered in the last 14 days (its
+  pages are read again for current prices). A repeated "HP Z2 Tower G1i" went from 2 web search
+  queries to 0. "Search the web again too" asks anyway.
 - **Parameters side by side** (phases 0 and 1 of [plan-parameters.md](plan-parameters.md)):
   processor, graphics card and its memory, RAM, storage, screen, power supply and system per
   product, read from what shops publish, with filters and "not stated" where no shop says. For
@@ -209,9 +213,11 @@ round, see the state above):
 2. **Re-check the provider table in the README** ("Where to get a key") from time to time and
    update its date. Tavily stays a fallback: one query per shop was tried for the first user's
    sentence and found nothing either. Its `language` parameter is untried.
-3. **Read Brave's terms on keeping results.** Its FAQ says storing results needs a plan with
-   storage rights; the app keeps web search results for 6 hours. If the terms do not allow that,
-   shorten or drop the cache for Brave.
+3. **Read Brave's terms on keeping results** (more pressing since the local database). Its FAQ
+   says storing results needs a plan with storage rights; the app keeps web search results for 6
+   hours, and since 2026-11-28 keeps for 14 days the product addresses a web search led to (and
+   "found nothing"), to avoid asking again. Read Brave's, Serper's and Tavily's terms; if keeping is
+   not allowed, shorten the reuse (`REUSE_DAYS`) or limit it to the providers that allow it.
 4. **Similar models, third pass.** The first user's search showed rough names (see known
    problems).
 5. **Work through "Code issues found in review"** below; none blocks use.

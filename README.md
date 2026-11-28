@@ -49,6 +49,12 @@ shops). A correction in one of them needs no other change.
      not type it. "6000" finds "6000MHz", and "16" finds the model code "16IMH10" as a possible
      match. A word that stands in for one you typed ("MX Anywhere 3S" for "mx master 3s") means
      another product.
+   - **Saved results and fewer web searches.** "Load saved" shows what earlier searches found,
+     from a local database, and asks nothing (each price with the date it was read). "Check
+     online" asks the shops; where a shop's web search for the same query was answered in the last
+     14 days, the pages it found are read again for current prices and no web search credit is
+     spent. "Search the web again too" asks it anyway. On the command line: `--local` and
+     `--refresh-web`.
    - **Parameters side by side.** When a search finds several configurations of a computer or
      a phone, a table shows processor, graphics card and its memory, RAM, storage, screen, power
      supply and system for each, with filters ("graphics memory at least 24 GB", "price at most

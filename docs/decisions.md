@@ -244,3 +244,23 @@ widen to all shops. This saves shop requests and search quota.
 - Test fixtures are trimmed JSON-LD blocks, not whole shop pages.
 - No personal information in any file or outgoing request. The User-Agent is the generic
   `price-compare/0.1`.
+
+## A local database, and a web search is not repeated for 14 days (2026-11-28)
+
+The owner asked that the app ask again only what it does not already know, to save web search
+credit, with two buttons: load from the local database, and check online.
+
+- Every online search stores, without an expiry, the product pages it read (offers and
+  parameters), which pages matched the query at each shop, and each shop's last result. "Load
+  saved" shows that and asks nothing at all, with the date each price was read.
+- "Check online" asks the shops as before (their own search and product pages cost no credit).
+  For a shop whose web search for the same query was answered in the last 14 days, the pages it
+  found are read again for current prices and the web search is not asked again; "found nothing"
+  is not asked again either. "Search the web again too" asks it anyway. A product that a shop has
+  newly listed can therefore be missed for up to 14 days at a shop reached only through the web
+  search; the page says when shops were answered this way.
+- What is kept is the app's own reading of the shops' pages and their addresses. Whether keeping
+  addresses that a web search returned for 14 days fits each provider's terms is not checked yet
+  (roadmap, "Read Brave's terms on keeping results"); if it does not, the reuse is shortened or
+  limited to the other providers.
+

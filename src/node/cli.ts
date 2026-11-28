@@ -10,6 +10,8 @@
 //                            and table headings of this output stay English)
 //            --as-typed   (no brand correction: "Iral b ..." is searched as typed, not as "Oral-B ...";
 //                          no effect on a pasted product link, whose name is always taken from the link)
+//            --local   (only the local database: what earlier searches found, with the date it was read; no request at all)
+//            --refresh-web   (ask the web search again even where the local database has its answer from the last 14 days)
 //   A product link instead of a name works too: npm run search -- "https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm"
 
 import { parseArgs } from 'node:util';
@@ -37,6 +39,8 @@ const { values, positionals } = parseArgs({
     'no-cache': { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
     'as-typed': { type: 'boolean', default: false },
+    local: { type: 'boolean', default: false },
+    'refresh-web': { type: 'boolean', default: false },
     width: { type: 'string', default: '160' },
     lang: { type: 'string', default: 'en' },
   },
@@ -83,9 +87,11 @@ for await (const ev of runSearch(query, {
   onProviderCall: (c) => store.recordProviderCall(c),
   asTyped: values['as-typed'],
   lang, shopTexts,
+  history: store, mode: values.local ? 'local' : 'online', refreshWeb: values['refresh-web'],
 })) {
   if (ev.type === 'start') {
     heureka = ev.heurekaUrl;
+    if (ev.mode === 'local') console.log('From the local database only: nothing is asked. Prices are as read on the dates shown; search without --local to check them online.');
     const asked = ev.shops.length;
     if (ev.fromLink) {
       console.log(`Searched for "${ev.query}" (from the link you pasted)${ev.linkShop ? `; the link is to ${ev.linkShop}, which is asked like every other shop` : ''}`);
@@ -208,7 +214,7 @@ console.log(`  Heureka.sk (never fetched by this app): ${heureka}`);
 for (const t of todo) console.log(`  ${t.shopName.padEnd(24)} ${t.status.padEnd(17)} ${t.url}`);
 
 console.log(`\n== Shops: ${statusSummary(shopResults, lang)} ==`);
-const order: Record<ShopStatus, number> = { ok: 0, no_match: 1, needs_search_key: 2, robots_disallowed: 3, blocked: 4, needs_js: 5, no_route: 6, error: 7, not_relevant: 8 };
+const order: Record<ShopStatus, number> = { ok: 0, no_match: 1, needs_search_key: 2, robots_disallowed: 3, blocked: 4, needs_js: 5, no_route: 6, error: 7, not_relevant: 8, not_stored: 9 };
 const asked = shopResults.filter((r) => r.status !== 'not_relevant');
 console.log(table(
   ['shop', 'section', 'status', 'route', 'req', 'detail'],

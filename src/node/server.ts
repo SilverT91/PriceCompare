@@ -23,6 +23,7 @@ const app = createApp({
   onSearchDone: (s) => store.recordSearch({ query: s.query, location: s.location, startedAt: s.startedAt, ms: s.ms, statusCounts: s.statusCounts, offers: s.offers, groups: s.groups }),
   history: () => store.history(),
   usage: makeUsage(store),
+  stored: store,
 });
 app.use('/*', serveStatic({ root: `${ROOT}public`.replace(/\\/g, '/') }));
 
