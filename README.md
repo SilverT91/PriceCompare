@@ -15,6 +15,22 @@ and products; it links to one of them for every search.
 
 Status: first working version (2026-11). Coverage is partial on purpose; see "Coverage" below.
 
+## What a search costs
+
+About two thirds of the shops are asked through their own search, which never costs anything.
+The rest are reached through a web search, which uses your key's credit. One query covers up to
+6 shops of one country, so a search typically needs 2 to 7 queries.
+
+| You do | Shops' own search | Shops reached through the web search |
+|---|---|---|
+| "Check online", the same search again within 30 minutes | free | free (answers kept 30 minutes) |
+| "Check online" the next day | free | costs queries again with Brave; free for 14 days with Serper or Tavily |
+| "Load saved", any time | free, with the date each price was read | Brave results are not saved; Serper and Tavily results are |
+
+Why: Brave's terms forbid keeping its results beyond the moment they are needed, so the app uses
+them for one comparison and then drops them. Serper's and Tavily's terms set no such limit. Details
+and quotes: [docs/research.md](docs/research.md), section 14.
+
 ## Language
 
 The page is in English and Slovak. The "SK | EN" switch in the header changes it; without a choice
