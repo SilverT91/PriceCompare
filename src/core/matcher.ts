@@ -764,7 +764,11 @@ export function scoreCandidate(query: ParsedQuery, title: string, url: string): 
   const fromTitle = title ? matchTitle(query, { title, url }) : null;
   let fromSlug = matchTitle(query, { title: slug, url });
   // Slugs carry ids and sizes without decimal points ("6.1" -> "61"); numeric extras there are noise.
-  const slugWordsDifferent = fromSlug.distinguishing.some((t) => !hasDigit(t));
+  // A word the title also has, and that the title's own reading did not count against the match, is
+  // explained by the title: "plus" of a processor in "...-u7-270k-plus-rtx-pro-4000-bl-24gb", where
+  // the title shows it in a specification list (ABCOM, 2026-11-28).
+  const titleWords = fromTitle && fromTitle.level !== 'different' ? new Set(tokenize(foldSimple(title))) : new Set<string>();
+  const slugWordsDifferent = fromSlug.distinguishing.some((t) => !hasDigit(t) && !titleWords.has(t));
   if (fromSlug.level === 'different' && !fromSlug.missing.length && !slugWordsDifferent) {
     fromSlug = { ...fromSlug, level: 'possible', score: 0.6 };
   }

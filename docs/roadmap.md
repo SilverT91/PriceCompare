@@ -23,10 +23,15 @@ HP Z2 Tower G1i configuration).
 - **A link without a name** ("online.asbis.sk/default.asp?...") gets the "no name in this link"
   message instead of a search for "Default".
 - "Herný počítač" and "Stolný počítač" in front of a name are category words.
+- **A product link whose address spells out the configuration** ("...-u7-270k-plus-rtx-pro-4000-bl-24gb")
+  is no longer rated another product for a word its title explains. Before, ABCOM's real product
+  link lost to the "add to favourites" and "compare" links next to it, which robots.txt does not
+  allow, and the shop ended as `robots_disallowed`.
 
 Live check: the pasted ASBIS title at NAY, ABCOM and Datacomp without a web search key (12 shop
-requests); then on the page with the key, in English and in Slovak: 6 Brave queries (100 used
-this month).
+requests); then on the page with the key, in English and in Slovak: 6 Brave queries. A price
+search for the configuration the owner chose (part number CF1Q7ET) used 7 more: no shop the app
+reads lists that part number. 107 Brave queries are used this month.
 
 What the sixth round did (2026-11-25):
 
@@ -248,6 +253,9 @@ round, see the state above):
 - **Switching the language after a search** rewrites what the page writes, but sentences the
   search built (delivery notes, "pickup in the branch: free") stay in the first language until the
   next search. Seen on 2026-11-28; a search started in Slovak is all Slovak.
+- **A model number with letters glued to it** ("RTX Pro 4000Bl") does not meet the query "4000",
+  so that ABCOM configuration is only a similar model for "HP Z2 Tower G1i RTX PRO 4000". "4000 BL"
+  written apart matches. Seen 2026-11-28.
 - **A specification list is read from its wording.** A title counts as "name, then a list" when
   three or more comma-separated parts follow the name and two of them state an amount with a unit.
   A list written another way (only " / ", or without units) is read as before; its listed tokens

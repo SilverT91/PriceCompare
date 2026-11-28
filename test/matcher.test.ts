@@ -601,6 +601,16 @@ describe('workstation configurations (test of 2026-11-27, HP Z2 Tower G1i)', () 
     assert.equal(specList('HP Z2 Tower G1i, A40SRET'), null);
     assert.equal(specList('Oral-B Pro 3 3000, čierna, CrossAction, cestovné puzdro'), null);
   });
+  test('a product link whose address spells out the configuration is read, not the "add to favourites" link beside it (ABCOM, 2026-11-28)', () => {
+    const pq = parseQuery('HP Z2 Tower G1i RTX PRO 4000');
+    const title = 'HP PC Z2 Tower G1i 1200W, Intel Core U7 270K Plus, RTX PRO 4000 BL 24GB,2×32GB DDR5, 1TB, Kb+mouse,Win11Pro,3yo';
+    const product = scoreCandidate(pq, title, 'https://eshop.abcomke.sk/hp-pc-z2-tower-g1i-1200w-intel-core-u7-270k-plus-rtx-pro-4000-bl-24gb-2-32gb-ddr5-1tb-kb-mouse-win11pro-3yo/');
+    const favourite = scoreCandidate(pq, `Obľúbený Pridať do obľúbených Pridať ${title} do obľúbených produktov heart`, 'https://eshop.abcomke.sk/hladanie/?createfav=480803');
+    assert.equal(product.level, 'possible');
+    assert.ok(product.score > favourite.score);
+    // a tier word only in the address, not in the title, still marks another product
+    assert.equal(scoreCandidate(parseQuery('Oral-B Pro 3 3000'), 'Oral-B Pro 3 3000', 'https://shop.test/oral-b-pro-3-3000-kids').level, 'different');
+  });
   test('the part code in the title is the configuration, without its market suffix', () => {
     assert.equal(m(q, 'HP Z2 Tower G1i, EE7H6ES').partCode, 'ee7h6es');
     assert.equal(m(q, 'Stolný počítač HP Z2 Tower G1i (A40SRET#BCM) čierny').partCode, 'a40sret');

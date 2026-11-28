@@ -524,6 +524,9 @@ the user typed. `matchTitle(query, input)` goes through these stages:
 
 `scoreCandidate()` is the cheap version used before fetching: it matches the search-result title and
 the URL slug and takes the better score, but a distinguishing word in either one marks it different.
+A word in the slug does not count when the title has it too and the title's own match is not
+`different`: an address that spells out a configuration ("...-270k-plus-rtx-pro-4000-bl-24gb") is
+explained by the title's specification list.
 
 Where to extend the vocabulary (all in `vocab.ts` unless noted):
 
