@@ -325,7 +325,7 @@ Step by step:
     `no_delivery`, stays visible, and is outside the ranking (`reachable()`).
 11. **Streaming.** When a shop finishes, `runSearch()` pushes a `shop` event and then a `products`
     event with `groupOffers()` over all offers collected so far. Grouping (`group.ts`) joins offers
-    by GTIN plus condition, by identical `match.signature`, or by shared order code. A product in
+    by GTIN plus condition, by identical `match.signature`, by shared order code, or by the query's own long model code (eight or more letters and digits, such as "GT22-3582nc", in two matching offers: `modelCodes()`). A product in
     which two offers of the same colour name different part codes (`match.partCode`: "HP Z2 Tower
     G1i, EE7H6ES" and "..., A40MKET") is split into one product per code (`byConfiguration()`); an
     offer without a code follows its GTIN. Different colours with different codes stay one product
@@ -475,7 +475,7 @@ the user typed. `matchTitle(query, input)` goes through these stages:
    ignored; condition, package and accessory words count as in the name (except words for something
    left out: "bez OS", "no Kb+mouse"); tokens with a digit are the configuration and make the match
    `possible` (`variantNotInQuery`, one doubt however long the list), and they go into the signature
-   so configurations stay apart. A query found only inside the list ("RTX 5080" in a whole
+   so configurations stay apart. A processor named in the title ("AMD Ryzen AI Max PRO 395 APU", "Intel Core Ultra 9 285K vPro": `processorSpan()`) is read the same way, unless the query names the processor family itself. A query found only inside the list ("RTX 5080" in a whole
    computer's title) does not split it and stays `different`. A part code in brackets, with a
    market suffix after "#" or "/" ("(A40SRET#BCM)", "(MYED3SX/A)"), and an unbracketed code among
    the extra tokens become `partCode` without the suffix (`codeRoot()`). Pharmacy pack notation is

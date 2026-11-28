@@ -653,3 +653,23 @@ describe('a model number with letters glued to it (ABCOM, 2026-11-28)', () => {
     assert.equal(m('Oral-B Pro 3 3000', 'Oral-B Pro 3 3000x').level, 'different');
   });
 });
+
+describe('the processor named inside a computer\'s title (ABCOM, 2026-11-28)', () => {
+  const title = 'HP PC Z2 Mini G1a AMD Ryzen AI Max PRO 395 APU, 128GB fixed, 2TB, AMD Radeon 8060S graphics, no Kb+Mouse, 300W, Win11Pro, 3yo';
+  test('"Max PRO" of the processor is not the product\'s tier', () => {
+    assert.notEqual(m('HP Z2 Mini G1a 395 128GB', title, { brand: 'HP' }).level, 'different');
+    assert.notEqual(m('HP Z2 Mini G1a', title, { brand: 'HP' }).level, 'different');
+    const intel = m('HP Z2 Tower G1i', 'HP PC Z2 Tower G1i Intel Core Ultra 9 285K vPro, RTX PRO 4000 24GB, 64GB DDR5, 1TB', { brand: 'HP' });
+    assert.notEqual(intel.level, 'different');
+  });
+  test('two processors are two configurations; another one than the query asks for is another product', () => {
+    const a = m('HP Z2 Mini G1a', title, { brand: 'HP' });
+    const b = m('HP Z2 Mini G1a', 'HP PC Z2 Mini G1a AMD Ryzen AI Max PRO 385 APU, 64GB fixed, 1TB, AMD Radeon 8050S graphics, 300W, Win11Pro, 3yo', { brand: 'HP' });
+    assert.notEqual(a.signature, b.signature);
+    assert.equal(m('HP Z2 Mini G1a 395', 'HP PC Z2 Mini G1a AMD Ryzen AI Max PRO 385 APU, 64GB fixed, 1TB, 300W, Win11Pro, 3yo', { brand: 'HP' }).level, 'different');
+  });
+  test('when the query names the processor, its tier words still count', () => {
+    assert.equal(m('AMD Ryzen 9 9950X', 'AMD Ryzen 9 PRO 9950X').level, 'different');
+    assert.equal(m('Intel Core Ultra 7 265K', 'Intel Core Ultra 7 265K').level, 'exact');
+  });
+});

@@ -8,6 +8,7 @@ import { colourName, t, type Lang } from './i18n.ts';
 import { displayTitle } from './matcher.ts';
 import { headline, reachable, sortOffers } from './totals.ts';
 import type { MatchLevel, Offer, ProductGroup, ProductVariant } from './types.ts';
+import { NEUTRAL_UNITS, VARIANT_UNITS } from './vocab.ts';
 
 const LEVEL_RANK: Record<MatchLevel, number> = { exact: 0, possible: 1, different: 2 };
 
@@ -37,6 +38,18 @@ function hash(s: string): string {
     h = Math.imul(h, 16777619);
   }
   return (h >>> 0).toString(36);
+}
+
+/**
+ * The query's own long model codes found in a matching offer ("gt223582nc" for "HP OMEN 45L
+ * GT22-3582nc"): eight or more characters of letters and digits, not a unit. Such a code names one
+ * configuration, so offers that share it are one product, whether the shop names the configuration
+ * by its part number (Datacomp: "..., D8QT8EA") or by its specifications (ABCOM: "..., Ultra
+ * 9-285K, 64GB DDR5, ..."). A shorter code ("16IMH10", "G1i") names a line with many configurations.
+ */
+function modelCodes(o: Offer): string[] {
+  if (o.match.level === 'different') return [];
+  return o.match.matched.filter((t) => t.length >= 8 && /[a-z]/.test(t) && /\d/.test(t) && !VARIANT_UNITS.test(t) && !NEUTRAL_UNITS.test(t));
 }
 
 /**
@@ -92,7 +105,7 @@ export function groupOffers(offers: Offer[], lang: Lang = 'en'): ProductGroup[] 
     const j = bySig.get(s);
     if (j === undefined) bySig.set(s, i);
     else uf.union(j, i);
-    for (const c of o.match.codes ?? []) {
+    for (const c of [...(o.match.codes ?? []), ...modelCodes(o)]) {
       const k = `${c}|${o.match.condition}`;
       const x = byCode.get(k);
       if (x === undefined) byCode.set(k, i);

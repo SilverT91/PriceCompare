@@ -36,6 +36,15 @@ HP Z2 Tower G1i configuration).
 - **Switching the language after a search** runs the search again in the new language, so the
   sentences the search built (delivery notes, shop details) change too. Within the 6-hour cache
   this asks no shop and no web search; the chosen product stays chosen.
+- **The processor named in a computer's title** ("AMD Ryzen AI Max PRO 395 APU", "Intel Core
+  Ultra 9 285K vPro") is read as one specification: its tier words are the processor's, and its
+  model number tells configurations apart. "HP Z2 Mini G1a 395 128GB" now finds ABCOM's 7,427 €
+  machine. When the query names the processor family itself, the processor is the product and its
+  tier words count as before.
+- **One machine named two ways is one product** when both titles hold the query's own long model
+  code (eight or more letters and digits, such as "GT22-3582nc"): Datacomp's part-number title,
+  ABCOM's specification list and NAY's "OMEN MAX" title of the HP OMEN 45L are now one product at
+  three shops. A shorter line code ("G1i", "16IMH10") joins nothing, so configurations stay apart.
 
 Live check: the pasted ASBIS title at NAY, ABCOM and Datacomp without a web search key (12 shop
 requests); then on the page with the key, in English and in Slovak: 6 Brave queries. A price
@@ -260,15 +269,6 @@ round, see the state above):
 - **Category words the matcher does not know** leave a correct offer as "possible" ("Robotický
   vysávač Roborock Qrevo Edge 2 Pro biely").
 - **A kit counted by its modules.** "64GB (2x32GB)" is offered as a possible match for "32gb".
-- **Tier words inside a processor's name** before the specification list ("HP Z2 Mini G1a AMD Ryzen
-  AI Max PRO 395 APU, 128GB ...") count as the product's, so the query "HP Z2 Mini G1a 395 128GB"
-  rejects it; typed with "Max PRO" it matches. Seen 2026-11-28.
-- **One machine named two ways is two products.** A shop that names a configuration by its part
-  number (Datacomp: "HP OMEN 45L GT22-3582nc, D8QT8EA") and one that lists its specifications
-  (ABCOM: "HP PC OMEN 45L GT22-3582nc, Ultra 9-285K, 64GB DDR5, ...") end up as two products,
-  because they share neither a code nor a signature. Joining them would need the model code
-  ("GT22-3582nc") treated as identifying, or the specifications read from the part-number shop's
-  page. Seen 2026-11-28.
 - **A specification list is read from its wording.** A title counts as "name, then a list" when
   three or more comma-separated parts follow the name and two of them state an amount with a unit.
   A list written another way (only " / ", or without units) is read as before; its listed tokens

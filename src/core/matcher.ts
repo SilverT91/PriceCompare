@@ -468,9 +468,16 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   // "Súprava zubných kefiek ... Duo Pack": with the two-pack word in the title, a generic set word says nothing more.
   const twoPackTitle = titleTokens.includes('duo') || specTokens.includes('duo');
   const setSaysNothing = (t: string) => twoPackTitle && GENERIC_SET_WORDS.has(t);
+  const processor = processorSpan(titleTokens, qset);
   for (let i = 0; i < titleTokens.length; i++) {
     const t = titleTokens[i];
     if (qset.has(t) || consumed.has(i) || setSaysNothing(t)) continue;
+    // The processor named in a computer's title ("AMD Ryzen AI Max PRO 395"): its tier words are the
+    // processor's; its model number tells configurations apart, like a specification list.
+    if (processor.has(i)) {
+      if (hasDigit(t) && !NEUTRAL_UNITS.test(t) && !listSpecs.includes(t)) listSpecs.push(t);
+      continue;
+    }
     // The same token as one that met the query, written again (a title the shop wrote twice): "16imh10".
     if (titleTokens.some((x, j) => j !== i && consumed.has(j) && x === t)) continue;
     const cond = conditionOfToken(t);
@@ -616,6 +623,39 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     level, score, matched: [...new Set(matched)], missing: [...missing, ...missingAlpha, ...softMissing], distinguishing, specExtras, unknownExtras,
     condition, conditionWords, colour, signature, codes: titleCodes, partCode: partCodes[0] ?? null, reasons, reasonCodes,
   };
+}
+
+/** Processor family words; "core" only after "intel". */
+const PROCESSOR_FAMILIES = new Set(['ryzen', 'xeon', 'threadripper', 'epyc', 'athlon', 'celeron', 'pentium']);
+const AFTER_PROCESSOR = new Set(['apu', 'vpro', 'cpu', 'procesor', 'processor']);
+
+/**
+ * Title positions of a processor's name inside a computer's title: "AMD Ryzen AI Max PRO 395 APU",
+ * "Intel Core Ultra 9 285K vPro", "Intel Core U9 285K". It runs from the family word over tier
+ * words, short numbers and the model number, and ends after the first number of three or more
+ * digits. Empty when the query names the family itself: then the processor is the product.
+ */
+function processorSpan(tokens: string[], qset: Set<string>): Set<number> {
+  const span = new Set<number>();
+  for (let i = 0; i < tokens.length; i++) {
+    const family = PROCESSOR_FAMILIES.has(tokens[i]) || (tokens[i] === 'core' && tokens[i - 1] === 'intel');
+    if (!family || qset.has(tokens[i])) continue;
+    if (i > 0 && (tokens[i - 1] === 'amd' || tokens[i - 1] === 'intel')) span.add(i - 1);
+    span.add(i);
+    let j = i + 1;
+    for (; j < tokens.length && j <= i + 6; j++) {
+      const t = tokens[j];
+      const part = inClass(t, MODEL_WORDS) || t === 'ai' || /^[iu]\d$/.test(t) || /^\d{1,2}$/.test(t) || /^\d{3,}[a-z]*$/.test(t);
+      if (!part) break;
+      span.add(j);
+      if (/^\d{3,}/.test(t)) {
+        j++;
+        break;
+      }
+    }
+    if (j < tokens.length && AFTER_PROCESSOR.has(tokens[j])) span.add(j);
+  }
+  return span;
 }
 
 /**

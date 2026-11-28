@@ -259,3 +259,23 @@ describe('configurations of one line (workstation test of 2026-11-27)', () => {
     assert.equal(groups[0].variants.length, 2);
   });
 });
+
+describe('one machine named two ways (2026-11-28, HP OMEN 45L GT22-3582nc)', () => {
+  const q = 'HP OMEN 45L GT22-3582nc';
+  test('offers that share the query\'s long model code are one product, by part number or by specifications', () => {
+    const groups = groupOffers([
+      offer(q, { title: 'HP OMEN 45L GT22-3582nc, D8QT8EA', price: 4753.35 }, 'datacomp'),
+      offer(q, { title: 'HP PC OMEN 45L GT22-3582nc, Ultra 9-285K, 64GB DDR5, 2TB SSD, RTX 5080 16GB,Win 11 Home,3-3-0, Game Pass', price: 5179 }, 'abcom'),
+      offer(q, { title: 'Herný počítač HP OMEN MAX by HP 45L GT22-3582nc + Game Pass predplatné na 2 mesiace (D8QT8EA#BCM) čierny', price: 5739, gtin: '00199999999999' }, 'nay'),
+    ]);
+    assert.equal(groups.length, 1);
+    assert.equal(groups[0].shopCount, 3);
+  });
+  test('a short line code does not join configurations', () => {
+    const groups = groupOffers([
+      offer('HP Z2 Tower G1i', { title: 'HP PC Z2 Tower G1i 1200W, Intel Core U7 270K Plus, Intel Graphics,2×16GB DDR5,1TB,Kb+mouse,Win11Pro,3yo', price: 2600 }, 'abcom'),
+      offer('HP Z2 Tower G1i', { title: 'HP PC Z2 Tower G1i 700W, Intel Core U9 285K vPro, RTX Pro 4000Bl 24GB,2×16GB DDR5,1TB,WiFi 7+BT,no Kb+mouse,Win11Pro,3yo', price: 4981 }, 'abcom'),
+    ]);
+    assert.equal(groups.length, 2);
+  });
+});
