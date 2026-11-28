@@ -209,7 +209,8 @@ Step by step:
    spaces that starts with http(s), starts with `www.`, or is a host with a dot and a path, is a
    link. The query becomes the name in its path: the last segment that carries words, without
    file endings, leading or trailing ids and path words such as "product"; the query string and
-   fragment are ignored. The link is never fetched. A link with no name in it yields a single
+   fragment are ignored. A segment that is only a program or page file name ("default.asp",
+   "index.php", "detail.aspx": `GENERIC_FILES`) names nothing. The link is never fetched. A link with no name in it yields a single
    `rejected` event and no request. With a name, the correction below is skipped, the `start`
    event carries `fromLink`, `linkShop` (when the host is one of the shops) and the pasted text
    as `typed`.
@@ -223,6 +224,14 @@ Step by step:
    cache keys and the Heureka link. The `start` event carries `query`, `typed` and `corrected`, the
    `done` summary `typed`; the page and the command line show both forms and offer the search as
    typed.
+
+   1b. **A name with a specification list** (`specList()` in `matcher.ts`), unless `asTyped` is
+   set or the input was a link. Text of the form "Name, spec, spec, spec" (at least three parts
+   after the name, two of them with an amount and a unit; a decimal comma does not split) is
+   searched as the name alone, when the name names something (`namesSomething()`); the brand
+   correction then applies to the name. The `start` event carries `fromList`, and the page and the
+   command line say what was searched, with the search as typed one click away. The configurations
+   found are offered in "Which one do you mean?".
 2. **Category selection.** `runSearch()` calls `chooseCategories(query, opts.category)`:
    `all`, a group id, or `auto`, which runs `guessCategories()` over `RULES` in `categories.ts`.
    Strong (product-word) rules beat brand-only rules. `shopIsRelevant()` keeps shops whose
@@ -316,8 +325,12 @@ Step by step:
     `no_delivery`, stays visible, and is outside the ranking (`reachable()`).
 11. **Streaming.** When a shop finishes, `runSearch()` pushes a `shop` event and then a `products`
     event with `groupOffers()` over all offers collected so far. Grouping (`group.ts`) joins offers
-    by GTIN plus condition, by identical `match.signature`, or by shared order code; inside a
-    product it splits variants by GTIN or colour. The same event carries `nearby` (step 11a). The
+    by GTIN plus condition, by identical `match.signature`, or by shared order code. A product in
+    which two offers of the same colour name different part codes (`match.partCode`: "HP Z2 Tower
+    G1i, EE7H6ES" and "..., A40MKET") is split into one product per code (`byConfiguration()`); an
+    offer without a code follows its GTIN. Different colours with different codes stay one product
+    (an iPhone's code changes with the colour). Inside a product variants are split by GTIN or
+    colour. The same event carries `nearby` (step 11a). The
     page re-renders on every `products` event.
 
     11a. **Similar models** (`nearby.ts`, `nearbyModels()`). Input is what the shops already gave:
@@ -454,7 +467,18 @@ the user typed. `matchTitle(query, input)` goes through these stages:
    joins "Oral-B" to `oralb`, "12V-15" to `12v15`, and glues units ("128 GB" to `128gb`).
 2. **Clean the title.** `cleanTitle()` removes shop suffixes ("| iStores", " - NAY"), an appended
    promotion ("+ Cashback 10€ pri nákupe ...") and bracketed part codes. A title of the form
-   "Name / spec / spec" is split: only the first segment is the name. Pharmacy pack notation is
+   "Name / spec / spec" is split: only the first segment is the name. A title of the form "Name,
+   spec, spec, spec" or "Name - spec, spec, spec" (`specList()`) is split the same way when the
+   name holds the query (`listedConfiguration()`: every query word is in the name or the list, and
+   a query word with a digit is in the name), so the model numbers of a computer's processor and
+   graphics card are not read as the product's. In the list, tier words belong to a part and are
+   ignored; condition, package and accessory words count as in the name (except words for something
+   left out: "bez OS", "no Kb+mouse"); tokens with a digit are the configuration and make the match
+   `possible` (`variantNotInQuery`, one doubt however long the list), and they go into the signature
+   so configurations stay apart. A query found only inside the list ("RTX 5080" in a whole
+   computer's title) does not split it and stays `different`. A part code in brackets, with a
+   market suffix after "#" or "/" ("(A40SRET#BCM)", "(MYED3SX/A)"), and an unbracketed code among
+   the extra tokens become `partCode` without the suffix (`codeRoot()`). Pharmacy pack notation is
    read as a count: "1×1 ks", "1×1 set" and "1×150 ml" are one item, "1×2 ks" is `2pc`.
    `displayTitle()` uses the same suffix and promotion step, plus `nameOnly()` (a leading
    specification list removed, a doubled title taken once), for the product name shown in "Which one

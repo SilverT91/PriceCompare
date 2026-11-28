@@ -2,12 +2,33 @@
 
 Where the project stands and what comes next. Update this file when a round of work finishes.
 
-## State on 2026-11-25 (after the sixth round)
+## State on 2026-11-28 (after the seventh round)
 
-The app works end to end: web page, command line, unit tests passing. The database has 39 non-food
-shops in scope.
+The app works end to end: web page, command line, 254 unit tests passing. The database has 40
+non-food shops in scope (ASBIS SK for its manual link only).
 
-What the sixth round did (the same day):
+What the seventh round did: fixes from the owner's workstation test of 2026-11-27 (searching for an
+HP Z2 Tower G1i configuration).
+
+- **Configurations are separate products.** Datacomp's "HP Z2 Tower G1i, EE7H6ES", "..., A40MKET"
+  and "..., D06G8ET" were one product with prices from 3,007 € to 5,307 €; now each part number is
+  a product, and the same part number at NAY and Datacomp is one.
+- **Titles with a specification list match.** ABCOM's "HP PC Z2 Tower G1i 700W, Intel Core U9 285K
+  vPro, RTX Pro 4000Bl 24GB, ..." and Lenovo's "IdeaPad Slim 5 16IMH10 - Ultra 5 135H,16" ..." were
+  rejected because the processor read as another model. They are now "possible", each
+  configuration its own product. A graphics card or processor searched for alone still does not
+  match a whole computer.
+- **A pasted title with its specifications** is searched by its name ("HP Z2 Tower G1i"), and the
+  page says so, with the search as typed one click away.
+- **A link without a name** ("online.asbis.sk/default.asp?...") gets the "no name in this link"
+  message instead of a search for "Default".
+- "Herný počítač" and "Stolný počítač" in front of a name are category words.
+
+Live check: the pasted ASBIS title at NAY, ABCOM and Datacomp without a web search key (12 shop
+requests); then on the page with the key, in English and in Slovak: 6 Brave queries (100 used
+this month).
+
+What the sixth round did (2026-11-25):
 
 - **Computer parts.** Six searches typed loosely (an SSD, a processor, a graphics card, a mouse,
   memory, a laptop) showed that specifications in titles were read as model numbers. The matcher
@@ -136,27 +157,12 @@ then 13 Brave and 27 Tavily for the measurement of Tavily. The search from a pas
 
 In this order.
 
-**First: from the workstation test of 2026-11-27 (documented only, nothing built yet).** The owner
-asked whether the app can find "the same or a better computer" than one HP Z2 Tower G1i
-configuration. What the test showed, without a search key:
+**Still open from the workstation test of 2026-11-27** (its faults were fixed in the seventh
+round, see the state above):
 
-- *The same machine is found by its part number.* "HP Z2 Tower G1i A40SRET" gave NAY 4,699 € (on
-  order) and Datacomp 4,750 € (in stock). Typing the line name alone, or the whole title with its
-  specifications, does not single out the configuration.
-- *Fault: a link without a name is searched as "Default".* A pasted link whose path is only
-  `default.asp` (the product is in the query string) must be answered with the "no name in this
-  link" message. Generic file names (default, index, product, item, detail) are not names.
-- *Fault: configurations merged into one product.* Three Datacomp offers that differ only by part
-  number ("HP Z2 Tower G1i, EE7H6ES", "..., A40MKET", "..., D06G8ET", 3,007 € to 5,307 €) were
-  grouped as one product. Different part numbers of one line are different products.
-- *Fault: titles with a full specification list are rejected.* ABCOM's "HP PC Z2 Tower G1i 1200W,
-  Intel Core U9 285K (24C/5.7GHz), RTX 5080 16GB GDDR7, 2×32GB DDR5, 1TB, ..." does not match the
-  query "HP Z2 Tower G1i": processor and graphics card names read as model numbers. The same
-  fault keeps some laptops out (see known problems).
-- *A pasted title with all specifications* finds nothing, because the shops' own searches get the
-  whole long text. The shorter query should be tried.
 - *"Better" is outside what the app does.* It compares one named product; it has no notion of one
-  specification being more than another.
+  specification being more than another. The configurations of a line are now separate products
+  to choose from, which is as far as it goes.
 - *Proposed: a configuration view for computers.* When a search hits a computer line, read
   processor, graphics card (with its memory), RAM and disk from each title and show the
   configurations side by side with their prices, so a person can judge. Shops that name a
@@ -239,8 +245,13 @@ configuration. What the test showed, without a search key:
 - **Category words the matcher does not know** leave a correct offer as "possible" ("Robotický
   vysávač Roborock Qrevo Edge 2 Pro biely").
 - **A kit counted by its modules.** "64GB (2x32GB)" is offered as a possible match for "32gb".
-- **Laptops with a long specification list** in the title ("... 16IMH10 - Ultra 5 135H,16" ...")
-  stay rejected: the processor's name reads as a model number.
+- **Switching the language after a search** rewrites what the page writes, but sentences the
+  search built (delivery notes, "pickup in the branch: free") stay in the first language until the
+  next search. Seen on 2026-11-28; a search started in Slovak is all Slovak.
+- **A specification list is read from its wording.** A title counts as "name, then a list" when
+  three or more comma-separated parts follow the name and two of them state an amount with a unit.
+  A list written another way (only " / ", or without units) is read as before; its listed tokens
+  appear as the variant words of the reason, folded ("u7, 270k, 16gb").
 - **Power in watts** is treated as a variant, so a graphics card title that states a recommended
   power supply is "possible", not exact.
 - **Variant labels** show the matcher's folded words ("biela, robot"), not the shop's wording.

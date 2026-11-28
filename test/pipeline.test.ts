@@ -408,6 +408,32 @@ test('a pasted link: its name is searched, the link itself is never requested, t
   assert.deepEqual([done.query, done.typed], ['Roborock Qrevo Edge 2 Pro', pasted]);
 });
 
+test('a pasted title with its specification list: the name is searched and the start event says so; as typed searches it all', async () => {
+  const { shops: listShops } = validateShops({
+    shops: [{ id: 'z', name: 'Shop Z', domain: 'z.test', country: 'SK', currency: 'EUR', search_url_template: 'https://www.z.test/s?q={query}' }],
+  });
+  // ASBIS SK's title of the configuration, as the owner pasted it on 2026-11-27
+  const pasted = 'HP Z2 Tower G1i, Ultra9 285K/vPro, RTXPRO4000Blw/24GB, 32GB, SSD 1TB, W11Pro, 3-3-3, WiFi/BT';
+  const calls: string[] = [];
+  const f: FetchLike = async (url) => {
+    calls.push(url);
+    if (url === 'https://www.z.test/robots.txt') return robotsOk();
+    if (url.startsWith('https://www.z.test/s?q=')) return new Response('<html><body><p>Nenašli sme žiadne produkty.</p></body></html>');
+    return new Response('nf', { status: 404 });
+  };
+  const run = (asTyped: boolean) => collect(runSearch(pasted, {
+    shops: listShops, cache: new MemoryCache(), scheduler: new HostScheduler({ intervalMs: 0 }), location: DEFAULT_LOCATION, providers: [], fetch: f,
+    category: 'all', asTyped,
+  }));
+  const start = (await run(false))[0] as Extract<SearchEvent, { type: 'start' }>;
+  assert.deepEqual([start.query, start.typed, start.fromList, start.fromLink], ['HP Z2 Tower G1i', pasted, true, false]);
+  assert.ok(calls.includes('https://www.z.test/s?q=HP+Z2+Tower+G1i'));
+  calls.length = 0;
+  const whole = (await run(true))[0] as Extract<SearchEvent, { type: 'start' }>;
+  assert.deepEqual([whole.query, whole.fromList], [pasted, false]);
+  assert.ok(!calls.includes('https://www.z.test/s?q=HP+Z2+Tower+G1i'));
+});
+
 test('a pasted link without the name: no search, no request, one event that asks for the name', async () => {
   const calls: string[] = [];
   const f: FetchLike = async (url) => {

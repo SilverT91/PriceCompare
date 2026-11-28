@@ -212,6 +212,25 @@ makes a match "possible" when the query does not state it; the others are ignore
 computer that contains the part stays a different product, because it names other parts' model
 numbers.
 
+Amended 2026-11-28: when a title is the product's name followed by a list of its specifications,
+and the name holds the query, the processor and graphics card in the list are the configuration,
+not other products. The match is "possible", so the user checks the configuration.
+
+## Configurations of one line are separate products (2026-11-28)
+
+A computer line ("HP Z2 Tower G1i") is sold in configurations that differ in processor, graphics
+card, memory and disk, at prices from about 2,300 € to 5,500 €. Shops name a configuration either
+by its part number ("HP Z2 Tower G1i, EE7H6ES") or by listing its specifications after the name.
+Both now count as what tells two products apart: two part numbers in one colour, or two different
+specification lists, are two products in "Which one do you mean?". The same part number at two
+shops is one product. Different part numbers in different colours stay colour variants of one
+product, because that is how phones are numbered.
+
+A typed or pasted title with its whole specification list is searched by its name, and the page
+says so. Matching such a list word for word would find nothing, since every shop writes the
+specifications its own way; choosing among the configurations found keeps the person in charge
+of the comparison. Judging which configuration is "better" stays outside the app.
+
 ## Only ask shops in the query's category (2026-11-24)
 
 A toothbrush query does not go to a furniture shop. Categories are guessed from the query with a

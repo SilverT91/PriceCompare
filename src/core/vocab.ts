@@ -67,6 +67,8 @@ const CATEGORY_EXACT = [
   'pamatovy', 'pamatova', 'pamatove', 'pametovy', 'pametova', 'modul', 'memory', 'arbeitsspeicher', 'mys', 'mysz', 'maus', 'mouse',
   'klavesnica', 'klavesnice', 'keyboard', 'tastatur', 'klawiatura', 'monitor', 'monitory', 'bezdrotova', 'bezdrotovy', 'bezdratova',
   'bezdratovy', 'bezprzewodowa', 'wireless', 'kabellos',
+  // "Herný počítač", "Stolný počítač" (NAY, 2026-11-27): the kind of computer, said in front of the name
+  'herny', 'herna', 'herni', 'stolny', 'stolni', 'pc', 'pocitace',
 ];
 // Interfaces and form factors shops list next to the name ("NVMe, M.2 SSD", "DIMM DDR5 ... Non-ECC",
 // "PCI-E 4.0 / TLC", "bluetooth"): they describe the product, they do not tell two products apart.

@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
-  matchTitle, scoreCandidate, parseQuery, cleanTitle, coreQuery, displayTitle, linkInput, namesSomething, withoutPackageWords,
+  matchTitle, scoreCandidate, parseQuery, cleanTitle, coreQuery, displayTitle, linkInput, namesSomething, specList, withoutPackageWords,
 } from '../src/core/matcher.ts';
 import { tokenize } from '../src/core/text.ts';
 
@@ -420,8 +420,10 @@ describe('PC components (titles from a live run, 2026-11-25)', () => {
       assert.equal(lvl(q, t), 'possible', t);
     }
     assert.match(m(q, 'Notebook Lenovo IdeaPad Slim 5 16ARP10 sivý').reasons.join('; '), /"16" found only as the start of "16arp10"/);
-    // The processor in this spec list ("Ultra 5 135H") reads as a tier word and a model number: still different.
-    assert.equal(lvl(q, 'LENOVO NTB IdeaPad Slim 5 16IMH10 - Ultra 5 135H,16" WUXGA OLED,16GB,512SSD,Inte...'), 'different');
+    // The processor in the specification list after " - " ("Ultra 5 135H") is the configuration, not
+    // another model (workstation test of 2026-11-27; before, this title was rejected).
+    assert.equal(lvl(q, 'LENOVO NTB IdeaPad Slim 5 16IMH10 - Ultra 5 135H,16" WUXGA OLED,16GB,512SSD,Inte...'), 'possible');
+    assert.equal(lvl('notebook lenovo ideapad slim 5 16 ultra 7', 'LENOVO NTB IdeaPad Slim 5 16IMH10 - Ultra 5 135H,16" WUXGA OLED,16GB,512SSD,Inte...'), 'different');
     assert.equal(lvl('iPhone 16 128GB', 'Mobilný telefón Apple iPhone 16e 128 GB čierny'), 'different');
     assert.equal(lvl('Oral-B iO Series 9', 'Oral-B iO Series 9N Black'), 'different');
     assert.equal(lvl('Oral-B iO9', 'Oral-B iO Series 9N'), 'different');
@@ -485,6 +487,11 @@ describe('a pasted product link (the first user, 2026-11-25)', () => {
     assert.deepEqual(linkInput('https://www.amazon.de/dp/B0C1234567'), { query: null, host: 'www.amazon.de' });
     assert.equal(name('https://shop.test/de/1'), null);
     assert.equal(name('https://www.alza.sk/'), null);
+    // ASBIS SK, 2026-11-27: the product is in the query string of "default.asp", which is not read
+    assert.deepEqual(linkInput('https://online.asbis.sk/default.asp?cls=stoitem&stiid=1038591&whisperword=HP%20z2'), { query: null, host: 'online.asbis.sk' });
+    for (const u of ['https://shop.test/index.php?id=4', 'https://shop.test/product/detail.aspx?id=4', 'https://shop.test/Default.aspx']) assert.equal(name(u), null, u);
+    // a name word that is also a page word stays inside a name
+    assert.equal(name('https://shop.test/google-home-mini'), 'Google Home Mini');
   });
 
   test('text is not a link, even with a dot in it', () => {
@@ -559,5 +566,48 @@ describe('robot vacuum titles (live search of 2026-11-25, from a pasted link)', 
   });
   test('another model of the line stays a different product', () => {
     assert.equal(m(q, 'Robotický vysávač s mopom 2v1 Roborock Qrevo Curv 2 Pro | Planeo').level, 'different');
+  });
+});
+
+describe('workstation configurations (test of 2026-11-27, HP Z2 Tower G1i)', () => {
+  const q = 'HP Z2 Tower G1i';
+  // ABCOM Košice, 2026-11-27: the name, then the configuration as a comma-separated list
+  const abcom = [
+    'HP PC Z2 Tower G1i 1200W, Intel Core U7 270K Plus, Intel Graphics,2×16GB DDR5,1TB,Kb+mouse,Win11Pro,3yo',
+    'HP PC Z2 Tower G1i 700W, Intel Core U9 285K vPro, RTX Pro 4000Bl 24GB,2×16GB DDR5,1TB,WiFi 7+BT,no Kb+mouse,Win11Pro,3yo',
+    'HP PC Z2 Tower G1i 1200W, Intel Core U7 270K Plus, RTX PRO 4000 BL 24GB,2×32GB DDR5, 1TB, Kb+mouse,Win11Pro,3yo',
+    'HP PC Z2 Tower G1i 700W, Intel Core U7 265K vPro (20C/5.5GHz), Intel Graphics,1×32GB DDR5,1TB,Kb+mouse,Win11Pro,3yo',
+  ];
+  test('a title with a specification list after the name: the parts\' model numbers are not the product\'s', () => {
+    for (const title of abcom) {
+      const r = m(q, title, { brand: 'HP' });
+      assert.equal(r.level, 'possible', title);
+      assert.deepEqual(r.distinguishing, [], title);
+      assert.ok(r.reasonCodes.some((c) => c.code === 'variantNotInQuery'), title);
+    }
+    // each configuration is its own product
+    assert.equal(new Set(abcom.map((title) => m(q, title, { brand: 'HP' }).signature)).size, abcom.length);
+    // a specification the query names is met in the list; another one is not
+    assert.equal(m('HP Z2 Tower G1i 24GB', abcom[1], { brand: 'HP' }).level, 'possible');
+    assert.equal(m('HP Z2 Tower G1i 285K', abcom[0], { brand: 'HP' }).level, 'different');
+  });
+  test('the query only inside the list (a part of a whole computer) stays another product', () => {
+    assert.equal(m('RTX Pro 4000', abcom[1]).level, 'different');
+    assert.equal(m('Intel Core Ultra 9 285K', abcom[1]).level, 'different');
+  });
+  test('the list is split at commas, never at a decimal comma; a short list or one without amounts is no list', () => {
+    assert.deepEqual(specList('Notebook X1, CPU 4,7 GHz, 16GB, 1TB')?.specs, ['CPU 4,7 GHz', '16GB', '1TB']);
+    assert.deepEqual(specList('HP PC Z2 Tower G1i 1200W, Intel Core U7 270K Plus, Intel Graphics,2×16GB DDR5,1TB,Kb+mouse')?.specs.slice(2, 4), ['2×16GB DDR5', '1TB']);
+    assert.equal(specList('HP Z2 Tower G1i, A40SRET'), null);
+    assert.equal(specList('Oral-B Pro 3 3000, čierna, CrossAction, cestovné puzdro'), null);
+  });
+  test('the part code in the title is the configuration, without its market suffix', () => {
+    assert.equal(m(q, 'HP Z2 Tower G1i, EE7H6ES').partCode, 'ee7h6es');
+    assert.equal(m(q, 'Stolný počítač HP Z2 Tower G1i (A40SRET#BCM) čierny').partCode, 'a40sret');
+    assert.equal(m('iPhone 16 128GB', 'Apple iPhone 16 128GB Black (MYE73SX/A)').partCode, 'mye73');
+    assert.equal(m(q, 'HP PC Z2 Tower G1i 700W').partCode, null);
+    // "#BCM" is part of the code in brackets, not a word of the title; "Stolný počítač" says the kind of computer
+    assert.equal(m(q, 'Stolný počítač HP Z2 Tower G1i (A40SRET#BCM) čierny').level, 'exact');
+    assert.equal(m(q, 'Herný počítač HP Z2 Tower G1i (EE6J3ET#BCM) čierny').level, 'exact');
   });
 });

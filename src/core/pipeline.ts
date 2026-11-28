@@ -8,7 +8,7 @@ import { categoryLabel, categoryName, localizeShop, t, techNote, type Lang, type
 import { HostScheduler, MAX_REQUESTS_PER_SHOP, ShopSession, type FetchLike } from './http.ts';
 import { extractListCandidates, extractOffers, offerUrl } from './jsonld.ts';
 import { extractLinkCandidates, pageKey, stripTrackingParams } from './links.ts';
-import { coreQuery, linkInput, matchTitle, namesSomething, parseQuery, scoreCandidate, withoutPackageWords, type ParsedQuery } from './matcher.ts';
+import { coreQuery, linkInput, matchTitle, namesSomething, parseQuery, scoreCandidate, specList, withoutPackageWords, type ParsedQuery } from './matcher.ts';
 import { nearbyModels } from './nearby.ts';
 import { getRates } from './rates.ts';
 import {
@@ -65,10 +65,12 @@ export interface ShopInfo {
 export type SearchEvent =
   /**
    * query: what is searched; typed: what was typed or pasted; corrected: a brand typo was corrected;
-   * fromLink: the query is the name in a pasted link; linkShop: the shop of that link, when it is one of the shops.
+   * fromLink: the query is the name in a pasted link; linkShop: the shop of that link, when it is one of the shops;
+   * fromList: what was typed is a name followed by a specification list, and the name is searched.
    */
   | {
-    type: 'start'; query: string; typed: string; corrected: boolean; fromLink: boolean; linkShop: string | null; location: string; shops: ShopInfo[];
+    type: 'start'; query: string; typed: string; corrected: boolean; fromLink: boolean; linkShop: string | null; fromList: boolean; location: string;
+    shops: ShopInfo[];
     heurekaUrl: string; providers: string[]; categories: CategoryChoice;
   }
   /** Nothing was searched: a pasted link without the product's name. The only event of such a search. */
@@ -156,7 +158,13 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
   // Otherwise a brand typed with one wrong letter is searched as the brand (correct.ts), unless asked
   // not to; "as typed" has no meaning for a link. Everything below (category guess, shop search
   // pages, web queries, matcher, cache keys) uses the searched form.
-  const fix = link?.query ? { query: link.query, typed, corrected: false } : opts.asTyped ? { query: typed.trim(), typed, corrected: false } : correctQuery(typed);
+  // A whole product title with its specifications ("HP Z2 Tower G1i, Ultra9 285K/vPro, …, 32GB, SSD
+  // 1TB, W11Pro") finds nothing in shops' own searches; its name is searched, and the configurations
+  // found are shown to choose from (matcher.ts, specList). "As typed" searches the whole text.
+  const list = link || opts.asTyped ? null : specList(typed.trim());
+  const listName = list && namesSomething(list.name) ? list.name : null;
+  const fix = link?.query ? { query: link.query, typed, corrected: false } : opts.asTyped ? { query: typed.trim(), typed, corrected: false }
+    : listName ? { ...correctQuery(listName), typed } : correctQuery(typed);
   const query = fix.query;
   const linkShop = link ? opts.shops.find((s) => link.host === s.domain || link.host.endsWith(`.${s.domain}`))?.name ?? null : null;
   const inScope = opts.shops.filter((s) => s.in_scope);
@@ -166,7 +174,7 @@ export async function* runSearch(typed: string, options: SearchOptions): AsyncGe
   const pq = parseQuery(query);
   const texts = searchTexts(query, opts.location.country);
   yield {
-    type: 'start', query, typed: fix.typed, corrected: fix.corrected, fromLink: Boolean(link), linkShop,
+    type: 'start', query, typed: fix.typed, corrected: fix.corrected, fromLink: Boolean(link), linkShop, fromList: Boolean(listName),
     location: opts.location.id, heurekaUrl: heurekaUrl(query), providers: opts.providers.map((p) => p.id),
     categories: choice,
     shops: inScope.map((s) => ({ id: s.id, name: s.name, domain: s.domain, section: sectionFor(s, opts.location), branchKnown: s[opts.location.branchField] })),

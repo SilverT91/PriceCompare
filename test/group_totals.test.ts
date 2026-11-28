@@ -233,3 +233,29 @@ describe('grouping into distinct products', () => {
     assert.equal(g[0].condition, 'new');
   });
 });
+
+describe('configurations of one line (workstation test of 2026-11-27)', () => {
+  const q = 'HP Z2 Tower G1i';
+  test('two part codes of one colour are two products; the same code at two shops is one', () => {
+    const groups = groupOffers([
+      offer(q, { title: 'HP Z2 Tower G1i, EE7H6ES', price: 5306.65 }, 'datacomp'),
+      offer(q, { title: 'HP Z2 Tower G1i, A40MKET', price: 3006.89 }, 'datacomp'),
+      offer(q, { title: 'HP Z2 Tower G1i, A40SRET', price: 4750 }, 'datacomp'),
+      offer(q, { title: 'Stolný počítač HP Z2 Tower G1i (A40SRET#BCM) čierny', price: 4699, gtin: '00199251749032' }, 'nay'),
+    ]);
+    assert.equal(groups.length, 3);
+    const a40sret = groups.find((g) => g.offerCount === 2);
+    assert.ok(a40sret);
+    assert.deepEqual(a40sret.variants.flatMap((v) => v.offers.map((o) => o.price)).sort(), [4699, 4750]);
+    assert.equal(new Set(groups.map((g) => g.id)).size, 3);
+  });
+  test('colour variants with their own part codes stay one product', () => {
+    const groups = groupOffers([
+      offer('iPhone 16 128GB', { title: 'Apple iPhone 16 128GB Black (MYE73SX/A)', price: 829 }),
+      offer('iPhone 16 128GB', { title: 'Apple iPhone 16 128GB Teal (MYED3SX/A)', price: 839 }),
+      offer('iPhone 16 128GB', { title: 'Apple iPhone 16 128GB Black (MYE73ZD/A)', price: 819 }, 't'),
+    ]);
+    assert.equal(groups.length, 1);
+    assert.equal(groups[0].variants.length, 2);
+  });
+});

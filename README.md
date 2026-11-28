@@ -49,12 +49,19 @@ shops). A correction in one of them needs no other change.
      not type it. "6000" finds "6000MHz", and "16" finds the model code "16IMH10" as a possible
      match. A word that stands in for one you typed ("MX Anywhere 3S" for "mx master 3s") means
      another product.
+   - **Computers come in configurations.** A title that lists the configuration after the name
+     ("HP PC Z2 Tower G1i 700W, Intel Core U9 285K vPro, RTX Pro 4000Bl 24GB, 2×16GB DDR5, 1TB,
+     ...") matches the name as a possible match, and each configuration, or each part number
+     ("HP Z2 Tower G1i, EE7H6ES"), is a product of its own to choose from. A whole title with its
+     specifications typed or pasted as the query is searched by its name, and the page says so,
+     with the search as typed one click away. The app does not judge which configuration is
+     better.
    - **A pasted product link works as a query.** Paste the address of a product page
      (`https://www.alza.sk/roborock-qrevo-edge-2-pro-d13260955.htm`) and the app searches for the
      name in it: `Searched for "Roborock Qrevo Edge 2 Pro" (from the link you pasted)`. The linked
      page itself is not read; only the words of the address are used, and ids, tracking parameters
-     and file endings are dropped. A link that holds only an id gets a message asking for the
-     product's name, and nothing is searched.
+     and file endings are dropped. A link that holds only an id or a program name
+     (`default.asp?...`) gets a message asking for the product's name, and nothing is searched.
    - **Words of one language stay in that language's shops.** A colour or category word
      ("čierna zubná kefka") is sent to the shops of the country you search from. Shops in other
      countries get the query without those words ("Oral-B iO Series 9"), when what is left still

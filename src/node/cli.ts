@@ -88,6 +88,8 @@ for await (const ev of runSearch(query, {
     const asked = ev.shops.length;
     if (ev.fromLink) {
       console.log(`Searched for "${ev.query}" (from the link you pasted)${ev.linkShop ? `; the link is to ${ev.linkShop}, which is asked like every other shop` : ''}`);
+    } else if (ev.fromList) {
+      console.log(`Searched for "${ev.query}", the name at the start of what you typed (the rest reads as a list of specifications); to search the whole text: npm run search -- "${ev.typed}" --as-typed`);
     } else if (ev.corrected) {
       console.log(`Searched for "${ev.query}" (you typed "${ev.typed}"); to search exactly as typed: npm run search -- "${ev.typed}" --as-typed`);
     }

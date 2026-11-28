@@ -39,6 +39,31 @@ function hash(s: string): string {
   return (h >>> 0).toString(36);
 }
 
+/**
+ * One product split into its configurations: when two offers of the same colour name different part
+ * codes ("HP Z2 Tower G1i, EE7H6ES" and "..., A40MKET"), the line is sold in configurations and each
+ * part code is a product of its own. Different colours with different codes are colour variants of
+ * one product (an iPhone's part code changes with the colour) and stay together. An offer without a
+ * part code joins the configuration it shares a GTIN with, or else the offers without one.
+ */
+function byConfiguration(members: Offer[]): Offer[][] {
+  const codesByColour = new Map<string, Set<string>>();
+  for (const m of members) {
+    if (!m.match.partCode) continue;
+    const c = m.match.colour ?? '';
+    codesByColour.set(c, (codesByColour.get(c) ?? new Set()).add(m.match.partCode));
+  }
+  if (![...codesByColour.values()].some((s) => s.size > 1)) return [members];
+  const parts = new Map<string, Offer[]>();
+  const codeOfGtin = new Map<string, string>();
+  for (const m of members) if (m.match.partCode && m.gtin) codeOfGtin.set(m.gtin, m.match.partCode);
+  for (const m of members) {
+    const key = m.match.partCode ?? (m.gtin ? codeOfGtin.get(m.gtin) : undefined) ?? '';
+    parts.set(key, [...(parts.get(key) ?? []), m]);
+  }
+  return [...parts.values()];
+}
+
 /** lang: the language of the notes and variant labels (default English); the grouping does not depend on it. */
 /** The product notes in `lang`, from the facts they state (the page builds the same lines from noteFacts). */
 export function groupNotes(f: ProductGroup['noteFacts'], lang: Lang = 'en'): string[] {
@@ -81,7 +106,7 @@ export function groupOffers(offers: Offer[], lang: Lang = 'en'): ProductGroup[] 
   });
 
   const groups: ProductGroup[] = [];
-  for (const members of comps.values()) {
+  for (const members of [...comps.values()].flatMap(byConfiguration)) {
     const best = [...members].sort((a, b) => LEVEL_RANK[a.match.level] - LEVEL_RANK[b.match.level] || b.match.score - a.match.score || a.title.length - b.title.length)[0];
     // The name shown for the product comes from an offer the user can get: a branch in the city
     // first, then a shop that delivers to Slovakia; a shop that does not deliver only as a last resort.
@@ -143,7 +168,7 @@ export function groupOffers(offers: Offer[], lang: Lang = 'en'): ProductGroup[] 
     };
     const notes = groupNotes(noteFacts, lang);
     groups.push({
-      id: hash(signature + '|' + gtins.join(',')),
+      id: hash(signature + '|' + gtins.join(',') + '|' + [...new Set(members.map((m) => m.match.partCode).filter(Boolean))].sort().join(',')),
       // The product's name without the shop's suffix, promotion or doubled text; the offer rows keep the shop's own title.
       title: displayTitle(named.title, named.shopName),
       level: best.match.level,

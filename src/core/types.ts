@@ -125,6 +125,12 @@ export interface MatchResult {
   signature: string;
   /** Manufacturer order codes found in the title (e.g. "060186810f"); they link offers like a GTIN. */
   codes: string[];
+  /**
+   * The manufacturer's product number the title names besides the query ("EE7H6ES" in "HP Z2 Tower
+   * G1i, EE7H6ES"), without its market suffix. Offers of one line in one colour with two different
+   * part codes are two configurations, not one product (group.ts).
+   */
+  partCode?: string | null;
   /** Why the level is not "exact", in English (reasonText('en', ...) of reasonCodes, same order). */
   reasons: string[];
   /** The same reasons as codes with their words, so they can be written in another language (i18n.ts, reasonText). */

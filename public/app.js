@@ -271,13 +271,16 @@ function renderStart() {
   if (!ev) return;
   // A pasted link: say which name was taken from it. A corrected brand typo: say what was searched,
   // with a way to search exactly as typed.
+  // A name with a specification list: say that the name was searched, with the same way back.
+  const asTyped = () => el('button', { type: 'button', class: 'link', onclick: () => go(ev.typed, loc, cat, true) }, t('asTyped'));
   if (ev.fromLink) {
     $('#corrected').replaceChildren(t('fromLink', { query: ev.query }), ev.linkShop ? t('linkShop', { shop: ev.linkShop }) : '');
+  } else if (ev.fromList) {
+    $('#corrected').replaceChildren(t('fromList', { query: ev.query }), asTyped());
   } else if (ev.corrected) {
-    $('#corrected').replaceChildren(t('corrected', { query: ev.query, typed: ev.typed }),
-      el('button', { type: 'button', class: 'link', onclick: () => go(ev.typed, loc, cat, true) }, t('asTyped')));
+    $('#corrected').replaceChildren(t('corrected', { query: ev.query, typed: ev.typed }), asTyped());
   }
-  $('#corrected').hidden = !(ev.fromLink || ev.corrected);
+  $('#corrected').hidden = !(ev.fromLink || ev.fromList || ev.corrected);
   const c = ev.categories;
   const widen = c.categories ? el('button', { type: 'button', class: 'link', onclick: () => go(q, loc, 'all') }, t('searchAll')) : null;
   // By rule id (categories.ts); English, an unknown id or an older server: the server's English text.

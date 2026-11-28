@@ -67,10 +67,56 @@ function withoutSuffix(title: string, shopName?: string | null): string {
   return t.replace(/\s*\+\s*cashback\b.*$/i, '').trim();
 }
 
+// "(MYED3SX/A)", "(MYE73)", "(EE6J3ET#BCM)": uppercase codes in brackets are part numbers.
+const BRACKET_CODE_RE = /\(\s*([A-Z0-9][A-Z0-9/\-.#]{3,})\s*\)/g;
+
 /** Remove page-title suffixes, an appended cashback promotion and bracketed part codes. */
 export function cleanTitle(title: string, shopName?: string | null): string {
-  // "(MYED3SX/A)", "(MYE73)": uppercase codes in brackets are part numbers.
-  return withoutSuffix(title, shopName).replace(/\(\s*[A-Z0-9][A-Z0-9/\-.]{3,}\s*\)/g, ' ').trim();
+  return withoutSuffix(title, shopName).replace(BRACKET_CODE_RE, ' ').trim();
+}
+
+/**
+ * A part code as the manufacturer's product number, without the market suffix: "EE6J3ET#BCM" ->
+ * "ee6j3et" (HP's localisation after "#"), "MYED3SX/A" -> "myed3" (Apple's region letters before "/").
+ * The same product sold for two markets keeps one code; two configurations keep two.
+ */
+function codeRoot(code: string): string {
+  const c = code.toLowerCase();
+  if (c.includes('#')) return c.slice(0, c.indexOf('#'));
+  if (c.includes('/')) {
+    const head = c.slice(0, c.indexOf('/'));
+    const bare = head.replace(/[a-z]{1,2}$/, '');
+    return bare.length >= 4 && /\d/.test(bare) ? bare : head;
+  }
+  return c;
+}
+
+/**
+ * A title written as a name followed by a list of specifications: "HP PC Z2 Tower G1i 1200W, Intel
+ * Core U7 270K Plus, Intel Graphics,2×16GB DDR5,1TB,Kb+mouse,Win11Pro,3yo". The parts are split at
+ * commas; a decimal comma ("4,7 GHz") stays. A list has the name and at least three more parts, two
+ * of them with an amount and a unit (capacity, power, frequency). Null when the text is no such list.
+ */
+export function specList(text: string): { name: string; specs: string[] } | null {
+  const parts: string[] = [];
+  let from = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== ',') continue;
+    // "4,7": a decimal comma, when the number before it stands alone ("DDR5,1TB" is two parts).
+    if (/\d/.test(text[i + 1] ?? '') && /(?:^|[^\p{L}\d.])\d+$/u.test(text.slice(from, i))) continue;
+    parts.push(text.slice(from, i));
+    from = i + 1;
+  }
+  parts.push(text.slice(from));
+  const kept = parts.map((p) => p.trim()).filter(Boolean);
+  if (kept.length < 4) return null;
+  // "LENOVO NTB IdeaPad Slim 5 16IMH10 - Ultra 5 135H,16" WUXGA OLED,16GB,512SSD": the list starts after " - ".
+  const [first, ...rest] = kept;
+  const dash = first.split(/\s[-–]\s/);
+  const name = dash.length === 2 ? dash[0].trim() : first;
+  const specs = dash.length === 2 ? [dash[1].trim(), ...rest] : rest;
+  const withUnit = specs.filter((s) => /\d\s*(?:gb|tb|mb|w|ghz|mhz|hz|mah|wh|ssd|hdd)(?![a-z])|\d(?:"|''|\s?inch)/i.test(s)).length;
+  return withUnit >= 2 && /\p{L}/u.test(name) ? { name, specs } : null;
 }
 
 /**
@@ -279,13 +325,19 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   // only package/model/accessory words and counts count ("2x 2Ah" = two batteries), not numbers
   // such as rpm or torque.
   const segments = cleaned.split(/\s\/\s/);
-  const main = segments.length >= 3 ? segments[0] : cleaned;
+  const brandList = tokenize(input.brand ?? '');
+  // A name followed by a comma-separated specification list (specList): when the name holds the
+  // query, the list describes the configuration (processor, graphics card, memory) and its model
+  // numbers are not the product's. Not when the query is found only in the list ("RTX 5080" in a
+  // whole computer's title): that stays another product.
+  const list = segments.length >= 3 ? null : listedConfiguration(q, specList(cleaned), brandList);
+  const main = segments.length >= 3 ? segments[0] : list ? list.name : cleaned;
   const specText = segments.length >= 3 ? segments.slice(1).join(' ') : '';
   const { text, packs } = packTokens(foldSimple(main));
   const spec = packTokens(foldSimple(specText));
   const specTokens = tokenize(spec.text);
+  const listTokens = list ? list.specs.flatMap((s) => tokenize(packTokens(foldSimple(s)).text)) : [];
   const titleTokens = tokenize(text);
-  const brandList = tokenize(input.brand ?? '');
   const brandTokens = new Set(brandList);
   const codes = new Set([...tokenize(input.sku ?? ''), ...tokenize(input.mpn ?? '')].filter((t) => t.length >= 4));
   const reasons: string[] = [];
@@ -329,7 +381,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
       found(t, joined);
       continue;
     }
-    if (coverIndices(t, specTokens)) {
+    if (coverIndices(t, specTokens) || coverIndices(t, listTokens)) {
       matched.push(t);
       continue;
     }
@@ -392,6 +444,11 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
   const condWords: Condition[] = [];
   const conditionWords: string[] = [];
   const titleCodes: string[] = [];
+  // Part codes in brackets were taken out of the title for matching; they still name the configuration.
+  const partCodes: string[] = [...withoutSuffix(input.title, input.shopName).matchAll(BRACKET_CODE_RE)]
+    .map((m) => codeRoot(m[1])).filter((c) => /[a-z]/.test(c) && /\d/.test(c));
+  /** Model numbers and amounts in a specification list after the name (listedConfiguration). */
+  const listSpecs: string[] = [];
   let colour: string | null = null;
   // "Súprava zubných kefiek ... Duo Pack": with the two-pack word in the title, a generic set word says nothing more.
   const twoPackTitle = titleTokens.includes('duo') || specTokens.includes('duo');
@@ -434,6 +491,7 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     if (isPartCode(t, codes)) {
       // Manufacturer order codes in titles ("060186810F") link offers across shops like a GTIN.
       if (t.length >= 8 && /[a-z]/.test(t) || /^0\d{9}$/.test(t)) titleCodes.push(t);
+      if (/[a-z]/.test(t) && /\d/.test(t)) partCodes.push(t);
       continue;
     }
     if (inClass(t, NEUTRAL)) continue;
@@ -459,6 +517,24 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
       distinguishing.push(t);
     } else if (!colour && colourOf(t)) {
       colour = colourOf(t);
+    }
+  }
+  // A specification list after the name: a part's tier word ("RTX Pro 4000", "U7 270K Plus") is the
+  // part's, not the product's; its model numbers and amounts tell configurations apart (the user is
+  // asked to check), and a condition, package or accessory word still counts as in the name. Words
+  // for something left out ("bez OS", "no Kb+mouse") describe the configuration.
+  for (const t of listTokens) {
+    if (qset.has(t) || matched.includes(t)) continue;
+    const cond = conditionOfToken(t);
+    if (cond) {
+      condWords.push(cond);
+      conditionWords.push(t);
+    } else if ((inClass(t, PACKAGE_WORDS) || inClass(t, ACCESSORY_WORDS)) && !LEFT_OUT.has(t) && !distinguishing.includes(t)) {
+      distinguishing.push(t);
+    } else if (colourOf(t)) {
+      colour = colour ?? colourOf(t);
+    } else if (hasDigit(t) && !NEUTRAL_UNITS.test(t) && !/^\d$|^\d+x$/.test(t) && !listSpecs.includes(t)) {
+      listSpecs.push(t);
     }
   }
   // The title's colour word is usually more specific ("Teal") than the JSON-LD color ("Zielony").
@@ -493,14 +569,14 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
     level = 'different';
     if (missing.length) say({ code: 'titleLacks', params: { words: [...missing] } });
     if (distinguishing.length) say({ code: 'titleHas', params: { words: [...distinguishing] } });
-  } else if (softMissing.length || codeStarts.length || missingAlpha.length || unknownExtras.length || specExtras.length) {
+  } else if (softMissing.length || codeStarts.length || missingAlpha.length || unknownExtras.length || specExtras.length || listSpecs.length) {
     level = 'possible';
     for (const t of softMissing) {
       const next = q.tokens[q.tokens.indexOf(t) + 1];
       say({ code: 'sameOrOlder', params: { before: String(q.tokens[q.tokens.indexOf(t) - 1]), after: String(next), token: t } });
     }
     if (missingAlpha.length) say({ code: 'titleLacks', params: { words: [...missingAlpha] } });
-    if (specExtras.length) say({ code: 'variantNotInQuery', params: { words: [...specExtras] } });
+    if (specExtras.length || listSpecs.length) say({ code: 'variantNotInQuery', params: { words: [...new Set([...specExtras, ...listSpecs])] } });
     if (unknownExtras.length) say({ code: 'extraWords', params: { words: [...unknownExtras] } });
   } else {
     level = 'exact';
@@ -508,18 +584,40 @@ export function matchTitle(query: ParsedQuery | string, input: MatchInput): Matc
 
   let score: number;
   if (level === 'exact') score = 1;
+  // A specification list counts as one doubt, however long it is.
   else if (level === 'possible') score = 0.75 - 0.04 * unknownExtras.length - 0.08 * specExtras.length - 0.12 * missingAlpha.length - 0.15 * softMissing.length
-    - 0.1 * codeStarts.length;
+    - 0.1 * codeStarts.length - (listSpecs.length ? 0.08 : 0);
   else score = 0.35 - 0.05 * distinguishing.length - 0.08 * missing.length;
   score = Math.max(0.01, Math.min(1, score));
 
-  const sigTokens = [...new Set([...matched, ...distinguishing, ...specExtras])].sort();
+  const sigTokens = [...new Set([...matched, ...distinguishing, ...specExtras, ...listSpecs])].sort();
   const signature = sigTokens.join(' ') + (condition !== 'new' ? ` [${condition}]` : '');
 
   return {
     level, score, matched: [...new Set(matched)], missing: [...missing, ...missingAlpha, ...softMissing], distinguishing, specExtras, unknownExtras,
-    condition, conditionWords, colour, signature, codes: titleCodes, reasons, reasonCodes,
+    condition, conditionWords, colour, signature, codes: titleCodes, partCode: partCodes[0] ?? null, reasons, reasonCodes,
   };
+}
+
+/** Words in a specification list that say something is left out ("bez OS", "no Kb+mouse"). */
+const LEFT_OUT = new Set(['bez', 'ohne', 'no', 'without', 'solo', 'bare', 'body']);
+
+/**
+ * The title's specification list, when its name part holds the query: every query word that is not
+ * a category word or a colour is in the name or in the list, and the name holds a query word with a
+ * digit ("Z2", "G1i") or, for a query without one, all of the query. Null otherwise.
+ */
+function listedConfiguration(q: ParsedQuery, list: { name: string; specs: string[] } | null, brandList: string[]): { name: string; specs: string[] } | null {
+  if (!list) return null;
+  const nameTokens = tokenize(packTokens(foldSimple(list.name)).text);
+  const listTokens = list.specs.flatMap((s) => tokenize(packTokens(foldSimple(s)).text));
+  // A short number that starts a configuration code ("16" in "16IMH10") is in the name as a doubt (matchTitle, codeStart).
+  const inName = (t: string) => Boolean(coverIndices(t, nameTokens) ?? gluedCover(t, nameTokens) ?? coverIndices(t, brandList))
+    || (/^\d{1,2}$/.test(t) && nameTokens.some((n) => new RegExp(`^${t}[a-z]{2,}\\d+[a-z]*$`).test(n)));
+  const optional = (t: string) => inClass(t, NEUTRAL) || colourOf(t) !== null;
+  if (!q.tokens.every((t) => inName(t) || optional(t) || coverIndices(t, listTokens))) return null;
+  const nameHolds = q.tokens.some(hasDigit) ? q.tokens.some((t) => hasDigit(t) && inName(t)) : q.tokens.every((t) => inName(t) || optional(t));
+  return nameHolds ? list : null;
 }
 
 // Words of review, comparison, manual and advice pages ("RECENZIA: elektrická kefka Oral-B PRO 3 3000",
@@ -555,8 +653,17 @@ const LEADING_ID = /^(?:[a-z]?\d{5,})[-_]/i;
 const PATH_WORDS = new Set(['product', 'products', 'produkt', 'produkty', 'produkte', 'p', 'dp', 'gp', 'item', 'items', 'detail', 'katalog',
   'kategoria', 'kategorie', 'category', 'shop', 'eshop', 'index', 'artikel', 'www']);
 
+/**
+ * Names of a shop's program or page file ("default.asp", "index.php", "product.aspx"), with or
+ * without the ending: a link whose path is only such a file keeps the product in its query string,
+ * which is not read.
+ */
+const GENERIC_FILES = new Set(['default', 'index', 'main', 'home', 'start', 'page', 'view', 'show', 'detail', 'details', 'product',
+  'products', 'item', 'items', 'goods', 'catalog', 'katalog', 'shop', 'eshop', 'search']);
+
 /** A path segment's words, ids and file ending removed; empty when nothing in it names a product. */
 function segmentWords(segment: string): string[] {
+  if (GENERIC_FILES.has(segment.trim().replace(FILE_ENDING, '').toLowerCase())) return [];
   let s = segment.trim().replace(FILE_ENDING, '');
   for (let k = 0; k < 2; k++) s = s.replace(TRAILING_ID, '');
   s = s.replace(LEADING_ID, '');
