@@ -215,12 +215,11 @@ round, see the state above):
 2. **Re-check the provider table in the README** ("Where to get a key") from time to time and
    update its date. Tavily stays a fallback: one query per shop was tried for the first user's
    sentence and found nothing either. Its `language` parameter is untried.
-3. **The 6-hour cache of Brave's answers: the owner's decision.** The terms were read on
-   2026-11-28 ([research.md](research.md), section 14). Brave forbids storing results beyond
-   "transient storage required for operation", so the local database no longer keeps anything of a
-   Brave answer. Still open: whether the 6-hour cache of web search answers counts as transient.
-   Options: keep it, shorten it for Brave (for example to the length of one search and a language
-   switch), or drop it for Brave. Serper and Tavily say nothing about keeping results.
+3. **Providers' terms on keeping results: done 2026-11-28** ([research.md](research.md), section
+   14). Brave forbids storing its results beyond transient use: nothing of a Brave answer goes into
+   the local database, and its answers are cached for 30 minutes (the owner's decision: a live
+   comparison, dropped afterwards). Serper and Tavily say nothing; re-read their terms when the
+   README key table is re-checked.
 4. **Similar models, third pass.** The first user's search showed rough names (see known
    problems).
 5. **Work through "Code issues found in review"** below; none blocks use.

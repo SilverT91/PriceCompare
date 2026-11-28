@@ -266,4 +266,7 @@ Brave's terms forbid storing or caching its results beyond transient use, links 
 nothing of a Brave answer goes into the local database: a shop reached through Brave is asked
 through the web search again next time, and "Load saved" does not list what only Brave found.
 Serper's and Tavily's terms say nothing about keeping results, so the reuse stays for them.
+The owner then settled the cache too: the app is for a live comparison, and Brave's answers may be
+dropped afterwards. They are cached for 30 minutes (`cacheSeconds` on the provider), long enough for
+one comparison; the next day a search asks Brave again, while the shops' own searches stay free.
 

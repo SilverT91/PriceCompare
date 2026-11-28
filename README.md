@@ -54,9 +54,11 @@ shops). A correction in one of them needs no other change.
      online" asks the shops; where a shop's web search for the same query was answered in the last
      14 days, the pages it found are read again for current prices and no web search credit is
      spent. "Search the web again too" asks it anyway. On the command line: `--local` and
-     `--refresh-web`. Brave's terms forbid keeping its results, so nothing of a Brave answer is
-     kept: shops reached through Brave are asked again each time, and "Load saved" shows only
-     what the shops' own search, Serper or Tavily found.
+     `--refresh-web`. Brave's terms forbid keeping its results, so a Brave answer is kept for 30
+     minutes only (enough to repeat a comparison or switch the language) and never in the local
+     database: the next day, shops reached through Brave cost queries again, and "Load saved"
+     shows only what the shops' own search, Serper or Tavily found. The shops' own searches never
+     cost credit.
    - **Parameters side by side.** When a search finds several configurations of a computer or
      a phone, a table shows processor, graphics card and its memory, RAM, storage, screen, power
      supply and system for each, with filters ("graphics memory at least 24 GB", "price at most

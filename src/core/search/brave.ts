@@ -20,6 +20,12 @@ export class BraveProvider implements SearchProvider {
   readonly id = 'brave';
   readonly resultsPerQuery: number;
   readonly minIntervalMs = 1100;
+  /**
+   * Brave's terms (updated 1 Sep 2026, section 3(b)(i)) allow only "transient storage required for
+   * operation" of its results. 30 minutes covers one comparison: repeating it, switching the
+   * language, opening another product. A search the next day asks Brave again.
+   */
+  readonly cacheSeconds = 30 * 60;
   private readonly key: string;
 
   constructor(apiKey: string, resultsPerQuery = 20) {

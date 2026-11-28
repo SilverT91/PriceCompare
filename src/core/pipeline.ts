@@ -810,7 +810,9 @@ async function searchShop(
     } else {
       return finish('no_route', t(lang, 'noRoute', { reason: shop.no_route_reason ?? t(lang, 'defaultNoSearchUrl') }));
     }
-    if (!storedAt) await opts.cache.set('candidates', candKey, { route, candidates } satisfies CachedCandidates, CACHE_TTL.candidates);
+    // Candidates built from a web search answer are kept no longer than the provider allows its answers.
+    const limit = route === 'search_provider' ? opts.providers.find((p) => p.id === webProvider)?.cacheSeconds : undefined;
+    if (!storedAt) await opts.cache.set('candidates', candKey, { route, candidates } satisfies CachedCandidates, Math.min(limit ?? CACHE_TTL.candidates, CACHE_TTL.candidates));
   } else {
     decline();
     notes.push(t(lang, 'candidatesFromCache'));

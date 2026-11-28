@@ -800,3 +800,31 @@ test('Brave\'s results are not kept: its pages are not linked to the query, so t
   assert.equal(braveCalls, 2, 'asked again: nothing of Brave\'s answer was kept');
   history.close();
 });
+
+test('Brave\'s answer and the candidates built from it are cached for 30 minutes only; another provider\'s for 6 hours', async () => {
+  const ttls = new Map<string, number>();
+  class TtlCache extends MemoryCache {
+    override async set<T>(ns: string, key: string, value: T, ttl?: number): Promise<void> {
+      if (ttl !== undefined) ttls.set(ns, Math.max(ttls.get(ns) ?? 0, ttl));
+      await super.set(ns, key, value);
+    }
+  }
+  const brave: SearchProvider = {
+    id: 'brave', resultsPerQuery: 20, minIntervalMs: 0, cacheSeconds: 1800,
+    async search() {
+      return { hits: [{ url: 'https://f.test/oral-b-pro-3-3000', title: 'Oral-B Pro 3 3000 černá', snippet: '' }], credits: 1 };
+    },
+    exhaustedTtlSeconds: () => 3600,
+  };
+  const search = async (providers: SearchProvider[]) => {
+    ttls.clear();
+    const { f } = site();
+    await collect(runSearch('Oral-B Pro 3 3000', {
+      shops: shops.filter((s) => s.id === 'f'), cache: new TtlCache(), scheduler: new HostScheduler({ intervalMs: 0 }),
+      location: DEFAULT_LOCATION, providers, fetch: f, category: 'all',
+    }));
+    return { provider: ttls.get('provider'), candidates: ttls.get('candidates'), offers: ttls.get('offers') };
+  };
+  assert.deepEqual(await search([brave]), { provider: 1800, candidates: 1800, offers: 6 * 3600 });
+  assert.deepEqual(await search([new SerperProvider('test')]), { provider: 6 * 3600, candidates: 6 * 3600, offers: 6 * 3600 });
+});

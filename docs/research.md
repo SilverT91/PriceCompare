@@ -404,7 +404,9 @@ Consequences, applied the same day:
   earlier that day from Brave answers (3 page links, 12 dates) were removed.
 - **Serper and Tavily:** their terms do not forbid it, so the 14-day reuse stays for them. Not
   forbidden is not the same as allowed; if either adds such a clause, add it to `NO_KEEP_PROVIDERS`.
-- **Open:** the 6-hour cache of web search answers (all providers, Brave included). Whether six
-  hours counts as "transient storage required for operation" is a reading of Brave's terms, not a
-  fact; it is left for the owner to decide (roadmap).
+- **The cache of Brave's answers:** decided by the owner the same day: the point is a live
+  comparison, and Brave's answers may be dropped afterwards. They, and the candidate pages built
+  from them, are now kept for 30 minutes (one comparison: repeating it, switching the language,
+  opening another product) instead of 6 hours; a search the next day asks Brave again. Brave
+  answers cached earlier that day (43 entries) were removed. Serper's and Tavily's stay at 6 hours.
 
