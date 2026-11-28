@@ -307,6 +307,9 @@ The target `user@host` is given with `-Target`, or `PRICECOMPARE_DEPLOY`, or a l
 repository). On the target the code is in `~/projects/pricecompare/app`. `-Test` builds the image's
 test stage, which runs the type check and the unit tests and stops the deploy if one fails.
 
+`tools/stack.ps1` operates the stack (`status`, `logs`, `restart`, `backup`, `tunnel`). How it all
+fits together, backups and restoring: [docs/deploy.md](docs/deploy.md).
+
 ## Web search keys
 
 Some shops do not allow their own search page to be read automatically, and a few have none that

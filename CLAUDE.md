@@ -13,6 +13,7 @@ no build step. The repository is public.
 - `docs/research.md`: market research, data sources, the shop probe, delivery facts.
 - `docs/architecture.md`: how the code is organised and how a search flows through it.
 - `docs/plan-parameters.md`: the planned parameters, filters and local catalogue (not built yet).
+- `docs/deploy.md`: the Docker stack on the home server, deploying and operating it.
 
 ## Commands
 
@@ -28,7 +29,7 @@ quota, so use one only to check behaviour that tests cannot show.
 
 Live checks run on the deploy target (a home server; its address is in the git-ignored
 `.env.deploy`), not on the owner's PC: `powershell -File tools/deploy.ps1 -Test`, then open the page
-through the SSH tunnel (README, "Run it on another machine with Docker").
+through the SSH tunnel (`powershell -File tools/stack.ps1 tunnel`; details in `docs/deploy.md`).
 
 ## Rules that are not negotiable
 
