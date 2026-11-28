@@ -258,6 +258,9 @@ round, see the state above):
 - **Switching the language after a search** rewrites what the page writes, but sentences the
   search built (delivery notes, "pickup in the branch: free") stay in the first language until the
   next search. Seen on 2026-11-28; a search started in Slovak is all Slovak.
+- **Tier words inside a processor's name** before the specification list ("HP Z2 Mini G1a AMD Ryzen
+  AI Max PRO 395 APU, 128GB ...") count as the product's, so the query "HP Z2 Mini G1a 395 128GB"
+  rejects it; typed with "Max PRO" it matches. Seen 2026-11-28.
 - **One machine named two ways is two products.** A shop that names a configuration by its part
   number (Datacomp: "HP OMEN 45L GT22-3582nc, D8QT8EA") and one that lists its specifications
   (ABCOM: "HP PC OMEN 45L GT22-3582nc, Ultra 9-285K, 64GB DDR5, ...") end up as two products,
