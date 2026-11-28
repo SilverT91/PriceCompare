@@ -1,0 +1,21 @@
+# PriceCompare as a Docker stack of its own (project "pricecompare"), next to other stacks on the
+# same machine. The page is published on the host's 127.0.0.1:8787 only: reach it through an SSH
+# tunnel (ssh -N -L 8787:127.0.0.1:8787 <user>@<host>). Search keys come from .env next to this
+# file (never in the image); without it the app runs with the shops' own searches only.
+name: pricecompare
+services:
+  app:
+    build:
+      context: .
+      target: app
+    image: pricecompare:latest
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - data:/data
+volumes:
+  data:

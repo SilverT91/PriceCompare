@@ -1,5 +1,6 @@
 // Local web server: the portable Hono app plus static files from public/ and SQLite storage.
-//   npm start            -> http://localhost:8787  (PORT to change; binds to 127.0.0.1 only)
+//   npm start            -> http://localhost:8787  (PORT to change; binds to 127.0.0.1 unless HOST says
+//                           otherwise: the container sets HOST=0.0.0.0, compose.yaml publishes on 127.0.0.1)
 
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
@@ -28,7 +29,7 @@ const app = createApp({
 app.use('/*', serveStatic({ root: `${ROOT}public`.replace(/\\/g, '/') }));
 
 const port = Number(process.env.PORT) || 8787;
-serve({ fetch: app.fetch, port, hostname: '127.0.0.1' }, (info) => {
+serve({ fetch: app.fetch, port, hostname: process.env.HOST || '127.0.0.1' }, (info) => {
   const names = providersFromEnv().map((p) => p.id);
   console.log(`PriceCompare on http://localhost:${info.port}  (web search: ${names.length ? names.join(' > ') : 'none'})`);
 });

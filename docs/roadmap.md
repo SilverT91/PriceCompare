@@ -41,6 +41,10 @@ HP Z2 Tower G1i configuration).
   model number tells configurations apart. "HP Z2 Mini G1a 395 128GB" now finds ABCOM's 7,427 €
   machine. When the query names the processor family itself, the processor is the product and its
   tier words count as before.
+- **Runs as a Docker stack on a home server** (`tools/deploy.ps1`; README, "Run it on another
+  machine with Docker"): the tests run in a container there before each start, and live checks
+  happen there instead of on the owner's PC. Deployed 2026-11-28, with this PC's database carried
+  over.
 - **A local database and two buttons.** "Load saved" shows what earlier searches found and asks
   nothing; "Check online" does not repeat a shop's web search answered in the last 14 days (its
   pages are read again for current prices). A repeated "HP Z2 Tower G1i" went from 2 web search

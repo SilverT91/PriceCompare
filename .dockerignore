@@ -1,0 +1,11 @@
+# Never into an image: secrets, local data, dependencies installed on the host, git.
+.env
+.env.*
+.cache/
+*.sqlite
+*.sqlite-*
+node_modules/
+.git/
+.venv/
+.claude/
+__pycache__/

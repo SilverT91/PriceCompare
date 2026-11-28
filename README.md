@@ -285,6 +285,28 @@ candidates 6 hours, web search results 6 hours, robots.txt 24 hours, exchange ra
 "blocked" marks 1 hour, plus the search history and a log of web search API calls. Page bodies are
 never stored. Delete the file to start fresh.
 
+## Run it on another machine with Docker
+
+The app also runs as a Docker stack of its own (`Dockerfile`, `compose.yaml`, project name
+`pricecompare`), for example on a home server next to other stacks. The page is published on that
+machine's `127.0.0.1:8787` only and is opened through an SSH tunnel; the database lives in the
+volume `pricecompare_data`; the search keys come from a `.env` next to `compose.yaml`, never from
+the image.
+
+From a Windows PC with SSH access by key, `tools/deploy.ps1` copies the working tree (uncommitted
+changes included, git-ignored files never), builds and restarts the stack:
+
+```powershell
+powershell -File tools/deploy.ps1 -Test -CopyEnv   # first time: tests in a container, copy .env
+powershell -File tools/deploy.ps1 -Test            # later: copy, test, build, restart
+ssh -N -L 8787:127.0.0.1:8787 user@host            # then open http://localhost:8787
+```
+
+The target `user@host` is given with `-Target`, or `PRICECOMPARE_DEPLOY`, or a line
+`PRICECOMPARE_DEPLOY=user@host` in `.env.deploy` (git-ignored, so the address stays out of the
+repository). On the target the code is in `~/projects/pricecompare/app`. `-Test` builds the image's
+test stage, which runs the type check and the unit tests and stops the deploy if one fails.
+
 ## Web search keys
 
 Some shops do not allow their own search page to be read automatically, and a few have none that

@@ -26,6 +26,10 @@ npm start                              # page on http://localhost:8787
 Run the tests and the type check after every change. A live search costs shop requests and search
 quota, so use one only to check behaviour that tests cannot show.
 
+Live checks run on the deploy target (a home server; its address is in the git-ignored
+`.env.deploy`), not on the owner's PC: `powershell -File tools/deploy.ps1 -Test`, then open the page
+through the SSH tunnel (README, "Run it on another machine with Docker").
+
 ## Rules that are not negotiable
 
 1. **Request rules.** Every outgoing request honours robots.txt, keeps 3 seconds between requests

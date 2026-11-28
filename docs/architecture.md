@@ -766,3 +766,13 @@ normalised.
   skips this. A product page served from the 6-hour cache but missing in the database is stored
   then too.
 
+## 8e. Running as a container
+
+`Dockerfile` has three stages: `base` (Node 26.12, package files), `test` (all dependencies, type
+check and unit tests; `docker build --target test .`) and `app` (runtime dependencies only, the
+`src`, `public` and `data` folders, user `node`). The server listens on `HOST` (default 127.0.0.1;
+the image sets 0.0.0.0) and keeps its SQLite file at `PRICE_COMPARE_DB` (the image: `/data`, a
+volume). `compose.yaml` publishes the port on the host's 127.0.0.1 only and reads the keys from
+`.env` beside it. `tools/deploy.ps1` packs the files git knows, copies them over SSH, keeps `.env` on
+the target, optionally runs the test stage, and runs `docker compose up -d --build`.
+
